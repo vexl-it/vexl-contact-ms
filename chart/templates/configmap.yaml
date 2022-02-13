@@ -1,0 +1,26 @@
+# nginx/symfony nginx config
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nginx-config-test
+data:
+  nginx.conf: |
+    events {
+    }
+    http {
+      server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
+        server_name _;
+
+        root /var/www/html/public;
+
+        location / {
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Forwarded-Port $server_port;
+          proxy_set_header Host $host;
+          proxy_pass http://localhost:8080/;
+        }
+      }
+    }
