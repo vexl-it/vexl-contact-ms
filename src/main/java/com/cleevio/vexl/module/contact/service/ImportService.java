@@ -59,9 +59,10 @@ public class ImportService {
                     }
                 });
 
-        String message = String.format("Imported %s / %s contacts.",
+        String message = String.format("Imported %s / %s contacts for public_key %s",
                 imported.get(),
-                importSize);
+                importSize,
+                EncryptionUtils.encodeToBase64String(user.getPublicKey()));
 
         log.info(message);
 

@@ -22,7 +22,7 @@ public class UserService {
         log.info("Creating user {} ",
                 request.getPublicKey());
 
-        if (this.userRepository.existByPublicKeyAndHash(request.getPublicKey(), request.getHash())) {
+        if (this.userRepository.existsByPublicKeyAndHash(request.getPublicKey(), request.getHash())) {
             throw new UserAlreadyExistsException();
         }
 

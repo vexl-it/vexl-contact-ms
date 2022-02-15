@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
 
-    boolean existByPublicKeyAndHash(byte[] publicKey, byte[] hash);
+    boolean existsByPublicKeyAndHash(byte[] publicKey, byte[] hash);
 }
