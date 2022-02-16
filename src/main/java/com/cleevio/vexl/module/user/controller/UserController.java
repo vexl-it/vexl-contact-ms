@@ -54,7 +54,7 @@ public class UserController {
             @ApiResponse(responseCode = "409 (101101)", description = "User already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "400 (101103)", description = "Avatar has invalid format", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    @Operation(summary = "Create a new user")
+    @Operation(summary = "Delete a user")
     @PreAuthorize("hasRole('ROLE_USER')")
     public void deleteMe(@AuthenticationPrincipal User user) {
         this.userService.removeUserAndContacts(user);
