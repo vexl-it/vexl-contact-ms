@@ -13,9 +13,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.Valid;
 
 @Tag(name = "User")
 @Slf4j
@@ -34,7 +38,8 @@ public class UserController {
             @ApiResponse(responseCode = "400 (101103)", description = "Avatar has invalid format", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Operation(summary = "Create a new user")
-    public UserResponse createUser(CreateUserRequest request)
+    @PreAuthorize("hasRole('ROLE_NEW_USER')")
+    public UserResponse createUser(@Valid @RequestBody CreateUserRequest request)
             throws UserAlreadyExistsException {
         return new UserResponse(userService.createUser(request));
     }
