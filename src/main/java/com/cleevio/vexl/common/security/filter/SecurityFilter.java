@@ -44,7 +44,7 @@ public class SecurityFilter extends OncePerRequestFilter {
                 AuthenticationHolder authenticationHolder;
 
                 if (userService.findByPublicKey(publicKey).isPresent()) {
-                    authenticationHolder = new AuthenticationHolder(userService.findByPublicKey(publicKey),
+                    authenticationHolder = new AuthenticationHolder(userService.findByPublicKey(publicKey).get(),
                             List.of(new SimpleGrantedAuthority("ROLE_USER")));
                     authenticationHolder.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 } else {

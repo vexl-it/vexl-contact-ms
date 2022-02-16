@@ -69,7 +69,7 @@ public class ContactController {
     @Operation(summary = "Get Facebook friends")
     public FacebookContactResponse getFacebookContacts(@Valid @RequestBody FacebookContactRequest facebookContactRequest)
             throws FacebookException {
-        return this.facebookService.retrieveContacts(facebookContactRequest);
+        return new FacebookContactResponse(this.facebookService.retrieveContacts(facebookContactRequest));
     }
 
     @GetMapping
@@ -95,5 +95,19 @@ public class ContactController {
     public void deleteContacts(@AuthenticationPrincipal User user,
                                @Valid @RequestBody DeleteContactsRequest deleteContactsRequest) {
         this.userContactService.deleteContacts(user, deleteContactsRequest);
+    }
+
+    @GetMapping("/facebook/contact/new/")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200"),
+            @ApiResponse(responseCode = "500 (101202)", description = "Cannot write file", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409 (101101)", description = "User already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "400 (101103)", description = "Avatar has invalid format", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @Operation(summary = "Get new user contacts")
+    public FacebookContactResponse getNewFacebookContacts(@AuthenticationPrincipal User user,
+                                                      @Valid @RequestBody FacebookContactRequest contactRequest)
+            throws FacebookException, NoSuchAlgorithmException {
+        return this.userContactService.retrieveFacebookNewContacts(user, contactRequest);
     }
 }

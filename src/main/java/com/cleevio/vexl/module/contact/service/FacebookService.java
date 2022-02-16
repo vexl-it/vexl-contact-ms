@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class FacebookService {
 
-    public FacebookContactResponse retrieveContacts(FacebookContactRequest facebookContactRequest)
+    public FacebookUser retrieveContacts(FacebookContactRequest facebookContactRequest)
             throws FacebookException {
 
         log.info("Retrieving contacts for user {}",
@@ -29,7 +29,7 @@ public class FacebookService {
             log.info("Successfully fetched {} friends.",
                     facebookFriends.getFriends().size()
             );
-            return new FacebookContactResponse(facebookFriends);
+            return facebookFriends;
         } catch (Exception e) {
             log.error("Error occurred during fetching data from Facebook", e);
             throw new FacebookException(e);
