@@ -25,4 +25,8 @@ public class ContactService {
 
         return new UserContactResponse(contacts);
     }
+
+    public void deleteAllContacts(byte[] userPublicKey) {
+        this.contactRepository.deleteAllByPublicKey(userPublicKey);
+    }
 }

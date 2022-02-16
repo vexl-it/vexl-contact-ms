@@ -23,4 +23,7 @@ interface ContactRepository extends JpaRepository<UserContact, Long>, JpaSpecifi
             "where x.hash_to is not null ",
             nativeQuery = true)
     Set<byte[]> findAllContactsByPublicKey(byte[] publicKey);
+
+    @Query("delete from UserContact uc where uc.hashFrom in (select u.hash from User u where u.publicKey = :publicKey) ")
+    void deleteAllByPublicKey(byte[] publicKey);
 }

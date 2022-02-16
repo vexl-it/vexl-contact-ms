@@ -1,5 +1,6 @@
 package com.cleevio.vexl.module.user.service;
 
+import com.cleevio.vexl.module.contact.service.ContactService;
 import com.cleevio.vexl.module.user.dto.request.CreateUserRequest;
 import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.module.user.exception.UserAlreadyExistsException;
@@ -17,6 +18,7 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final ContactService contactService;
 
     @Transactional(rollbackFor = Exception.class)
     public User createUser(CreateUserRequest request)
@@ -42,5 +44,10 @@ public class UserService {
     public Optional<User> findByPublicKey(String publicKey) {
         byte[] publicKeyByte = EncryptionUtils.decodeBase64String(publicKey);
         return this.userRepository.findUserByPublicKey(publicKeyByte);
+    }
+
+    public void removeUserAndContacts(User user) {
+        this.contactService.deleteAllContacts(user.getPublicKey());
+        this.userRepository.delete(user);
     }
 }
