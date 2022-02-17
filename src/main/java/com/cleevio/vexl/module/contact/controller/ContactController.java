@@ -4,6 +4,8 @@ import com.cleevio.vexl.common.dto.ErrorResponse;
 import com.cleevio.vexl.module.contact.dto.request.DeleteContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.FacebookContactRequest;
 import com.cleevio.vexl.module.contact.dto.request.ImportRequest;
+import com.cleevio.vexl.module.contact.dto.request.NewContactsRequest;
+import com.cleevio.vexl.module.contact.dto.response.NewContactsResponse;
 import com.cleevio.vexl.module.contact.dto.response.UserContactResponse;
 import com.cleevio.vexl.module.contact.dto.response.FacebookContactResponse;
 import com.cleevio.vexl.module.contact.dto.response.ImportResponse;
@@ -104,10 +106,24 @@ public class ContactController {
             @ApiResponse(responseCode = "409 (101101)", description = "User already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "400 (101103)", description = "Avatar has invalid format", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    @Operation(summary = "Get new user contacts")
+    @Operation(summary = "Get new user Facebook contacts")
     public FacebookContactResponse getNewFacebookContacts(@AuthenticationPrincipal User user,
-                                                      @Valid @RequestBody FacebookContactRequest contactRequest)
+                                                          @Valid @RequestBody FacebookContactRequest contactRequest)
             throws FacebookException, NoSuchAlgorithmException {
         return this.userContactService.retrieveFacebookNewContacts(user, contactRequest);
+    }
+
+    @GetMapping("/new/")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200"),
+            @ApiResponse(responseCode = "500 (101202)", description = "Cannot write file", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409 (101101)", description = "User already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "400 (101103)", description = "Avatar has invalid format", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @Operation(summary = "Get new user contacts")
+    public NewContactsResponse getNewPhoneContacts(@AuthenticationPrincipal User user,
+                                                   @Valid @RequestBody NewContactsRequest contactsRequest)
+            throws NoSuchAlgorithmException {
+        return this.userContactService.retrieveNewContacts(user, contactsRequest);
     }
 }

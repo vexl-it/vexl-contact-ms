@@ -41,12 +41,15 @@ public class UserService {
         );
     }
 
+    @Transactional(readOnly = true)
     public Optional<User> findByPublicKey(String publicKey) {
         byte[] publicKeyByte = EncryptionUtils.decodeBase64String(publicKey);
         return this.userRepository.findUserByPublicKey(publicKeyByte);
     }
 
     public void removeUserAndContacts(User user) {
+        log.info("Removing user with id {} and all his contacts",
+                user.getId());
         this.contactService.deleteAllContacts(user.getPublicKey());
         this.userRepository.delete(user);
     }
