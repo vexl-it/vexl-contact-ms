@@ -31,7 +31,7 @@ public class FacebookService {
             return facebookFriends;
         } catch (Exception e) {
             log.error("Error occurred during fetching data from Facebook", e);
-            throw new FacebookException(e);
+            throw new FacebookException();
         }
     }
 }

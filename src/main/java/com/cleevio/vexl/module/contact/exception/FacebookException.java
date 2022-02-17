@@ -1,8 +1,20 @@
 package com.cleevio.vexl.module.contact.exception;
 
-public class FacebookException extends Exception {
+import com.cleevio.vexl.common.exception.ApiException;
+import com.cleevio.vexl.common.exception.ErrorType;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-    public FacebookException(Throwable cause) {
-        super(cause);
-    }
+@ResponseStatus(HttpStatus.BAD_REQUEST)
+public class FacebookException extends ApiException {
+
+    @Override
+	protected ApiException.Module getModule() {
+		return Module.CONCTACT;
+	}
+
+	@Override
+	protected ErrorType getErrorType() {
+		return UserErrorType.FACEBOOK;
+	}
 }

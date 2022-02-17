@@ -35,6 +35,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .addFilterAfter(new SecurityFilter(signatureService, userService), UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests()
+                .antMatchers("/api-docs/**").permitAll()
+				.antMatchers("/actuator/health").permitAll()
                 .anyRequest().authenticated();
     }
 }

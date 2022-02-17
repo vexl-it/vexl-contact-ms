@@ -7,13 +7,18 @@ import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.module.user.exception.UserAlreadyExistsException;
 import com.cleevio.vexl.module.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -34,29 +39,33 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
+    @SecurityRequirements({
+            @SecurityRequirement(name = "public-key"),
+            @SecurityRequirement(name = "phone-hash"),
+            @SecurityRequirement(name = "signature"),
+    })
     @ApiResponses({
             @ApiResponse(responseCode = "200"),
-            @ApiResponse(responseCode = "500 (101202)", description = "Cannot write file", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "409 (101101)", description = "User already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "400 (101103)", description = "Avatar has invalid format", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            @ApiResponse(responseCode = "201", description = "User has been created"),
+            @ApiResponse(responseCode = "409 (101101)", description = "User already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Operation(summary = "Create a new user")
     @PreAuthorize("hasRole('ROLE_NEW_USER')")
-    public UserResponse createUser(@Valid @RequestBody CreateUserRequest request)
+    ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreateUserRequest request)
             throws UserAlreadyExistsException {
-        return new UserResponse(userService.createUser(request));
+        return new ResponseEntity<>(new UserResponse(this.userService.createUser(request)), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/me")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200"),
-            @ApiResponse(responseCode = "500 (101202)", description = "Cannot write file", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "409 (101101)", description = "User already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "400 (101103)", description = "Avatar has invalid format", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @SecurityRequirements({
+            @SecurityRequirement(name = "public-key"),
+            @SecurityRequirement(name = "phone-hash"),
+            @SecurityRequirement(name = "signature"),
     })
+    @ApiResponse(responseCode = "200")
     @Operation(summary = "Delete a user")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public void deleteMe(@AuthenticationPrincipal User user) {
+    void deleteMe(@Parameter(hidden = true) @AuthenticationPrincipal User user) {
         this.userService.removeUserAndContacts(user);
     }
 }
