@@ -1,6 +1,0 @@
-# https://gitlab.com/charts/auto-deploy-app/blob/master/Chart.yaml
-apiVersion: v1
-description: GitLab's Auto-deploy Helm Chart
-name: chart
-version: 0.2.4
-icon: https://gitlab.com/gitlab-com/gitlab-artwork/raw/master/logo/logo-square.png

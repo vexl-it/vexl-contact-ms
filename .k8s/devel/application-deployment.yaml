@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: appplication-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: application
+  template:
+    metadata:
+      labels:
+        component: application
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: application
+          imagePullPolicy: Always
+          image: gitlab.cleevio.cz:4567/backend/vexl/vexl-user-ms/devel:latest
