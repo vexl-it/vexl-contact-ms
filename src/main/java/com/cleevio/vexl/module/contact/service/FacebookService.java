@@ -2,7 +2,6 @@ package com.cleevio.vexl.module.contact.service;
 
 import com.cleevio.vexl.module.contact.dto.FacebookUser;
 import com.cleevio.vexl.module.contact.dto.request.FacebookContactRequest;
-import com.cleevio.vexl.module.contact.dto.response.FacebookContactResponse;
 import com.cleevio.vexl.module.contact.exception.FacebookException;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;

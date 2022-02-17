@@ -7,5 +7,5 @@ import java.util.List;
 @Data
 public class NewContactsRequest {
 
-    private final List<String> contacts;
+    private List<String> contacts;
 }

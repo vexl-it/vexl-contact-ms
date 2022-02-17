@@ -34,7 +34,7 @@ public class ImportService {
 
         log.info("Importing new {} contacts for {}",
                 importRequest.getContacts().size(),
-                user.getPublicKey());
+                user.getId());
 
         if (importRequest.getContacts().isEmpty()) {
             throw new ImportContactsException("Import list is empty. Nothing to import.");
