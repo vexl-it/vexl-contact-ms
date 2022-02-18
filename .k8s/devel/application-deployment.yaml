@@ -17,4 +17,4 @@ spec:
       containers:
         - name: application
           imagePullPolicy: Always
-          image: gitlab.cleevio.cz:4567/backend/vexl/vexl-user-ms/devel:latest
+          image: gitlab.cleevio.cz:4567/backend/vexl/vexl-contact-ms/devel:latest

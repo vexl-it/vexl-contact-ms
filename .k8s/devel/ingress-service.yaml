@@ -10,10 +10,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - user.vexl.devel.cleevio.io
-      secretName: vexl-user-ms-api-tls
+        - contact.vexl.devel.cleevio.io
+      secretName: vexl-contact-ms-api-tls
   rules:
-    - host: user.vexl.devel.cleevio.io
+    - host: contact.vexl.devel.cleevio.io
       http:
         paths:
           - path: /
