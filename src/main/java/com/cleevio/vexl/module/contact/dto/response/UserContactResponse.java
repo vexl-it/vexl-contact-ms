@@ -7,9 +7,9 @@ import java.util.Set;
 @Data
 public class UserContactResponse {
 
-    private final Set<byte[]> contactHashes;
+    private final Set<String> publicKeys;
 
-    public UserContactResponse(Set<byte[]> contactHashes) {
-        this.contactHashes = contactHashes;
+    public UserContactResponse(Set<String> publicKeys) {
+        this.publicKeys = publicKeys;
     }
 }

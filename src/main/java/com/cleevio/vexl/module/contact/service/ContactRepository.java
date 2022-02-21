@@ -14,16 +14,18 @@ interface ContactRepository extends JpaRepository<UserContact, Long>, JpaSpecifi
 
     boolean existsByHashFromAndHashTo(byte[] hashFrom, byte[] hashTo);
 
-    @Query(value = "select x.hash_to from ( " +
-            "select distinct uc.hash_to from user_contact uc " +
+    @Query(value = "select x.public_key from ( " +
+            "select distinct u2.public_key from users u2 " +
+            "join user_contact uc on uc.hash_to = u2.hash  " +
             "join users u on u.hash = uc.hash_from " +
             "where u.public_key = :publicKey " +
             "union " +
-            "select distinct uc2.hash_to from user_contact uc " +
+            "select distinct u2.public_key from users u2 " +
+            "left join user_contact uc on uc.hash_to = u2.hash " +
             "left join user_contact uc2 on uc.hash_to = uc2.hash_from " +
             "join users u on u.hash = uc.hash_from " +
             "where u.public_key = :publicKey) x " +
-            "where x.hash_to is not null ",
+            "where x.public_key is not null ",
             nativeQuery = true)
     Set<byte[]> findAllContactsByPublicKey(byte[] publicKey);
 
@@ -34,6 +36,10 @@ interface ContactRepository extends JpaRepository<UserContact, Long>, JpaSpecifi
 
     @Transactional
     @Modifying
-    @Query("delete from UserContact uc where uc.hashTo in (:contacts) AND uc.hashFrom = :hash ")
-    void deleteContacts(byte[] hash, List<byte[]> contacts);
+    @Query("delete from UserContact uc " +
+            "where uc.hashTo in ( " +
+            "select u.hash from User u " +
+            "where u.publicKey in (:publicKeys) ) " +
+            "AND uc.hashFrom = :hash ")
+    void deleteContacts(byte[] hash, List<byte[]> publicKeys);
 }

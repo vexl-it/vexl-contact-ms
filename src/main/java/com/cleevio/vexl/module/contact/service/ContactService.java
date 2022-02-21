@@ -2,7 +2,6 @@ package com.cleevio.vexl.module.contact.service;
 
 import com.cleevio.vexl.module.contact.dto.FacebookUser;
 import com.cleevio.vexl.module.contact.dto.request.DeleteContactsRequest;
-import com.cleevio.vexl.module.contact.dto.request.FacebookContactRequest;
 import com.cleevio.vexl.module.contact.dto.request.NewContactsRequest;
 import com.cleevio.vexl.module.contact.dto.response.FacebookContactResponse;
 import com.cleevio.vexl.module.contact.dto.response.NewContactsResponse;
@@ -36,9 +35,13 @@ public class ContactService {
         log.info("Retrieving contacts for user {}",
                 user.getId());
 
-        Set<byte[]> contacts = contactRepository.findAllContactsByPublicKey(user.getPublicKey());
+        Set<byte[]> contactsPublicKey = contactRepository.findAllContactsByPublicKey(user.getPublicKey());
 
-        return new UserContactResponse(contacts);
+        return new UserContactResponse(
+                contactsPublicKey.stream()
+                        .map(EncryptionUtils::encodeToBase64String)
+                        .collect(Collectors.toSet())
+        );
     }
 
     public void deleteAllContacts(byte[] userPublicKey) {
@@ -57,21 +60,21 @@ public class ContactService {
     }
 
     @Transactional(readOnly = true)
-    public FacebookContactResponse retrieveFacebookNewContacts(User user, FacebookContactRequest contactRequest)
+    public FacebookContactResponse retrieveFacebookNewContacts(User user, String facebookId, String accessToken)
             throws FacebookException, NoSuchAlgorithmException {
         log.info("Checking for new Facebook connections for user {}",
                 user.getId());
 
-        FacebookUser facebookUser = this.facebookService.retrieveContacts(contactRequest);
+        FacebookUser facebookUser = this.facebookService.retrieveContacts(facebookId, accessToken);
         List<String> facebookIds = facebookUser.getFriends().stream()
                 .map(FacebookUser::getId).toList();
 
-        for (String facebookId :
+        for (String id :
                 facebookIds) {
-            if (!this.contactRepository.existsByHashFromAndHashTo(user.getHash(), EncryptionUtils.createHash(facebookId, SHA256))) {
+            if (!this.contactRepository.existsByHashFromAndHashTo(user.getHash(), EncryptionUtils.createHash(id, SHA256))) {
                 for (FacebookUser fu :
                         facebookUser.getFriends()) {
-                    if (facebookId.equals(fu.getId())) {
+                    if (id.equals(fu.getId())) {
                         facebookUser.addNewFriends(fu);
                     }
                 }
