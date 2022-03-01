@@ -1,7 +1,7 @@
 package com.cleevio.vexl.common;
 
 import com.cleevio.vexl.module.contact.service.ContactService;
-import com.cleevio.vexl.module.contact.service.FacebookService;
+import com.cleevio.vexl.module.facebook.service.FacebookService;
 import com.cleevio.vexl.module.contact.service.ImportService;
 import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.module.user.service.UserService;

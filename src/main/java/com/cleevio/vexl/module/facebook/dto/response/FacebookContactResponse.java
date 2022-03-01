@@ -1,6 +1,6 @@
-package com.cleevio.vexl.module.contact.dto.response;
+package com.cleevio.vexl.module.facebook.dto.response;
 
-import com.cleevio.vexl.module.contact.dto.FacebookUser;
+import com.cleevio.vexl.module.facebook.dto.FacebookUser;
 import lombok.Data;
 
 

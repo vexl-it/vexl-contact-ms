@@ -1,8 +1,11 @@
 package com.cleevio.vexl.common.service;
 
+import com.cleevio.vexl.common.enums.AlgorithmEnum;
 import com.cleevio.vexl.common.exception.DigitalSignatureException;
 import com.cleevio.vexl.utils.EncryptionUtils;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -15,12 +18,11 @@ import java.security.spec.InvalidKeySpecException;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class SignatureService {
 
-    private static final String EdDSA = "Ed25519";
-
-    //TODO public_key will be in properties
-    private static final String publicKey = "MCowBQYDK2VwAyEAUrB4CUnNldgBuC7vuhhCdfuAGzy6YSA5RnkCABa29DE=";
+    @Value("${signature.user.publickey}")
+    private final String publicKey;
 
     public boolean isSignatureValid(String publicKey, String phoneHash, String digitalSignature)
             throws DigitalSignatureException, IOException {
@@ -31,8 +33,8 @@ public class SignatureService {
     public boolean isSignatureValid(byte[] valueForSign, String digitalSignature)
             throws DigitalSignatureException {
         try {
-            Signature signature = Signature.getInstance(EdDSA);
-            signature.initVerify(EncryptionUtils.createPublicKey(publicKey, EdDSA));
+            Signature signature = Signature.getInstance(AlgorithmEnum.EdDSA.getValue());
+            signature.initVerify(EncryptionUtils.createPublicKey(publicKey, AlgorithmEnum.EdDSA.getValue()));
             signature.update(valueForSign);
             return signature.verify(EncryptionUtils.decodeBase64String(digitalSignature));
         } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException | SignatureException e) {

@@ -63,7 +63,7 @@ public class UserController {
             @SecurityRequirement(name = "signature"),
     })
     @ApiResponse(responseCode = "200")
-    @Operation(summary = "Delete a user")
+    @Operation(summary = "Delete a user and his contacts.")
     @PreAuthorize("hasRole('ROLE_USER')")
     void deleteMe(@Parameter(hidden = true) @AuthenticationPrincipal User user) {
         this.userService.removeUserAndContacts(user);

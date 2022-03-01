@@ -1,6 +1,6 @@
-package com.cleevio.vexl.module.contact.service;
+package com.cleevio.vexl.module.facebook.service;
 
-import com.cleevio.vexl.module.contact.dto.FacebookUser;
+import com.cleevio.vexl.module.facebook.dto.FacebookUser;
 import com.cleevio.vexl.module.contact.exception.FacebookException;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
@@ -21,13 +21,13 @@ public class FacebookService {
 
         try {
             FacebookClient client = new DefaultFacebookClient(accessToken, Version.LATEST);
-            FacebookUser facebookFriends = client.fetchObject(facebookId, FacebookUser.class,
+            FacebookUser facebookUser = client.fetchObject(facebookId, FacebookUser.class,
                     Parameter.with("fields", "id,name,friends{name,id,friends}")
             );
             log.info("Successfully fetched {} friends.",
-                    facebookFriends.getFriends().size()
+                    facebookUser.getFriends().size()
             );
-            return facebookFriends;
+            return facebookUser;
         } catch (Exception e) {
             log.error("Error occurred during fetching data from Facebook", e);
             throw new FacebookException();

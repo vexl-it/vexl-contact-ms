@@ -14,4 +14,6 @@ public class ErrorResponse {
 
     private String code;
 
+    private Map<String, String> params;
+
 }

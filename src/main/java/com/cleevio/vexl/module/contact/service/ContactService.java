@@ -1,23 +1,25 @@
 package com.cleevio.vexl.module.contact.service;
 
-import com.cleevio.vexl.module.contact.dto.FacebookUser;
+import com.cleevio.vexl.module.facebook.dto.FacebookUser;
 import com.cleevio.vexl.module.contact.dto.request.DeleteContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.NewContactsRequest;
-import com.cleevio.vexl.module.contact.dto.response.FacebookContactResponse;
+import com.cleevio.vexl.module.facebook.dto.response.FacebookContactResponse;
 import com.cleevio.vexl.module.contact.dto.response.NewContactsResponse;
-import com.cleevio.vexl.module.contact.dto.response.UserContactResponse;
 import com.cleevio.vexl.module.contact.exception.FacebookException;
+import com.cleevio.vexl.module.facebook.service.FacebookService;
 import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.utils.EncryptionUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.NoSuchAlgorithmException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,23 +27,18 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class ContactService {
 
-    private static final String SHA256 = "SHA-256";
+    @Value("${hmac.secret.key}")
+    private final String secretKey;
 
     private final ContactRepository contactRepository;
     private final FacebookService facebookService;
 
     @Transactional(readOnly = true)
-    public UserContactResponse retrieveUserContactsByUser(User user) {
+    public Page<byte[]> retrieveUserContactsByUser(User user, int page, int limit) {
         log.info("Retrieving contacts for user {}",
                 user.getId());
 
-        Set<byte[]> contactsPublicKey = contactRepository.findAllContactsByPublicKey(user.getPublicKey());
-
-        return new UserContactResponse(
-                contactsPublicKey.stream()
-                        .map(EncryptionUtils::encodeToBase64String)
-                        .collect(Collectors.toSet())
-        );
+        return contactRepository.findAllContactsByPublicKey(user.getPublicKey(), PageRequest.of(page, limit));
     }
 
     public void deleteAllContacts(byte[] userPublicKey) {
@@ -61,7 +58,7 @@ public class ContactService {
 
     @Transactional(readOnly = true)
     public FacebookContactResponse retrieveFacebookNewContacts(User user, String facebookId, String accessToken)
-            throws FacebookException, NoSuchAlgorithmException {
+            throws FacebookException {
         log.info("Checking for new Facebook connections for user {}",
                 user.getId());
 
@@ -71,7 +68,7 @@ public class ContactService {
 
         for (String id :
                 facebookIds) {
-            if (!this.contactRepository.existsByHashFromAndHashTo(user.getHash(), EncryptionUtils.createHash(id, SHA256))) {
+            if (!this.contactRepository.existsByHashFromAndHashTo(user.getHash(), calculateHmacSha256(id))) {
                 for (FacebookUser fu :
                         facebookUser.getFriends()) {
                     if (id.equals(fu.getId())) {
@@ -89,17 +86,23 @@ public class ContactService {
     }
 
     @Transactional(readOnly = true)
-    public NewContactsResponse retrieveNewContacts(User user, NewContactsRequest contactsRequest)
-            throws NoSuchAlgorithmException {
+    public NewContactsResponse retrieveNewContacts(User user, NewContactsRequest contactsRequest) {
         List<String> newContacts = new ArrayList<>();
 
         for (String contact :
                 contactsRequest.getContacts()) {
-            if (!this.contactRepository.existsByHashFromAndHashTo(user.getHash(), EncryptionUtils.createHash(contact, SHA256))) {
+            if (!this.contactRepository.existsByHashFromAndHashTo(user.getHash(), calculateHmacSha256(contact))) {
                 newContacts.add(contact);
             }
         }
 
         return new NewContactsResponse(newContacts);
+    }
+
+    private byte[] calculateHmacSha256(String value) {
+        return EncryptionUtils.calculateHmacSha256(
+                this.secretKey.getBytes(StandardCharsets.UTF_8),
+                value.getBytes(StandardCharsets.UTF_8)
+        );
     }
 }

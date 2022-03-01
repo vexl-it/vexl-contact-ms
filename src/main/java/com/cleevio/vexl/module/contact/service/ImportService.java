@@ -8,10 +8,11 @@ import com.cleevio.vexl.module.contact.exception.ImportContactsException;
 import com.cleevio.vexl.utils.EncryptionUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.NoSuchAlgorithmException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -21,13 +22,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 @AllArgsConstructor
 public class ImportService {
 
-    private static final String SHA256 = "SHA-256";
+    @Value("${hmac.secret.key}")
+    private final String secretKey;
 
     private final ContactRepository userContactRepository;
 
     @Transactional(rollbackFor = Exception.class)
     public ImportResponse importContacts(User user, ImportRequest importRequest)
-            throws ImportContactsException, NoSuchAlgorithmException {
+            throws ImportContactsException {
 
         int importSize = importRequest.getContacts().size();
         List<byte[]> contacts = new ArrayList<>();
@@ -42,7 +44,10 @@ public class ImportService {
 
         for (String contact :
                 importRequest.getContacts()) {
-            contacts.add(EncryptionUtils.createHash(contact, SHA256));
+            contacts.add(EncryptionUtils.calculateHmacSha256(
+                    this.secretKey.getBytes(StandardCharsets.UTF_8),
+                    contact.getBytes(StandardCharsets.UTF_8))
+            );
         }
 
         AtomicInteger imported = new AtomicInteger();

@@ -6,14 +6,13 @@ import com.cleevio.vexl.module.contact.dto.request.ImportRequest;
 import com.cleevio.vexl.module.contact.dto.request.NewContactsRequest;
 import com.cleevio.vexl.module.contact.dto.response.NewContactsResponse;
 import com.cleevio.vexl.module.contact.dto.response.UserContactResponse;
-import com.cleevio.vexl.module.contact.dto.response.FacebookContactResponse;
 import com.cleevio.vexl.module.contact.dto.response.ImportResponse;
-import com.cleevio.vexl.module.contact.exception.FacebookException;
-import com.cleevio.vexl.module.contact.service.FacebookService;
+import com.cleevio.vexl.module.contact.dto.response.UserContactsResponse;
 import com.cleevio.vexl.module.contact.service.ContactService;
 import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.module.contact.exception.ImportContactsException;
 import com.cleevio.vexl.module.contact.service.ImportService;
+import com.cleevio.vexl.utils.EncryptionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,14 +29,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.security.NoSuchAlgorithmException;
 
 @Tag(name = "Contact")
 @Slf4j
@@ -48,7 +47,6 @@ import java.security.NoSuchAlgorithmException;
 public class ContactController {
 
     private final ImportService importService;
-    private final FacebookService facebookService;
     private final ContactService userContactService;
 
     @PostMapping("/import")
@@ -64,43 +62,8 @@ public class ContactController {
     @Operation(summary = "Import contacts. Every contact will be encrypted with HMAC-SHA256.")
     ImportResponse importContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user,
                                   @Valid @RequestBody ImportRequest importRequest)
-            throws ImportContactsException, NoSuchAlgorithmException {
+            throws ImportContactsException {
         return this.importService.importContacts(user, importRequest);
-    }
-
-    @GetMapping("/facebook/{facebookId}/token/{accessToken}")
-    @SecurityRequirements({
-            @SecurityRequirement(name = "public-key"),
-            @SecurityRequirement(name = "phone-hash"),
-            @SecurityRequirement(name = "signature"),
-    })
-    @ApiResponses({
-            @ApiResponse(responseCode = "200"),
-            @ApiResponse(responseCode = "400 (101103)", description = "Bad request to Facebook", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    })
-    @Operation(summary = "Get Facebook contacts.")
-    FacebookContactResponse getFacebookContacts(@PathVariable String facebookId,
-                                                @PathVariable String accessToken)
-            throws FacebookException {
-        return new FacebookContactResponse(this.facebookService.retrieveContacts(facebookId, accessToken));
-    }
-
-    @GetMapping("/facebook/{facebookId}/token/{accessToken}/new/")
-    @SecurityRequirements({
-            @SecurityRequirement(name = "public-key"),
-            @SecurityRequirement(name = "phone-hash"),
-            @SecurityRequirement(name = "signature"),
-    })
-    @ApiResponses({
-            @ApiResponse(responseCode = "200"),
-            @ApiResponse(responseCode = "400 (101103)", description = "Bad request to Facebook", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    })
-    @Operation(summary = "Get new contact connections on Facebook. Returns all friends and in the newFriends attribute returns contacts which are not imported yet.")
-    FacebookContactResponse getNewFacebookContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user,
-                                                   @PathVariable String facebookId,
-                                                   @PathVariable String accessToken)
-            throws FacebookException, NoSuchAlgorithmException {
-        return this.userContactService.retrieveFacebookNewContacts(user, facebookId, accessToken);
     }
 
     @GetMapping
@@ -111,8 +74,16 @@ public class ContactController {
     })
     @ApiResponse(responseCode = "200")
     @Operation(summary = "Get all the user's contacts' public keys.")
-    UserContactResponse getContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user) {
-        return this.userContactService.retrieveUserContactsByUser(user);
+    UserContactsResponse getContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user,
+                                     @RequestParam(required = false, defaultValue = "0") int page,
+                                     @RequestParam(required = false, defaultValue = "10") int limit,
+                                     HttpServletRequest request) {
+        return new UserContactsResponse(
+                request,
+                this.userContactService.retrieveUserContactsByUser(user, page, limit)
+                        .map(EncryptionUtils::encodeToBase64String)
+                        .map(UserContactResponse::new)
+        );
     }
 
     @DeleteMapping
@@ -129,17 +100,16 @@ public class ContactController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/new/")
+    @PostMapping("/new/")
     @SecurityRequirements({
             @SecurityRequirement(name = "public-key"),
             @SecurityRequirement(name = "phone-hash"),
             @SecurityRequirement(name = "signature"),
     })
     @ApiResponse(responseCode = "200")
-    @Operation(summary = "Get new user contacts. Send all contacts and all contacts which are not imported will be returned.")
+    @Operation(summary = "Retrieve new user contacts. Send all phone contacts and all contacts which are not imported will be returned.")
     NewContactsResponse getNewPhoneContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user,
-                                            @Valid @RequestBody NewContactsRequest contactsRequest)
-            throws NoSuchAlgorithmException {
+                                            @Valid @RequestBody NewContactsRequest contactsRequest) {
         return this.userContactService.retrieveNewContacts(user, contactsRequest);
     }
 }

@@ -1,4 +1,4 @@
-package com.cleevio.vexl.module.contact.dto;
+package com.cleevio.vexl.module.facebook.dto;
 
 import com.restfb.Facebook;
 import lombok.Data;

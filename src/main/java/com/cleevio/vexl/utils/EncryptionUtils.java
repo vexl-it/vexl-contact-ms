@@ -1,7 +1,10 @@
 package com.cleevio.vexl.utils;
 
+import com.cleevio.vexl.common.enums.AlgorithmEnum;
 import lombok.experimental.UtilityClass;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -47,5 +50,18 @@ public class EncryptionUtils {
     public KeyPair retrieveKeyPair(String algorithm) throws NoSuchAlgorithmException {
         KeyPairGenerator kpg = KeyPairGenerator.getInstance(algorithm);
         return kpg.generateKeyPair();
+    }
+
+    public byte[] calculateHmacSha256(byte[] secretKey, byte[] message) {
+        byte[] hmacSha256;
+        try {
+            Mac mac = Mac.getInstance(AlgorithmEnum.HMACSHA256.getValue());
+            SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey, AlgorithmEnum.HMACSHA256.getValue());
+            mac.init(secretKeySpec);
+            hmacSha256 = mac.doFinal(message);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to calculate hmac-sha256", e);
+        }
+        return hmacSha256;
     }
 }

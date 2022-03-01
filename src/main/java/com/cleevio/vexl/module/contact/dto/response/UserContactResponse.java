@@ -1,15 +1,12 @@
 package com.cleevio.vexl.module.contact.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-
-import java.util.Set;
 
 @Data
 public class UserContactResponse {
 
-    private final Set<String> publicKeys;
+    @Schema(description = "PublicKeys in Base64")
+    private final String publicKeys;
 
-    public UserContactResponse(Set<String> publicKeys) {
-        this.publicKeys = publicKeys;
-    }
 }
