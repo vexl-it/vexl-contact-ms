@@ -82,7 +82,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         httpResponse.setStatus(code);
 
-        ErrorResponse error = new ErrorResponse(Collections.singleton(s), "0", Collections.emptyMap());
+        ErrorResponse error = new ErrorResponse(Collections.singleton(s), "0");
         OutputStream out = response.getOutputStream();
         ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(out, error);
