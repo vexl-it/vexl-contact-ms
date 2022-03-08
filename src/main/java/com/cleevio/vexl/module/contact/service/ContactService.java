@@ -1,5 +1,6 @@
 package com.cleevio.vexl.module.contact.service;
 
+import com.cleevio.vexl.module.contact.exception.InvalidFacebookToken;
 import com.cleevio.vexl.module.facebook.dto.FacebookUser;
 import com.cleevio.vexl.module.contact.dto.request.DeleteContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.NewContactsRequest;
@@ -58,7 +59,7 @@ public class ContactService {
 
     @Transactional(readOnly = true)
     public FacebookContactResponse retrieveFacebookNewContacts(User user, String facebookId, String accessToken)
-            throws FacebookException {
+            throws FacebookException, InvalidFacebookToken {
         log.info("Checking for new Facebook connections for user {}",
                 user.getId());
 

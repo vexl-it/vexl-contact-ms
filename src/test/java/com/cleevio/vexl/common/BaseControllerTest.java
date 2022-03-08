@@ -2,6 +2,7 @@ package com.cleevio.vexl.common;
 
 import com.cleevio.vexl.common.service.SignatureService;
 import com.cleevio.vexl.module.contact.service.ContactService;
+import com.cleevio.vexl.module.facebook.dto.FacebookUser;
 import com.cleevio.vexl.module.facebook.service.FacebookService;
 import com.cleevio.vexl.module.contact.service.ImportService;
 import com.cleevio.vexl.module.user.entity.User;
@@ -42,6 +43,9 @@ public class BaseControllerTest {
 
     @Mock
     protected User user;
+
+    @Mock
+    protected FacebookUser facebookUser;
 
     @MockBean
     protected SignatureService signatureService;

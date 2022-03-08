@@ -31,12 +31,6 @@ public class SecurityFilter extends OncePerRequestFilter {
     private final SignatureService signatureService;
     private final UserService userService;
 
-    private static final List<String> permittedEndpoints = List.of(
-            "/api/v1/contact",
-            "/api/v1/facebook",
-            "/api/v1/user"
-    );
-
     public SecurityFilter(SignatureService signatureService,
                           UserService userService) {
         this.signatureService = signatureService;
@@ -51,7 +45,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         String phoneHash = request.getHeader(HEADER_PHONE_HASH);
         String signature = request.getHeader(HEADER_SIGNATURE);
 
-        if (signature == null || publicKey == null || phoneHash == null || !permittedEndpoints.contains(requestURI)) {
+        if (signature == null || publicKey == null || phoneHash == null) {
             filterChain.doFilter(request, response);
             return;
         }

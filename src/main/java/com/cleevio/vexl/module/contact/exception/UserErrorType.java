@@ -8,7 +8,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum UserErrorType  implements ErrorType {
 
-    FACEBOOK("102", "Issue on Facebook side");
+    FACEBOOK("102", "Issue on Facebook side"),
+    INVALID_TOKEN("103", "Expired Facebook token");
 
 	/**
 	 * Error custom code

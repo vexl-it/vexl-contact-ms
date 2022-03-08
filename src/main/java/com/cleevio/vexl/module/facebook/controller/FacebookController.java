@@ -1,6 +1,7 @@
 package com.cleevio.vexl.module.facebook.controller;
 
 import com.cleevio.vexl.common.dto.ErrorResponse;
+import com.cleevio.vexl.module.contact.exception.InvalidFacebookToken;
 import com.cleevio.vexl.module.facebook.dto.response.FacebookContactResponse;
 import com.cleevio.vexl.module.contact.exception.FacebookException;
 import com.cleevio.vexl.module.contact.service.ContactService;
@@ -43,12 +44,13 @@ public class FacebookController {
     })
     @ApiResponses({
             @ApiResponse(responseCode = "200"),
-            @ApiResponse(responseCode = "400 (101103)", description = "Bad request to Facebook", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            @ApiResponse(responseCode = "400 (101102)", description = "Bad request to Facebook", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "400 (101103)", description = "Invalid Facebook token", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Operation(summary = "Get Facebook contacts.")
     FacebookContactResponse getFacebookContacts(@PathVariable String facebookId,
                                                 @PathVariable String accessToken)
-            throws FacebookException {
+            throws FacebookException, InvalidFacebookToken {
         return new FacebookContactResponse(this.facebookService.retrieveContacts(facebookId, accessToken));
     }
 
@@ -60,13 +62,15 @@ public class FacebookController {
     })
     @ApiResponses({
             @ApiResponse(responseCode = "200"),
-            @ApiResponse(responseCode = "400 (101103)", description = "Bad request to Facebook", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            @ApiResponse(responseCode = "400 (101102)", description = "Bad request to Facebook", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "400 (101103)", description = "Invalid Facebook token", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+
     })
     @Operation(summary = "Get new user contacts on Facebook. Returns all friends and in the newFriends attribute returns contacts which are not imported yet.")
     FacebookContactResponse getNewFacebookContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user,
                                                    @PathVariable String facebookId,
                                                    @PathVariable String accessToken)
-            throws FacebookException {
+            throws FacebookException, InvalidFacebookToken {
         return this.userContactService.retrieveFacebookNewContacts(user, facebookId, accessToken);
     }
 }
