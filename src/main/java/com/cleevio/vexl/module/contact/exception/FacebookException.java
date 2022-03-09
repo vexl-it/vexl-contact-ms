@@ -10,7 +10,7 @@ public class FacebookException extends ApiException {
 
     @Override
 	protected ApiException.Module getModule() {
-		return Module.CONCTACT;
+		return Module.CONTACT;
 	}
 
 	@Override

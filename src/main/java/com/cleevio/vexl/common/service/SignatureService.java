@@ -38,7 +38,7 @@ public class SignatureService {
             signature.update(valueForSign);
             return signature.verify(EncryptionUtils.decodeBase64String(digitalSignature));
         } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException | SignatureException e) {
-            String errorMessage = String.format("Error occurred while verifying signature {}, error {}",
+            String errorMessage = String.format("Error occurred while verifying signature %s, error %s",
                     digitalSignature,
                     e.getMessage());
             log.error(errorMessage);

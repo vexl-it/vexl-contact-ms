@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.BAD_REQUEST)
-public class InvalidFacebookToken extends ApiException {
+public class ContactsMissingException extends ApiException {
 
     @Override
 	protected ApiException.Module getModule() {
@@ -15,6 +15,6 @@ public class InvalidFacebookToken extends ApiException {
 
 	@Override
 	protected ErrorType getErrorType() {
-		return UserErrorType.INVALID_TOKEN;
+		return UserErrorType.MISSING_CONTACTS;
 	}
 }

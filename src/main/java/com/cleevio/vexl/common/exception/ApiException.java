@@ -47,7 +47,7 @@ public abstract class ApiException extends Exception {
     public enum Module {
 
         USER("100", "User Module Error."),
-        CONCTACT("101", "Contact Module Error.");
+        CONTACT("101", "Contact Module Error.");
 
         /**
          * Error custom code

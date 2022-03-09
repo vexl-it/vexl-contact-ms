@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(UserController.class)
 public class CreatePostTest extends BaseControllerTest {
 
-    private static final String BASE_URL = "/api/v1/user";
+    private static final String BASE_URL = "/api/v1/users";
 
     @BeforeEach
     @SneakyThrows
@@ -41,7 +41,7 @@ public class CreatePostTest extends BaseControllerTest {
                         .header(SecurityFilter.HEADER_PHONE_HASH, PHONE_HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(new CreateUserRequest(PUBLIC_KEY, PHONE_HASH))))
+                        .content(asJsonString(new CreateUserRequest(PUBLIC_KEY.getBytes(), PHONE_HASH.getBytes()))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id", notNullValue()))
                 .andExpect(jsonPath("$.publicKey", notNullValue()))
@@ -57,7 +57,7 @@ public class CreatePostTest extends BaseControllerTest {
                         .header(SecurityFilter.HEADER_PHONE_HASH, PHONE_HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(new CreateUserRequest(PUBLIC_KEY, PHONE_HASH))))
+                        .content(asJsonString(new CreateUserRequest(PUBLIC_KEY.getBytes(), PHONE_HASH.getBytes()))))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code", is(ApiException.Module.USER.getErrorCode() + UserErrorType.USER_DUPLICATE.getCode())))
                 .andExpect(jsonPath("$.message[0]", is(UserErrorType.USER_DUPLICATE.getMessage())));

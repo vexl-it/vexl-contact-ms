@@ -10,9 +10,8 @@ import com.cleevio.vexl.module.contact.dto.response.ImportResponse;
 import com.cleevio.vexl.module.contact.dto.response.UserContactsResponse;
 import com.cleevio.vexl.module.contact.service.ContactService;
 import com.cleevio.vexl.module.user.entity.User;
-import com.cleevio.vexl.module.contact.exception.ImportContactsException;
+import com.cleevio.vexl.module.contact.exception.ContactsMissingException;
 import com.cleevio.vexl.module.contact.service.ImportService;
-import com.cleevio.vexl.utils.EncryptionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -41,7 +40,7 @@ import javax.validation.Valid;
 @Tag(name = "Contact")
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/contact")
+@RequestMapping(value = "/api/v1/contacts")
 @AllArgsConstructor
 @PreAuthorize("hasRole('ROLE_USER')")
 public class ContactController {
@@ -57,12 +56,15 @@ public class ContactController {
     })
     @ApiResponses({
             @ApiResponse(responseCode = "200"),
-            @ApiResponse(responseCode = "400 (101103)", description = "Issue with an import", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            @ApiResponse(responseCode = "400 (101104)", description = "Import list is empty. Nothing to import.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    @Operation(summary = "Import contacts. Every contact will be encrypted with HMAC-SHA256.")
+    @Operation(
+            summary = "Import contacts.",
+            description = "Contacts have to be sent unencrypted, they will be encrypted on BE with HMAC-SHA256."
+    )
     ImportResponse importContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user,
                                   @Valid @RequestBody ImportRequest importRequest)
-            throws ImportContactsException {
+            throws ContactsMissingException {
         return this.importService.importContacts(user, importRequest);
     }
 
@@ -73,15 +75,14 @@ public class ContactController {
             @SecurityRequirement(name = "signature"),
     })
     @ApiResponse(responseCode = "200")
-    @Operation(summary = "Get all the user's contacts' public keys.")
+    @Operation(summary = "Get all public keys of user's contacts.")
     UserContactsResponse getContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user,
                                      @RequestParam(required = false, defaultValue = "0") int page,
                                      @RequestParam(required = false, defaultValue = "10") int limit,
                                      HttpServletRequest request) {
         return new UserContactsResponse(
                 request,
-                this.userContactService.retrieveUserContactsByUser(user, page, limit)
-                        .map(EncryptionUtils::encodeToBase64String)
+                this.userContactService.retrieveContactsByUser(user, page, limit)
                         .map(UserContactResponse::new)
         );
     }
@@ -93,23 +94,26 @@ public class ContactController {
             @SecurityRequirement(name = "signature"),
     })
     @ApiResponse(responseCode = "204")
-    @Operation(summary = "Remove chosen contacts by public key.")
+    @Operation(summary = "Remove contacts by public key.")
     ResponseEntity<Void> deleteContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user,
                                         @Valid @RequestBody DeleteContactsRequest deleteContactsRequest) {
         this.userContactService.deleteContacts(user, deleteContactsRequest);
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/new/")
+    @PostMapping("/not-imported/")
     @SecurityRequirements({
             @SecurityRequirement(name = "public-key"),
             @SecurityRequirement(name = "phone-hash"),
             @SecurityRequirement(name = "signature"),
     })
     @ApiResponse(responseCode = "200")
-    @Operation(summary = "Retrieve new user contacts. Send all phone contacts and all contacts which are not imported will be returned.")
+    @Operation(
+            summary = "Retrieve phone contacts which have not been imported yet",
+            description = "You have to send all user's phone contacts. Endpoint then will return only contacts, which are not imported yet."
+    )
     NewContactsResponse getNewPhoneContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user,
                                             @Valid @RequestBody NewContactsRequest contactsRequest) {
-        return this.userContactService.retrieveNewContacts(user, contactsRequest);
+        return new NewContactsResponse(this.userContactService.retrieveNewContacts(user, contactsRequest));
     }
 }

@@ -18,19 +18,10 @@ public class FacebookUser {
     private String name;
 
     @Facebook("friends")
-    private final List<FacebookUser> friends = new ArrayList<>();
-
-    private final List<FacebookUser> newFriends = new ArrayList<>();
+    private List<FacebookUser> friends = new ArrayList<>();
 
     public List<FacebookUser> getFriends() {
         return unmodifiableList(friends);
     }
 
-    public void addNewFriends(FacebookUser facebookUser) {
-        newFriends.add(facebookUser);
-    }
-
-    public List<FacebookUser> getNewFriends() {
-        return newFriends;
-    }
 }

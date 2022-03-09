@@ -39,7 +39,6 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        final String requestURI = request.getRequestURI();
 
         String publicKey = request.getHeader(HEADER_PUBLIC_KEY);
         String phoneHash = request.getHeader(HEADER_PHONE_HASH);

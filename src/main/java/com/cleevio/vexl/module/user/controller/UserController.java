@@ -32,7 +32,7 @@ import javax.validation.Valid;
 @Tag(name = "User")
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/user")
+@RequestMapping(value = "/api/v1/users")
 @AllArgsConstructor
 public class UserController {
 
@@ -49,7 +49,10 @@ public class UserController {
             @ApiResponse(responseCode = "201", description = "User has been created"),
             @ApiResponse(responseCode = "409 (101101)", description = "User already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    @Operation(summary = "Create a new user")
+    @Operation(
+            summary = "Create a new user",
+            description = "This endpoint must be called first. If you call other endpoints without a user created, it will return Unauthorized."
+    )
     @PreAuthorize("hasRole('ROLE_NEW_USER')")
     ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreateUserRequest request)
             throws UserAlreadyExistsException {

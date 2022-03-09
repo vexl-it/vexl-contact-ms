@@ -10,6 +10,6 @@ import java.util.List;
 public class NewContactsRequest {
 
     @NotBlank
-    @Schema(required = true, description = "Contacts in String format")
+    @Schema(required = true, description = "Contacts in String format. Not encrypted.")
     private List<String> contacts;
 }

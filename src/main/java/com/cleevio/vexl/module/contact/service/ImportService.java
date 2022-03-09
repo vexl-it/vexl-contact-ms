@@ -4,7 +4,7 @@ import com.cleevio.vexl.module.contact.dto.request.ImportRequest;
 import com.cleevio.vexl.module.contact.dto.response.ImportResponse;
 import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.module.contact.entity.UserContact;
-import com.cleevio.vexl.module.contact.exception.ImportContactsException;
+import com.cleevio.vexl.module.contact.exception.ContactsMissingException;
 import com.cleevio.vexl.utils.EncryptionUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +17,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Service for importing contacts. All contacts are from phoneHash/facebookIdHash and contact encrypted with HmacSHA256.
+ * We get contacts not encrypted, so we need to encrypt them on BE.
+ *
+ */
 @Service
 @Slf4j
 @AllArgsConstructor
@@ -29,7 +34,7 @@ public class ImportService {
 
     @Transactional(rollbackFor = Exception.class)
     public ImportResponse importContacts(User user, ImportRequest importRequest)
-            throws ImportContactsException {
+            throws ContactsMissingException {
 
         int importSize = importRequest.getContacts().size();
         List<byte[]> contacts = new ArrayList<>();
@@ -39,11 +44,10 @@ public class ImportService {
                 user.getId());
 
         if (importRequest.getContacts().isEmpty()) {
-            throw new ImportContactsException("Import list is empty. Nothing to import.");
+            throw new ContactsMissingException();
         }
 
-        for (String contact :
-                importRequest.getContacts()) {
+        for (String contact : importRequest.getContacts()) {
             contacts.add(EncryptionUtils.calculateHmacSha256(
                     this.secretKey.getBytes(StandardCharsets.UTF_8),
                     contact.getBytes(StandardCharsets.UTF_8))

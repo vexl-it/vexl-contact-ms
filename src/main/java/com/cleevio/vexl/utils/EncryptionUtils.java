@@ -25,12 +25,6 @@ public class EncryptionUtils {
         return Base64.getDecoder().decode(value);
     }
 
-    public byte[] createHash(String value, String hashFunction)
-            throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance(hashFunction);
-        return digest.digest(value.getBytes(StandardCharsets.UTF_8));
-    }
-
     public String encodeToBase64String(byte[] bytes) {
         return Base64.getEncoder().encodeToString(bytes);
     }
@@ -39,17 +33,6 @@ public class EncryptionUtils {
             throws NoSuchAlgorithmException, InvalidKeySpecException {
         byte[] decodedPublicBytes = Base64.getDecoder().decode(base64PublicKey);
         return KeyFactory.getInstance(algorithm).generatePublic(new X509EncodedKeySpec(decodedPublicBytes));
-    }
-
-    public PrivateKey createPrivateKey(String base64PrivateKey, String algorithm)
-            throws NoSuchAlgorithmException, InvalidKeySpecException {
-        byte[] decodedPrivateBytes = Base64.getDecoder().decode(base64PrivateKey);
-        return KeyFactory.getInstance(algorithm).generatePrivate(new PKCS8EncodedKeySpec(decodedPrivateBytes));
-    }
-
-    public KeyPair retrieveKeyPair(String algorithm) throws NoSuchAlgorithmException {
-        KeyPairGenerator kpg = KeyPairGenerator.getInstance(algorithm);
-        return kpg.generateKeyPair();
     }
 
     public byte[] calculateHmacSha256(byte[] secretKey, byte[] message) {

@@ -1,13 +1,7 @@
 package com.cleevio.vexl.module.contact.service;
 
-import com.cleevio.vexl.module.contact.exception.InvalidFacebookToken;
-import com.cleevio.vexl.module.facebook.dto.FacebookUser;
 import com.cleevio.vexl.module.contact.dto.request.DeleteContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.NewContactsRequest;
-import com.cleevio.vexl.module.facebook.dto.response.FacebookContactResponse;
-import com.cleevio.vexl.module.contact.dto.response.NewContactsResponse;
-import com.cleevio.vexl.module.contact.exception.FacebookException;
-import com.cleevio.vexl.module.facebook.service.FacebookService;
 import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.utils.EncryptionUtils;
 import lombok.AllArgsConstructor;
@@ -23,6 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Implementation of receiving and deleting contacts. Adding (importing) contacts is done in ImportService.
+ */
 @Service
 @Slf4j
 @AllArgsConstructor
@@ -32,10 +29,17 @@ public class ContactService {
     private final String secretKey;
 
     private final ContactRepository contactRepository;
-    private final FacebookService facebookService;
 
+    /**
+     * Retrieve public keys of all my connections (friends)
+     *
+     * @param user
+     * @param page
+     * @param limit
+     * @return
+     */
     @Transactional(readOnly = true)
-    public Page<byte[]> retrieveUserContactsByUser(User user, int page, int limit) {
+    public Page<byte[]> retrieveContactsByUser(User user, int page, int limit) {
         log.info("Retrieving contacts for user {}",
                 user.getId());
 
@@ -58,47 +62,26 @@ public class ContactService {
     }
 
     @Transactional(readOnly = true)
-    public FacebookContactResponse retrieveFacebookNewContacts(User user, String facebookId, String accessToken)
-            throws FacebookException, InvalidFacebookToken {
-        log.info("Checking for new Facebook connections for user {}",
-                user.getId());
-
-        FacebookUser facebookUser = this.facebookService.retrieveContacts(facebookId, accessToken);
-        List<String> facebookIds = facebookUser.getFriends().stream()
-                .map(FacebookUser::getId).toList();
-
-        for (String id :
-                facebookIds) {
-            if (!this.contactRepository.existsByHashFromAndHashTo(user.getHash(), calculateHmacSha256(id))) {
-                for (FacebookUser fu :
-                        facebookUser.getFriends()) {
-                    if (id.equals(fu.getId())) {
-                        facebookUser.addNewFriends(fu);
-                    }
-                }
-            }
-        }
-
-        log.info("Found {} new Facebook contacts",
-                facebookUser.getNewFriends().size());
-
-        return new FacebookContactResponse(facebookUser);
-
-    }
-
-    @Transactional(readOnly = true)
-    public NewContactsResponse retrieveNewContacts(User user, NewContactsRequest contactsRequest) {
+    public List<String> retrieveNewContacts(User user, NewContactsRequest contactsRequest) {
         List<String> newContacts = new ArrayList<>();
 
-        for (String contact :
-                contactsRequest.getContacts()) {
-            if (!this.contactRepository.existsByHashFromAndHashTo(user.getHash(), calculateHmacSha256(contact))) {
-                newContacts.add(contact);
+        contactsRequest.getContacts().forEach(c -> {
+            if (!this.contactRepository.existsByHashFromAndHashTo(user.getHash(), calculateHmacSha256(c))) {
+                newContacts.add(c);
             }
-        }
+        });
 
-        return new NewContactsResponse(newContacts);
+        return newContacts;
     }
+
+    public boolean existsByHashFromAndHashTo(byte[] hashFrom, byte[] hashTo) {
+        return this.contactRepository.existsByHashFromAndHashTo(hashFrom, hashTo);
+    }
+
+    public boolean existsByHashFromAndHashTo(byte[] hashFrom, String hashToString) {
+        return existsByHashFromAndHashTo(hashFrom, calculateHmacSha256(hashToString));
+    }
+
 
     private byte[] calculateHmacSha256(String value) {
         return EncryptionUtils.calculateHmacSha256(

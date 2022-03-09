@@ -4,7 +4,6 @@ import com.cleevio.vexl.common.dto.ErrorResponse;
 import com.cleevio.vexl.module.contact.exception.InvalidFacebookToken;
 import com.cleevio.vexl.module.facebook.dto.response.FacebookContactResponse;
 import com.cleevio.vexl.module.contact.exception.FacebookException;
-import com.cleevio.vexl.module.contact.service.ContactService;
 import com.cleevio.vexl.module.facebook.service.FacebookService;
 import com.cleevio.vexl.module.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,7 +33,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class FacebookController {
 
     private final FacebookService facebookService;
-    private final ContactService userContactService;
 
     @GetMapping("/{facebookId}/token/{accessToken}")
     @SecurityRequirements({
@@ -47,14 +45,17 @@ public class FacebookController {
             @ApiResponse(responseCode = "400 (101102)", description = "Bad request to Facebook", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "400 (101103)", description = "Invalid Facebook token", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    @Operation(summary = "Get Facebook contacts.")
+    @Operation(summary = "Get Facebook contacts who use the app.",
+            description = "We return the current user, in the friends' field we return his friends who use the application " +
+                    "and in the friends.friends field we return mutual friends who use the application. " +
+                    "WARNING - the user himself will also be in the mutual friends.")
     FacebookContactResponse getFacebookContacts(@PathVariable String facebookId,
                                                 @PathVariable String accessToken)
             throws FacebookException, InvalidFacebookToken {
         return new FacebookContactResponse(this.facebookService.retrieveContacts(facebookId, accessToken));
     }
 
-    @GetMapping("/{facebookId}/token/{accessToken}/new/")
+    @GetMapping("/{facebookId}/token/{accessToken}/not-imported/")
     @SecurityRequirements({
             @SecurityRequirement(name = "public-key"),
             @SecurityRequirement(name = "phone-hash"),
@@ -66,11 +67,11 @@ public class FacebookController {
             @ApiResponse(responseCode = "400 (101103)", description = "Invalid Facebook token", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 
     })
-    @Operation(summary = "Get new user contacts on Facebook. Returns all friends and in the newFriends attribute returns contacts which are not imported yet.")
+    @Operation(summary = "Returns contacts from Facebook which have not been imported yet.")
     FacebookContactResponse getNewFacebookContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user,
                                                    @PathVariable String facebookId,
                                                    @PathVariable String accessToken)
             throws FacebookException, InvalidFacebookToken {
-        return this.userContactService.retrieveFacebookNewContacts(user, facebookId, accessToken);
+        return new FacebookContactResponse(this.facebookService.retrieveFacebookNotImportedConnection(user, facebookId, accessToken));
     }
 }
