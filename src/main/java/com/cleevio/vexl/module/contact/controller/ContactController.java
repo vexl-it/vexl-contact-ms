@@ -68,14 +68,14 @@ public class ContactController {
         return this.importService.importContacts(user, importRequest);
     }
 
-    @GetMapping
+    @GetMapping("/me")
     @SecurityRequirements({
             @SecurityRequirement(name = "public-key"),
             @SecurityRequirement(name = "phone-hash"),
             @SecurityRequirement(name = "signature"),
     })
     @ApiResponse(responseCode = "200")
-    @Operation(summary = "Get all public keys of user's contacts.")
+    @Operation(summary = "Get all public keys of my contacts.")
     UserContactsResponse getContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user,
                                      @RequestParam(required = false, defaultValue = "0") int page,
                                      @RequestParam(required = false, defaultValue = "10") int limit,
