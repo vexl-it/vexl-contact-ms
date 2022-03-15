@@ -30,7 +30,7 @@ public class ImportService {
     @Value("${hmac.secret.key}")
     private final String secretKey;
 
-    private final ContactRepository userContactRepository;
+    private final ContactRepository contactRepository;
 
     @Transactional(rollbackFor = Exception.class)
     public ImportResponse importContacts(User user, ImportRequest importRequest)
@@ -58,12 +58,12 @@ public class ImportService {
 
         contacts
                 .forEach(p -> {
-                    if (!this.userContactRepository.existsByHashFromAndHashTo(user.getHash(), p)) {
+                    if (!this.contactRepository.existsByHashFromAndHashTo(user.getHash(), p)) {
                         UserContact contact = UserContact.builder()
                                 .hashFrom(user.getHash())
                                 .hashTo(p)
                                 .build();
-                        this.userContactRepository.save(contact);
+                        this.contactRepository.save(contact);
                         imported.getAndIncrement();
                     }
                 });

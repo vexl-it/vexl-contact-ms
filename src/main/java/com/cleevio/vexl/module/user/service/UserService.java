@@ -42,9 +42,19 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<User> findByPublicKey(String publicKey) {
+    public Optional<User> findByPublicKeyAndHash(String publicKey, String hash) {
         byte[] publicKeyByte = EncryptionUtils.decodeBase64String(publicKey);
-        return this.userRepository.findUserByPublicKey(publicKeyByte);
+        byte[] hashByte = EncryptionUtils.decodeBase64String(hash);
+
+        return this.userRepository.findUserByPublicKeyAndHash(publicKeyByte, hashByte);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean existsByPublicKeyAndHash(String publicKey, String hash) {
+        byte[] publicKeyByte = EncryptionUtils.decodeBase64String(publicKey);
+        byte[] hashByte = EncryptionUtils.decodeBase64String(hash);
+
+        return this.userRepository.existsByPublicKeyAndHash(publicKeyByte, hashByte);
     }
 
     public void removeUserAndContacts(User user) {
@@ -52,5 +62,10 @@ public class UserService {
                 user.getId());
         this.contactService.deleteAllContacts(user.getPublicKey());
         this.userRepository.delete(user);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public User save(User user) {
+        return this.userRepository.save(user);
     }
 }

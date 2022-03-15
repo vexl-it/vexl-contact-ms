@@ -32,6 +32,7 @@ public class CreatePostTest extends BaseControllerTest {
         super.setup();
 
         Mockito.when(userService.createUser(any(CreateUserRequest.class))).thenReturn(getUser());
+        Mockito.when(userService.existsByPublicKeyAndHash(any(String.class), any(String.class))).thenReturn(false);
     }
 
     @Test

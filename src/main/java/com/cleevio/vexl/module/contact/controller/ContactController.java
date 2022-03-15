@@ -46,7 +46,7 @@ import javax.validation.Valid;
 public class ContactController {
 
     private final ImportService importService;
-    private final ContactService userContactService;
+    private final ContactService contactService;
 
     @PostMapping("/import")
     @SecurityRequirements({
@@ -82,7 +82,7 @@ public class ContactController {
                                      HttpServletRequest request) {
         return new UserContactsResponse(
                 request,
-                this.userContactService.retrieveContactsByUser(user, page, limit)
+                this.contactService.retrieveContactsByUser(user, page, limit)
                         .map(UserContactResponse::new)
         );
     }
@@ -97,7 +97,7 @@ public class ContactController {
     @Operation(summary = "Remove contacts by public key.")
     ResponseEntity<Void> deleteContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user,
                                         @Valid @RequestBody DeleteContactsRequest deleteContactsRequest) {
-        this.userContactService.deleteContacts(user, deleteContactsRequest);
+        this.contactService.deleteContacts(user, deleteContactsRequest);
         return ResponseEntity.noContent().build();
     }
 
@@ -114,6 +114,6 @@ public class ContactController {
     )
     NewContactsResponse getNewPhoneContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user,
                                             @Valid @RequestBody NewContactsRequest contactsRequest) {
-        return new NewContactsResponse(this.userContactService.retrieveNewContacts(user, contactsRequest));
+        return new NewContactsResponse(this.contactService.retrieveNewContacts(user, contactsRequest));
     }
 }

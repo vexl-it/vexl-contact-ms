@@ -53,8 +53,8 @@ public class SecurityFilter extends OncePerRequestFilter {
             if (signatureService.isSignatureValid(publicKey, phoneHash, signature)) {
                 AuthenticationHolder authenticationHolder;
 
-                if (userService.findByPublicKey(publicKey).isPresent()) {
-                    authenticationHolder = new AuthenticationHolder(userService.findByPublicKey(publicKey).get(),
+                if (userService.existsByPublicKeyAndHash(publicKey, phoneHash)) {
+                    authenticationHolder = new AuthenticationHolder(userService.findByPublicKeyAndHash(publicKey, phoneHash).get(),
                             List.of(new SimpleGrantedAuthority(RoleEnum.ROLE_USER.name())));
                     authenticationHolder.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 } else {

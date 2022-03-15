@@ -1,81 +1,82 @@
 package com.cleevio.vexl.common;
 
+import com.cleevio.vexl.Application;
 import com.cleevio.vexl.common.service.SignatureService;
 import com.cleevio.vexl.module.contact.service.ContactService;
-import com.cleevio.vexl.module.facebook.dto.FacebookUser;
-import com.cleevio.vexl.module.facebook.service.FacebookService;
-import com.cleevio.vexl.module.contact.service.ImportService;
 import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.module.user.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
-import org.mockito.Mock;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
+import javax.transaction.Transactional;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
-public class BaseControllerTest {
+@ExtendWith(SpringExtension.class)
+@WebAppConfiguration
+@Transactional
+@ContextConfiguration(classes = Application.class)
+@TestPropertySource(locations = "/application.properties")
+public abstract class BaseIntegrationTest {
 
     protected static final String PUBLIC_KEY = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEzIdBL0Q/P+OEk84pJTaEIwro2mY9Y3JihBzNlMn5jTxVtzyi0MEepbgu57Z5nBZG6kNo0D8FTrY0Oe/2niL13w==";
     protected static final String PHONE_HASH = "GCzF7P15aLtu+LG6itgRfRKpOO+KKrdKZAnPzmTl1Fs=";
     protected static final String SIGNATURE = "/ty+wIsnpJu5XAcqTYs9FspaJct6YipVpIMqZTrMOglkisoU5E9jy5OiTVG/Gg5jVy+zEyc9KTHwJmIBcwlvDQ==";
 
-    @Autowired
     protected MockMvc mvc;
 
     @MockBean
     protected UserService userService;
 
     @MockBean
-    protected ContactService contactService;
-
-    @MockBean
-    protected FacebookService facebookService;
-
-    @MockBean
-    protected ImportService importService;
-
-    @Mock
-    protected User user;
-
-    @Mock
-    protected FacebookUser facebookUser;
-
-    @MockBean
     protected SignatureService signatureService;
+
+    @MockBean
+    protected ContactService contactService;
 
     @Autowired
     protected ObjectMapper objectMapper;
 
+    @Autowired
+    private WebApplicationContext wac;
+
     @BeforeEach
     @SneakyThrows
     public void setup() {
+        this.mvc = MockMvcBuilders.webAppContextSetup(this.wac).apply(springSecurity()).build();
+        this.userService.save(getUser());
 
         Mockito.when(signatureService.isSignatureValid(any(String.class), any(String.class), any(String.class))).thenReturn(true);
         Mockito.when(userService.findByPublicKeyAndHash(any(String.class), any(String.class))).thenReturn(Optional.of(getUser()));
         Mockito.when(userService.existsByPublicKeyAndHash(any(String.class), any(String.class))).thenReturn(true);
+
     }
 
-    public User getUser() {
+    /**
+     * Generate testing user
+     *
+     * @return User
+     */
+    protected User getUser() {
         return User.builder()
-                .id(1L)
                 .publicKey(PUBLIC_KEY.getBytes(StandardCharsets.UTF_8))
                 .hash(PHONE_HASH.getBytes(StandardCharsets.UTF_8))
                 .build();
-    }
-
-    public FacebookUser getFacebookUser() {
-        FacebookUser facebookUser = new FacebookUser();
-        facebookUser.setId("1");
-        facebookUser.setName("Marting");
-        return facebookUser;
     }
 
     /**
