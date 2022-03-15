@@ -83,7 +83,7 @@ public class ContactService {
     }
 
 
-    private byte[] calculateHmacSha256(String value) {
+    public byte[] calculateHmacSha256(String value) {
         return EncryptionUtils.calculateHmacSha256(
                 this.secretKey.getBytes(StandardCharsets.UTF_8),
                 value.getBytes(StandardCharsets.UTF_8)

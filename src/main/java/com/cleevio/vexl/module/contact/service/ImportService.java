@@ -5,14 +5,11 @@ import com.cleevio.vexl.module.contact.dto.response.ImportResponse;
 import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.module.contact.entity.UserContact;
 import com.cleevio.vexl.module.contact.exception.ContactsMissingException;
-import com.cleevio.vexl.utils.EncryptionUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,10 +24,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 @AllArgsConstructor
 public class ImportService {
 
-    @Value("${hmac.secret.key}")
-    private final String secretKey;
-
     private final ContactRepository contactRepository;
+    private final ContactService contactService;
 
     @Transactional(rollbackFor = Exception.class)
     public ImportResponse importContacts(User user, ImportRequest importRequest)
@@ -48,10 +43,7 @@ public class ImportService {
         }
 
         for (String contact : importRequest.getContacts()) {
-            contacts.add(EncryptionUtils.calculateHmacSha256(
-                    this.secretKey.getBytes(StandardCharsets.UTF_8),
-                    contact.getBytes(StandardCharsets.UTF_8))
-            );
+            contacts.add(this.contactService.calculateHmacSha256(contact));
         }
 
         AtomicInteger imported = new AtomicInteger();
@@ -68,10 +60,9 @@ public class ImportService {
                     }
                 });
 
-        String message = String.format("Imported %s / %s contacts for public_key %s",
+        String message = String.format("Imported %s / %s contacts.",
                 imported.get(),
-                importSize,
-                EncryptionUtils.encodeToBase64String(user.getPublicKey()));
+                importSize);
 
         log.info(message);
 
