@@ -43,7 +43,7 @@ public class ImportService {
         }
 
         for (String contact : importRequest.getContacts()) {
-            contacts.add(this.contactService.calculateHmacSha256(contact));
+            contacts.add(this.contactService.calculateHmacSha256(contact.trim()));
         }
 
         AtomicInteger imported = new AtomicInteger();

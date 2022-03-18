@@ -55,6 +55,7 @@ public class ContactService {
                 user.getId());
 
         List<byte[]> contactsByteList = deleteContactsRequest.getContactsToDelete().stream()
+                .map(String::trim)
                 .map(EncryptionUtils::decodeBase64String)
                 .collect(Collectors.toList());
 
@@ -66,7 +67,7 @@ public class ContactService {
         List<String> newContacts = new ArrayList<>();
 
         contactsRequest.getContacts().forEach(c -> {
-            if (!this.contactRepository.existsByHashFromAndHashTo(user.getHash(), calculateHmacSha256(c))) {
+            if (!this.contactRepository.existsByHashFromAndHashTo(user.getHash(), calculateHmacSha256(c.trim()))) {
                 newContacts.add(c);
             }
         });

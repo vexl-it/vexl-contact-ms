@@ -4,7 +4,6 @@ import com.cleevio.vexl.common.BaseControllerTest;
 import com.cleevio.vexl.common.exception.ApiException;
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
 import com.cleevio.vexl.module.user.dto.request.CreateUserRequest;
-import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.module.user.exception.UserAlreadyExistsException;
 import com.cleevio.vexl.module.user.exception.UserErrorType;
 import lombok.SneakyThrows;
