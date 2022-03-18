@@ -1,5 +1,6 @@
 package com.cleevio.vexl.integration.swagger.config;
 
+import com.cleevio.vexl.common.security.filter.SecurityFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.core.jackson.ModelResolver;
 import io.swagger.v3.oas.models.Components;
@@ -45,12 +46,12 @@ public class SwaggerConfig {
                 )
                 .components(
                         new Components()
-                                .addSecuritySchemes("phone-hash", new SecurityScheme().type(SecurityScheme.Type.APIKEY).
-                                        description("SHA-256 hash of phone number").in(SecurityScheme.In.HEADER).name("phone-hash"))
-                                .addSecuritySchemes("public-key", new SecurityScheme().type(SecurityScheme.Type.APIKEY)
-                                        .description("public key of user").in(SecurityScheme.In.HEADER).name("public-key"))
-                                .addSecuritySchemes("signature", new SecurityScheme().type(SecurityScheme.Type.APIKEY)
-                                        .description("signature").in(SecurityScheme.In.HEADER).name("signature"))
+                                .addSecuritySchemes(SecurityFilter.HEADER_HASH, new SecurityScheme().type(SecurityScheme.Type.APIKEY).
+                                        description("SHA-256 hash of phone number").in(SecurityScheme.In.HEADER).name(SecurityFilter.HEADER_HASH))
+                                .addSecuritySchemes(SecurityFilter.HEADER_PUBLIC_KEY, new SecurityScheme().type(SecurityScheme.Type.APIKEY)
+                                        .description("public key of user").in(SecurityScheme.In.HEADER).name(SecurityFilter.HEADER_PUBLIC_KEY))
+                                .addSecuritySchemes(SecurityFilter.HEADER_SIGNATURE, new SecurityScheme().type(SecurityScheme.Type.APIKEY)
+                                        .description("signature").in(SecurityScheme.In.HEADER).name(SecurityFilter.HEADER_SIGNATURE))
                 );
     }
 
@@ -62,9 +63,9 @@ public class SwaggerConfig {
     @Bean
     public OperationCustomizer customize() {
         return (operation, handlerMethod) -> {
-            operation.addParametersItem(new Parameter().in("header").required(true).example("Td7wKTAOSa8YfGD2FC6rD8tZ7RtVjamqlfZ3qrC6ucs=").name("phone-hash"));
-            operation.addParametersItem(new Parameter().in("header").required(true).example("Zjk1MmY1OTJnNTlzZDJnNTlzZGE0NTZzZA==").name("public-key"));
-            operation.addParametersItem(new Parameter().in("header").required(true).example("31U5s5v+oM1yP0twRRfTzNEN9oW98HIB3mSheXKXGlavZWpROUxl0VXxhfYal1oLLGxnR7Be8AYT34UV9EICw==").name("signature"));
+            operation.addParametersItem(new Parameter().in("header").required(true).example("Td7wKTAOSa8YfGD2FC6rD8tZ7RtVjamqlfZ3qrC6ucs=").name(SecurityFilter.HEADER_HASH));
+            operation.addParametersItem(new Parameter().in("header").required(true).example("Zjk1MmY1OTJnNTlzZDJnNTlzZGE0NTZzZA==").name(SecurityFilter.HEADER_PUBLIC_KEY));
+            operation.addParametersItem(new Parameter().in("header").required(true).example("31U5s5v+oM1yP0twRRfTzNEN9oW98HIB3mSheXKXGlavZWpROUxl0VXxhfYal1oLLGxnR7Be8AYT34UV9EICw==").name(SecurityFilter.HEADER_SIGNATURE));
             return operation;
         };
 

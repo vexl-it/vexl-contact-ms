@@ -38,7 +38,7 @@ public class CreatePostTest extends BaseControllerTest {
     public void createNewUser() throws Exception {
         mvc.perform(post(BASE_URL)
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
-                        .header(SecurityFilter.HEADER_PHONE_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(new CreateUserRequest(PUBLIC_KEY.getBytes(), PHONE_HASH.getBytes()))))
@@ -54,7 +54,7 @@ public class CreatePostTest extends BaseControllerTest {
 
         mvc.perform(post(BASE_URL)
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
-                        .header(SecurityFilter.HEADER_PHONE_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(new CreateUserRequest(PUBLIC_KEY.getBytes(), PHONE_HASH.getBytes()))))

@@ -1,6 +1,7 @@
 package com.cleevio.vexl.module.facebook.controller;
 
 import com.cleevio.vexl.common.dto.ErrorResponse;
+import com.cleevio.vexl.common.security.filter.SecurityFilter;
 import com.cleevio.vexl.module.contact.exception.InvalidFacebookToken;
 import com.cleevio.vexl.module.facebook.dto.response.FacebookContactResponse;
 import com.cleevio.vexl.module.contact.exception.FacebookException;
@@ -36,9 +37,9 @@ public class FacebookController {
 
     @GetMapping("/{facebookId}/token/{accessToken}")
     @SecurityRequirements({
-            @SecurityRequirement(name = "public-key"),
-            @SecurityRequirement(name = "phone-hash"),
-            @SecurityRequirement(name = "signature"),
+            @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
+            @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
+            @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
     })
     @ApiResponses({
             @ApiResponse(responseCode = "200"),
@@ -57,9 +58,9 @@ public class FacebookController {
 
     @GetMapping("/{facebookId}/token/{accessToken}/not-imported/")
     @SecurityRequirements({
-            @SecurityRequirement(name = "public-key"),
-            @SecurityRequirement(name = "phone-hash"),
-            @SecurityRequirement(name = "signature"),
+            @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
+            @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
+            @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
     })
     @ApiResponses({
             @ApiResponse(responseCode = "200"),

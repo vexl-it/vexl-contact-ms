@@ -1,6 +1,7 @@
 package com.cleevio.vexl.module.contact.controller;
 
 import com.cleevio.vexl.common.dto.ErrorResponse;
+import com.cleevio.vexl.common.security.filter.SecurityFilter;
 import com.cleevio.vexl.module.contact.dto.request.DeleteContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.ImportRequest;
 import com.cleevio.vexl.module.contact.dto.request.NewContactsRequest;
@@ -50,9 +51,9 @@ public class ContactController {
 
     @PostMapping("/import")
     @SecurityRequirements({
-            @SecurityRequirement(name = "public-key"),
-            @SecurityRequirement(name = "phone-hash"),
-            @SecurityRequirement(name = "signature"),
+            @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
+            @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
+            @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
     })
     @ApiResponses({
             @ApiResponse(responseCode = "200"),
@@ -70,9 +71,9 @@ public class ContactController {
 
     @GetMapping("/me")
     @SecurityRequirements({
-            @SecurityRequirement(name = "public-key"),
-            @SecurityRequirement(name = "phone-hash"),
-            @SecurityRequirement(name = "signature"),
+            @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
+            @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
+            @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
     })
     @ApiResponse(responseCode = "200")
     @Operation(summary = "Get all public keys of my contacts.")
@@ -89,9 +90,9 @@ public class ContactController {
 
     @DeleteMapping
     @SecurityRequirements({
-            @SecurityRequirement(name = "public-key"),
-            @SecurityRequirement(name = "phone-hash"),
-            @SecurityRequirement(name = "signature"),
+            @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
+            @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
+            @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
     })
     @ApiResponse(responseCode = "204")
     @Operation(summary = "Remove contacts by public key.")
@@ -103,9 +104,9 @@ public class ContactController {
 
     @PostMapping("/not-imported/")
     @SecurityRequirements({
-            @SecurityRequirement(name = "public-key"),
-            @SecurityRequirement(name = "phone-hash"),
-            @SecurityRequirement(name = "signature"),
+            @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
+            @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
+            @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
     })
     @ApiResponse(responseCode = "200")
     @Operation(

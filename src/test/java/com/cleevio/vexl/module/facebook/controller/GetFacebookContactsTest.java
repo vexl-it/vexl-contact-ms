@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,7 +40,7 @@ public class GetFacebookContactsTest extends BaseControllerTest {
     public void registerNewUser() throws Exception {
         mvc.perform(get(BASE_URL + FB_ID + TOKEN_URL + TOKEN)
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
-                        .header(SecurityFilter.HEADER_PHONE_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.facebookUser", notNullValue()));
@@ -51,7 +50,7 @@ public class GetFacebookContactsTest extends BaseControllerTest {
     public void getNotImported() throws Exception {
         mvc.perform(get(BASE_URL + FB_ID + TOKEN_URL + TOKEN)
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
-                        .header(SecurityFilter.HEADER_PHONE_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.facebookUser", notNullValue()));

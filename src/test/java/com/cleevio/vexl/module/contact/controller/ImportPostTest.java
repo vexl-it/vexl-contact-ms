@@ -51,7 +51,7 @@ public class ImportPostTest extends BaseControllerTest {
 
         mvc.perform(post(BASE_URL + "/import")
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
-                        .header(SecurityFilter.HEADER_PHONE_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(importRequest)))
@@ -65,7 +65,7 @@ public class ImportPostTest extends BaseControllerTest {
 
         mvc.perform(get(BASE_URL + "/me")
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
-                        .header(SecurityFilter.HEADER_PHONE_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -79,7 +79,7 @@ public class ImportPostTest extends BaseControllerTest {
 
         mvc.perform(post(BASE_URL + "/not-imported/")
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
-                        .header(SecurityFilter.HEADER_PHONE_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(contactsRequest)))
@@ -91,7 +91,7 @@ public class ImportPostTest extends BaseControllerTest {
     public void getNotImportedContactsWrongRequest_emptyContacts() throws Exception {
         mvc.perform(post(BASE_URL + "/not-imported/")
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
-                        .header(SecurityFilter.HEADER_PHONE_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(new NewContactsRequest())))
@@ -102,7 +102,7 @@ public class ImportPostTest extends BaseControllerTest {
     public void importContactsWrongRequest_emptyContacts() throws Exception {
         mvc.perform(post(BASE_URL + "/import")
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
-                        .header(SecurityFilter.HEADER_PHONE_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(new ImportRequest())))
