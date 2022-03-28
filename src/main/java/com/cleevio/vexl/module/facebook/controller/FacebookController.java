@@ -56,7 +56,7 @@ public class FacebookController {
         return new FacebookContactResponse(this.facebookService.retrieveContacts(facebookId, accessToken));
     }
 
-    @GetMapping("/{facebookId}/token/{accessToken}/not-imported/")
+    @GetMapping("/{facebookId}/token/{accessToken}/not-imported")
     @SecurityRequirements({
             @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
             @SecurityRequirement(name = SecurityFilter.HEADER_HASH),

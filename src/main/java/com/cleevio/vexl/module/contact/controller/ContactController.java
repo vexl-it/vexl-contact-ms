@@ -102,7 +102,7 @@ public class ContactController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/not-imported/")
+    @PostMapping("/not-imported")
     @SecurityRequirements({
             @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
             @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
