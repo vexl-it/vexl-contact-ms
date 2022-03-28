@@ -73,6 +73,6 @@ public class FacebookController {
                                                    @PathVariable String facebookId,
                                                    @PathVariable String accessToken)
             throws FacebookException, InvalidFacebookToken {
-        return new FacebookContactResponse(this.facebookService.retrieveFacebookNotImportedConnection(user, facebookId, accessToken));
+        return this.facebookService.retrieveFacebookNotImportedConnection(user, facebookId, accessToken);
     }
 }

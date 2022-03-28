@@ -2,6 +2,7 @@ package com.cleevio.vexl.module.facebook.controller;
 
 import com.cleevio.vexl.common.BaseControllerTest;
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
+import com.cleevio.vexl.module.facebook.dto.response.FacebookContactResponse;
 import com.cleevio.vexl.module.user.entity.User;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +33,7 @@ public class GetFacebookContactsTest extends BaseControllerTest {
         super.setup();
 
         Mockito.when(facebookService.retrieveContacts(any(String.class), any(String.class))).thenReturn(getFacebookUser());
-        Mockito.when(facebookService.retrieveFacebookNotImportedConnection(any(User.class), any(String.class), any(String.class))).thenReturn(List.of(getFacebookUser()));
+        Mockito.when(facebookService.retrieveFacebookNotImportedConnection(any(User.class), any(String.class), any(String.class))).thenReturn(new FacebookContactResponse(getFacebookUser(), List.of(getFacebookUser())));
         Mockito.when(userService.findByPublicKeyAndHash(any(String.class), any(String.class))).thenReturn(Optional.of(getUser()));
     }
 

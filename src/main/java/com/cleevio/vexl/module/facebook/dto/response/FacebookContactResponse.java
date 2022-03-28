@@ -13,7 +13,8 @@ public class FacebookContactResponse {
 
     private FacebookUser facebookUser;
 
-    public FacebookContactResponse(List<FacebookUser> facebookUsers) {
+    public FacebookContactResponse(FacebookUser facebookUser, List<FacebookUser> facebookUsers) {
+        this.facebookUser = facebookUser;
         this.facebookUser.setFriends(facebookUsers);
     }
 }
