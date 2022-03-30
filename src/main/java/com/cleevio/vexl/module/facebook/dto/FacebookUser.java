@@ -17,6 +17,9 @@ public class FacebookUser {
     @Facebook
     private String name;
 
+    @Facebook("picture")
+    private ProfilePicture profilePicture;
+
     @Facebook("friends")
     private List<FacebookUser> friends = new ArrayList<>();
 

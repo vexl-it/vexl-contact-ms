@@ -42,7 +42,7 @@ public class FacebookService {
         try {
             FacebookClient client = new DefaultFacebookClient(accessToken, Version.LATEST);
             FacebookUser facebookUser = client.fetchObject(facebookId, FacebookUser.class,
-                    Parameter.with("fields", "id,name,friends{name,id,friends}")
+                    Parameter.with("fields", "id,name,picture,friends{id,name,picture,friends}")
             );
             log.info("Successfully fetched {} friends.",
                     facebookUser.getFriends().size()
