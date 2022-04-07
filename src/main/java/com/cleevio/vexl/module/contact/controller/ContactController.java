@@ -5,6 +5,7 @@ import com.cleevio.vexl.common.security.filter.SecurityFilter;
 import com.cleevio.vexl.module.contact.dto.request.DeleteContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.ImportRequest;
 import com.cleevio.vexl.module.contact.dto.request.NewContactsRequest;
+import com.cleevio.vexl.module.contact.dto.response.ContactsCountResponse;
 import com.cleevio.vexl.module.contact.dto.response.NewContactsResponse;
 import com.cleevio.vexl.module.contact.dto.response.UserContactResponse;
 import com.cleevio.vexl.module.contact.dto.response.ImportResponse;
@@ -86,6 +87,21 @@ public class ContactController {
                 this.contactService.retrieveContactsByUser(user, page, limit)
                         .map(UserContactResponse::new)
         );
+    }
+
+    @GetMapping("/count")
+    @SecurityRequirements({
+            @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
+            @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
+            @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
+    })
+    @ApiResponse(responseCode = "200")
+    @Operation(
+            summary = "Get count of contacts by hash.",
+            description = "If you send facebookId hash, you will get count of facebook connections. If you send phoneHash, you will get count of phone connections."
+    )
+    ContactsCountResponse getContactsCount(@Parameter(hidden = true) @AuthenticationPrincipal User user) {
+        return new ContactsCountResponse(this.contactService.getContactsCount(user.getHash()));
     }
 
     @DeleteMapping

@@ -90,4 +90,9 @@ public class ContactService {
                 value.getBytes(StandardCharsets.UTF_8)
         );
     }
+
+    @Transactional(readOnly = true)
+    public int getContactsCount(byte[] hash) {
+        return this.contactRepository.countContactsByHash(hash);
+    }
 }

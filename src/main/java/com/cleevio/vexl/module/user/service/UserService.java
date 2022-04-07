@@ -1,9 +1,7 @@
 package com.cleevio.vexl.module.user.service;
 
 import com.cleevio.vexl.module.contact.service.ContactService;
-import com.cleevio.vexl.module.user.dto.request.CreateUserRequest;
 import com.cleevio.vexl.module.user.entity.User;
-import com.cleevio.vexl.module.user.exception.UserAlreadyExistsException;
 import com.cleevio.vexl.utils.EncryptionUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,21 +22,22 @@ public class UserService {
     private final ContactService contactService;
 
     @Transactional(rollbackFor = Exception.class)
-    public User createUser(CreateUserRequest request)
-            throws UserAlreadyExistsException {
+    public void createUser(String publicKeyString, String hashString) {
 
-        log.info("Creating user {} ",
-                request.getPublicKey());
+        byte[] publicKey = EncryptionUtils.decodeBase64String(publicKeyString);
+        byte[] hash = EncryptionUtils.decodeBase64String(hashString);
 
-        if (this.userRepository.existsByPublicKeyAndHash(request.getPublicKey(), request.getHash())) {
-            throw new UserAlreadyExistsException();
-        }
+        log.info("Creating an user {} ",
+                publicKey);
 
-        return this.userRepository.save(User.builder()
-                .publicKey(request.getPublicKey())
-                .hash(request.getHash())
+        User savedUser = this.userRepository.save(User.builder()
+                .publicKey(publicKey)
+                .hash(hash)
                 .build()
         );
+
+        log.info("User id - {} created",
+                savedUser.getId());
     }
 
     @Transactional(readOnly = true)

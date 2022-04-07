@@ -55,4 +55,7 @@ interface ContactRepository extends JpaRepository<UserContact, Long>, JpaSpecifi
             "where u.publicKey in (:publicKeys) ) " +
             "AND uc.hashFrom = :hash ")
     void deleteContacts(byte[] hash, List<byte[]> publicKeys);
+
+    @Query("select count(uc) from UserContact uc where uc.hashFrom = :hash ")
+    int countContactsByHash(byte[] hash);
 }
