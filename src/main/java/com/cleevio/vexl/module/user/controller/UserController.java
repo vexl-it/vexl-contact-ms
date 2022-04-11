@@ -1,10 +1,14 @@
 package com.cleevio.vexl.module.user.controller;
 
+import com.cleevio.vexl.common.dto.ErrorResponse;
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
 import com.cleevio.vexl.module.user.entity.User;
+import com.cleevio.vexl.module.user.exception.HashAlreadyUsedException;
 import com.cleevio.vexl.module.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -39,6 +43,7 @@ public class UserController {
     })
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "User has been created"),
+            @ApiResponse(responseCode = "409 (100102)", description = "FacebookId or phone number is already in use by another user.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
     })
     @Operation(
             summary = "Create a new user",
@@ -46,7 +51,8 @@ public class UserController {
     )
     @PreAuthorize("hasRole('ROLE_NEW_USER')")
     ResponseEntity<Void> createUser(@RequestHeader(name = SecurityFilter.HEADER_PUBLIC_KEY) String publicKey,
-                                    @RequestHeader(name = SecurityFilter.HEADER_HASH) String hash) {
+                                    @RequestHeader(name = SecurityFilter.HEADER_HASH) String hash)
+            throws HashAlreadyUsedException {
         this.userService.createUser(publicKey, hash);
         return ResponseEntity.noContent().build();
     }

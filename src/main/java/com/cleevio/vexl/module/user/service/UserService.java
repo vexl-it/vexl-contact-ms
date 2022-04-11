@@ -2,6 +2,7 @@ package com.cleevio.vexl.module.user.service;
 
 import com.cleevio.vexl.module.contact.service.ContactService;
 import com.cleevio.vexl.module.user.entity.User;
+import com.cleevio.vexl.module.user.exception.HashAlreadyUsedException;
 import com.cleevio.vexl.utils.EncryptionUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,10 +23,18 @@ public class UserService {
     private final ContactService contactService;
 
     @Transactional(rollbackFor = Exception.class)
-    public void createUser(String publicKeyString, String hashString) {
+    public void createUser(String publicKeyString, String hashString)
+            throws HashAlreadyUsedException {
+
+        byte[] hash = EncryptionUtils.decodeBase64String(hashString);
+
+        if (this.userRepository.existsByHash(hash)) {
+            log.info("FacebookId or phone number is already in use by another user. Hash string: {}",
+                    hashString);
+            throw new HashAlreadyUsedException();
+        }
 
         byte[] publicKey = EncryptionUtils.decodeBase64String(publicKeyString);
-        byte[] hash = EncryptionUtils.decodeBase64String(hashString);
 
         log.info("Creating an user {} ",
                 publicKey);
