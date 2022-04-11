@@ -90,11 +90,9 @@ public class ContactController {
                                      HttpServletRequest request)
             throws InvalidLevelException {
         try {
-            ConnectionLevel connectionLevel = ConnectionLevel.valueOf(level.toUpperCase());
-
             return new UserContactsResponse(
                     request,
-                    this.contactService.retrieveContactsByUser(user, page, limit, connectionLevel)
+                    this.contactService.retrieveContactsByUser(user, page, limit, ConnectionLevel.valueOf(level.toUpperCase()))
                             .map(UserContactResponse::new)
             );
         } catch (IllegalArgumentException e) {
