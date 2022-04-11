@@ -103,11 +103,6 @@ public class ContactController {
         }
     }
 
-    public static void main(String[] args) {
-        String level = "all";
-        ConnectionLevel connectionLevel = ConnectionLevel.valueOf(level);
-    }
-
     @GetMapping("/count")
     @SecurityRequirements({
             @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
