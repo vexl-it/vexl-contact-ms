@@ -2,6 +2,7 @@ package com.cleevio.vexl.module.contact.service;
 
 import com.cleevio.vexl.module.contact.dto.request.DeleteContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.NewContactsRequest;
+import com.cleevio.vexl.module.contact.enums.ConnectionLevel;
 import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.utils.EncryptionUtils;
 import lombok.AllArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,9 +31,10 @@ public class ContactService {
     private final String secretKey;
 
     private final ContactRepository contactRepository;
+    private final VContactRepository vContactRepository;
 
     /**
-     * Retrieve public keys of all my connections (friends)
+     * Retrieve public keys of my connections (friends)
      *
      * @param user
      * @param page
@@ -39,11 +42,14 @@ public class ContactService {
      * @return
      */
     @Transactional(readOnly = true)
-    public Page<byte[]> retrieveContactsByUser(User user, int page, int limit) {
+    public Page<byte[]> retrieveContactsByUser(User user, int page, int limit, ConnectionLevel level) {
         log.info("Retrieving contacts for user {}",
                 user.getId());
 
-        return contactRepository.findAllContactsByPublicKey(user.getPublicKey(), PageRequest.of(page, limit));
+        return vContactRepository.findPublicKeysByMyPublicKeyAndLevel(
+                user.getPublicKey(),
+                ConnectionLevel.ALL.equals(level) ? List.of(ConnectionLevel.FIRST, ConnectionLevel.SECOND) : Collections.singletonList(level),
+                PageRequest.of(page, limit));
     }
 
     public void deleteAllContacts(byte[] userPublicKey) {

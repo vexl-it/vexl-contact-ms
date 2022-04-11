@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.BAD_REQUEST)
-public class FacebookException extends ApiException {
+public class InvalidLevelException extends ApiException {
 
     @Override
 	protected ApiException.Module getModule() {
@@ -15,6 +15,6 @@ public class FacebookException extends ApiException {
 
 	@Override
 	protected ErrorType getErrorType() {
-		return ContactErrorType.FACEBOOK;
+		return ContactErrorType.INVALID_LEVEL;
 	}
 }

@@ -15,33 +15,6 @@ interface ContactRepository extends JpaRepository<UserContact, Long>, JpaSpecifi
 
     boolean existsByHashFromAndHashTo(byte[] hashFrom, byte[] hashTo);
 
-    @Query(value = "select x.public_key from ( " +
-            "select distinct u2.public_key from users u2 " +
-            "join user_contact uc on uc.hash_to = u2.hash  " +
-            "join users u on u.hash = uc.hash_from " +
-            "where u.public_key = :publicKey " +
-            "union " +
-            "select distinct u2.public_key from users u2 " +
-            "left join user_contact uc on uc.hash_to = u2.hash " +
-            "left join user_contact uc2 on uc.hash_to = uc2.hash_from " +
-            "join users u on u.hash = uc.hash_from " +
-            "where u.public_key = :publicKey) x " +
-            "where x.public_key is not null ",
-            countQuery = "select count(x.public_key) from ( " +
-            "select distinct u2.public_key from users u2 " +
-            "join user_contact uc on uc.hash_to = u2.hash  " +
-            "join users u on u.hash = uc.hash_from " +
-            "where u.public_key = :publicKey " +
-            "union " +
-            "select distinct u2.public_key from users u2 " +
-            "left join user_contact uc on uc.hash_to = u2.hash " +
-            "left join user_contact uc2 on uc.hash_to = uc2.hash_from " +
-            "join users u on u.hash = uc.hash_from " +
-            "where u.public_key = :publicKey) x " +
-            "where x.public_key is not null ",
-            nativeQuery = true)
-    Page<byte[]> findAllContactsByPublicKey(byte[] publicKey, Pageable pageable);
-
     @Transactional
     @Modifying
     @Query("delete from UserContact uc where uc.hashFrom in (select u.hash from User u where u.publicKey = :publicKey) ")

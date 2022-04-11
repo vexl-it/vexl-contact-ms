@@ -10,6 +10,8 @@ import com.cleevio.vexl.module.contact.dto.response.NewContactsResponse;
 import com.cleevio.vexl.module.contact.dto.response.UserContactResponse;
 import com.cleevio.vexl.module.contact.dto.response.ImportResponse;
 import com.cleevio.vexl.module.contact.dto.response.UserContactsResponse;
+import com.cleevio.vexl.module.contact.enums.ConnectionLevel;
+import com.cleevio.vexl.module.contact.exception.InvalidLevelException;
 import com.cleevio.vexl.module.contact.service.ContactService;
 import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.module.contact.exception.ContactsMissingException;
@@ -76,17 +78,34 @@ public class ContactController {
             @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
             @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
     })
-    @ApiResponse(responseCode = "200")
+        @ApiResponses({
+            @ApiResponse(responseCode = "200"),
+            @ApiResponse(responseCode = "400 (101105)", description = "Invalid connection level. Options - first, second, all. No case sensitive.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @Operation(summary = "Get all public keys of my contacts.")
     UserContactsResponse getContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user,
                                      @RequestParam(required = false, defaultValue = "0") int page,
                                      @RequestParam(required = false, defaultValue = "10") int limit,
-                                     HttpServletRequest request) {
-        return new UserContactsResponse(
-                request,
-                this.contactService.retrieveContactsByUser(user, page, limit)
-                        .map(UserContactResponse::new)
-        );
+                                     @RequestParam(required = false, defaultValue = "ALL") String level,
+                                     HttpServletRequest request)
+            throws InvalidLevelException {
+        try {
+            ConnectionLevel connectionLevel = ConnectionLevel.valueOf(level.toUpperCase());
+
+            return new UserContactsResponse(
+                    request,
+                    this.contactService.retrieveContactsByUser(user, page, limit, connectionLevel)
+                            .map(UserContactResponse::new)
+            );
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid level {} ", level);
+            throw new InvalidLevelException();
+        }
+    }
+
+    public static void main(String[] args) {
+        String level = "all";
+        ConnectionLevel connectionLevel = ConnectionLevel.valueOf(level);
     }
 
     @GetMapping("/count")

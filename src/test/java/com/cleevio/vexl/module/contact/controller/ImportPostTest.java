@@ -38,7 +38,7 @@ public class ImportPostTest extends BaseControllerTest {
 
 
         Mockito.when(importService.importContacts(any(User.class), any(ImportRequest.class))).thenReturn(new ImportResponse(true, "Success"));
-        Mockito.when(contactService.retrieveContactsByUser(any(User.class), anyInt(), anyInt())).thenReturn(new PageImpl<>(Collections.singletonList("+42045464465".getBytes())));
+        Mockito.when(contactService.retrieveContactsByUser(any(User.class), anyInt(), anyInt(), any())).thenReturn(new PageImpl<>(Collections.singletonList("+42045464465".getBytes())));
         Mockito.when(contactService.retrieveNewContacts(any(User.class), any(NewContactsRequest.class))).thenReturn(Collections.singletonList("+42045464465"));
 
     }

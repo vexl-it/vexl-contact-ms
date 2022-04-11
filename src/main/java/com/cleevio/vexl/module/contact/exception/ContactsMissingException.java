@@ -15,6 +15,6 @@ public class ContactsMissingException extends ApiException {
 
 	@Override
 	protected ErrorType getErrorType() {
-		return UserErrorType.MISSING_CONTACTS;
+		return ContactErrorType.MISSING_CONTACTS;
 	}
 }

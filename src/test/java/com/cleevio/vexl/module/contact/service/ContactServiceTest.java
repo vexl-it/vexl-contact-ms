@@ -23,6 +23,9 @@ public class ContactServiceTest {
     @Mock
     private ContactRepository contactRepository;
 
+    @Mock
+    private VContactRepository vContactRepository;
+
     private ContactService contactService;
 
     @Mock
@@ -32,7 +35,7 @@ public class ContactServiceTest {
 
     @BeforeEach
     public void setup() {
-        this.contactService = new ContactService(secretKey, contactRepository);
+        this.contactService = new ContactService(secretKey, contactRepository, vContactRepository);
 
     }
 

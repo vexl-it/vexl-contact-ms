@@ -15,6 +15,6 @@ public class InvalidFacebookToken extends ApiException {
 
 	@Override
 	protected ErrorType getErrorType() {
-		return UserErrorType.INVALID_TOKEN;
+		return ContactErrorType.INVALID_TOKEN;
 	}
 }
