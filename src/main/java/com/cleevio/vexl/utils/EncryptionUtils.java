@@ -47,4 +47,9 @@ public class EncryptionUtils {
         }
         return hmacSha256;
     }
+
+    public KeyPair retrieveKeyPair(String algorithm) throws NoSuchAlgorithmException {
+        KeyPairGenerator kpg = KeyPairGenerator.getInstance(algorithm);
+        return kpg.generateKeyPair();
+    }
 }
