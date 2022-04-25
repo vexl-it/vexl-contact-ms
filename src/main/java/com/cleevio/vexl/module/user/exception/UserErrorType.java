@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 public enum UserErrorType implements ErrorType {
 
     USER_DUPLICATE("101", "User already exists"),
-    HASH_ALREADY_USED("102", "FacebookId or phone number is already in use by another user."),
     ;
 
 	/**

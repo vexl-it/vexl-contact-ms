@@ -12,5 +12,5 @@ interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExec
 
     Optional<User> findUserByPublicKeyAndHash(byte[] publicKey, byte[] hash);
 
-    boolean existsByHash(byte[] hash);
+    Optional<User> findByHash(byte[] hash);
 }
