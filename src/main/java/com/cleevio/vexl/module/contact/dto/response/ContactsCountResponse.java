@@ -1,10 +1,7 @@
 package com.cleevio.vexl.module.contact.dto.response;
 
-import lombok.Data;
+public record ContactsCountResponse(
 
-@Data
-public class ContactsCountResponse {
-
-    private final int count;
-
+        int count
+) {
 }

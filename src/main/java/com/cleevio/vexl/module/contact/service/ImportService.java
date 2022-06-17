@@ -10,14 +10,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Service for importing contacts. All contacts are from phoneHash/facebookIdHash and contact encrypted with HmacSHA256.
  * We get contacts not encrypted, so we need to encrypt them on BE.
- *
  */
 @Service
 @Slf4j
@@ -25,26 +23,25 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ImportService {
 
     private final ContactRepository contactRepository;
-    private final ContactService contactService;
 
     @Transactional(rollbackFor = Exception.class)
     public ImportResponse importContacts(User user, ImportRequest importRequest)
             throws ContactsMissingException {
 
-        int importSize = importRequest.getContacts().size();
-        List<byte[]> contacts = new ArrayList<>();
+        int importSize = importRequest.contacts().size();
 
         log.info("Importing new {} contacts for {}",
-                importRequest.getContacts().size(),
+                importRequest.contacts().size(),
                 user.getId());
 
-        if (importRequest.getContacts().isEmpty()) {
+        if (importRequest.contacts().isEmpty()) {
             throw new ContactsMissingException();
         }
 
-        for (String contact : importRequest.getContacts()) {
-            contacts.add(this.contactService.calculateHmacSha256(contact.trim()));
-        }
+        List<String> contacts = importRequest.contacts()
+                .stream()
+                .map(String::trim)
+                .toList();
 
         AtomicInteger imported = new AtomicInteger();
 

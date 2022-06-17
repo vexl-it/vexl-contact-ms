@@ -8,9 +8,9 @@ import java.util.Optional;
 
 interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
 
-    boolean existsByPublicKeyAndHash(byte[] publicKey, byte[] hash);
+    boolean existsByPublicKeyAndHash(String publicKey, String hash);
 
-    Optional<User> findUserByPublicKeyAndHash(byte[] publicKey, byte[] hash);
+    Optional<User> findUserByPublicKeyAndHash(String publicKey, String hash);
 
-    Optional<User> findByHash(byte[] hash);
+    Optional<User> findByHash(String hash);
 }

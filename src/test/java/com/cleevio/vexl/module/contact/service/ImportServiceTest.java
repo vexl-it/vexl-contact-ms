@@ -31,22 +31,17 @@ public class ImportServiceTest {
     @Mock
     private UserContact userContact;
 
-    @Mock
-    private ContactService contactService;
-
     @BeforeEach
     public void setup() {
-        this.importService = new ImportService(contactRepository, contactService);
+        this.importService = new ImportService(contactRepository);
 
     }
 
     @Test
     void importContacts() throws ContactsMissingException {
-        ImportRequest importRequest = new ImportRequest();
-        importRequest.setContacts(Collections.singletonList(PHONE_NUMBER));
+        ImportRequest importRequest = new ImportRequest(Collections.singletonList(PHONE_NUMBER));
 
         Mockito.when(contactRepository.existsByHashFromAndHashTo(any(), any())).thenReturn(false);
-        Mockito.when(contactService.calculateHmacSha256(PHONE_NUMBER)).thenReturn(PHONE_NUMBER.getBytes(StandardCharsets.UTF_8));
         Mockito.when(contactRepository.save(any())).thenReturn(userContact);
         importService.importContacts(user, importRequest);
         Mockito.verify(contactRepository).save(any());

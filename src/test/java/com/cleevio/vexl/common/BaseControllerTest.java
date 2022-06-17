@@ -66,8 +66,8 @@ public class BaseControllerTest {
     public User getUser() {
         return User.builder()
                 .id(1L)
-                .publicKey(PUBLIC_KEY.getBytes(StandardCharsets.UTF_8))
-                .hash(PHONE_HASH.getBytes(StandardCharsets.UTF_8))
+                .publicKey(PUBLIC_KEY)
+                .hash(PHONE_HASH)
                 .build();
     }
 

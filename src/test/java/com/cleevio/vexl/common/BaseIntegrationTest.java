@@ -74,8 +74,8 @@ public abstract class BaseIntegrationTest {
      */
     protected User getUser() {
         return User.builder()
-                .publicKey(PUBLIC_KEY.getBytes(StandardCharsets.UTF_8))
-                .hash(PHONE_HASH.getBytes(StandardCharsets.UTF_8))
+                .publicKey(PUBLIC_KEY)
+                .hash(PHONE_HASH)
                 .build();
     }
 

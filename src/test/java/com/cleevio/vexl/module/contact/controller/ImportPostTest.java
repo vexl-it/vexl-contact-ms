@@ -38,7 +38,7 @@ public class ImportPostTest extends BaseControllerTest {
 
 
         Mockito.when(importService.importContacts(any(User.class), any(ImportRequest.class))).thenReturn(new ImportResponse(true, "Success"));
-        Mockito.when(contactService.retrieveContactsByUser(any(User.class), anyInt(), anyInt(), any())).thenReturn(new PageImpl<>(Collections.singletonList("+42045464465".getBytes())));
+        Mockito.when(contactService.retrieveContactsByUser(any(User.class), anyInt(), anyInt(), any())).thenReturn(new PageImpl<>(Collections.singletonList("+42045464465")));
         Mockito.when(contactService.retrieveNewContacts(any(User.class), any(NewContactsRequest.class))).thenReturn(Collections.singletonList("+42045464465"));
 
     }
@@ -46,8 +46,7 @@ public class ImportPostTest extends BaseControllerTest {
 
     @Test
     public void importContacts() throws Exception {
-        ImportRequest importRequest = new ImportRequest();
-        importRequest.setContacts(Arrays.asList("+42085285282", "+42058965236"));
+        ImportRequest importRequest = new ImportRequest(Arrays.asList("+42085285282", "+42058965236"));
 
         mvc.perform(post(BASE_URL + "/import")
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
@@ -74,8 +73,7 @@ public class ImportPostTest extends BaseControllerTest {
 
     @Test
     public void getNotImportedContacts() throws Exception {
-        NewContactsRequest contactsRequest = new NewContactsRequest();
-        contactsRequest.setContacts(List.of("+11231321231", "+1113241231"));
+        NewContactsRequest contactsRequest = new NewContactsRequest(List.of("+11231321231", "+1113241231"));
 
         mvc.perform(post(BASE_URL + "/not-imported/")
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
@@ -94,7 +92,7 @@ public class ImportPostTest extends BaseControllerTest {
                         .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(new NewContactsRequest())))
+                        .content(asJsonString(new NewContactsRequest(List.of("+11231321231", "+1113241231")))))
                 .andExpect(status().isBadRequest());
     }
 
@@ -105,7 +103,7 @@ public class ImportPostTest extends BaseControllerTest {
                         .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(new ImportRequest())))
+                        .content(asJsonString(new ImportRequest(Arrays.asList("+42085285282", "+42058965236")))))
                 .andExpect(status().isBadRequest());
     }
 

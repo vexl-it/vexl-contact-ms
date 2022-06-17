@@ -30,8 +30,8 @@ public class User {
     private Long id;
 
     @Column(name = "public_key")
-    private byte[] publicKey;
+    private String publicKey;
 
     @Column(name = "hash")
-    private byte[] hash;
+    private String hash;
 }

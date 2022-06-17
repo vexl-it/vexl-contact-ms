@@ -5,6 +5,7 @@ import com.cleevio.vexl.common.security.filter.SecurityFilter;
 import com.cleevio.vexl.module.contact.dto.request.DeleteContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.ImportRequest;
 import com.cleevio.vexl.module.contact.dto.request.NewContactsRequest;
+import com.cleevio.vexl.module.contact.dto.response.CommonContactsResponse;
 import com.cleevio.vexl.module.contact.dto.response.ContactsCountResponse;
 import com.cleevio.vexl.module.contact.dto.response.NewContactsResponse;
 import com.cleevio.vexl.module.contact.dto.response.UserContactResponse;
@@ -34,12 +35,14 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.List;
 
 @Tag(name = "Contact")
 @Slf4j
@@ -78,7 +81,7 @@ public class ContactController {
             @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
             @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
     })
-        @ApiResponses({
+    @ApiResponses({
             @ApiResponse(responseCode = "200"),
             @ApiResponse(responseCode = "400 (101105)", description = "Invalid connection level. Options - first, second, all. No case sensitive.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
@@ -144,5 +147,21 @@ public class ContactController {
     NewContactsResponse getNewPhoneContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user,
                                             @Valid @RequestBody NewContactsRequest contactsRequest) {
         return new NewContactsResponse(this.contactService.retrieveNewContacts(user, contactsRequest));
+    }
+
+    @GetMapping("/common")
+    @SecurityRequirements({
+            @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
+            @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
+            @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
+    })
+    @ApiResponse(responseCode = "200")
+    @Operation(
+            summary = "Retrieve common connections.",
+            description = "Send public keys and common contacts will be returned for every sent public key."
+    )
+    CommonContactsResponse retrieveCommonContacts(@RequestParam List<String> publicKeys,
+                                                         @RequestHeader(name = SecurityFilter.HEADER_PUBLIC_KEY) String ownerPublicKey) {
+        return this.contactService.retrieveCommonContacts(ownerPublicKey, publicKeys);
     }
 }

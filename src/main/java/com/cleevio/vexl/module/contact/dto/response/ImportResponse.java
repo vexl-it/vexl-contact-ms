@@ -1,10 +1,10 @@
 package com.cleevio.vexl.module.contact.dto.response;
 
-import lombok.Data;
+public record ImportResponse(
 
-@Data
-public class ImportResponse {
+        boolean imported,
 
-    private final boolean imported;
-    private final String message;
+        String message
+
+) {
 }

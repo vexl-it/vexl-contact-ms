@@ -2,18 +2,16 @@ package com.cleevio.vexl.module.contact.service;
 
 import com.cleevio.vexl.module.contact.dto.request.DeleteContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.NewContactsRequest;
+import com.cleevio.vexl.module.contact.dto.response.CommonContactsResponse;
 import com.cleevio.vexl.module.contact.enums.ConnectionLevel;
 import com.cleevio.vexl.module.user.entity.User;
-import com.cleevio.vexl.utils.EncryptionUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,9 +25,6 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class ContactService {
 
-    @Value("${hmac.secret.key}")
-    private final String secretKey;
-
     private final ContactRepository contactRepository;
     private final VContactRepository vContactRepository;
 
@@ -42,7 +37,7 @@ public class ContactService {
      * @return
      */
     @Transactional(readOnly = true)
-    public Page<byte[]> retrieveContactsByUser(User user, int page, int limit, ConnectionLevel level) {
+    public Page<String> retrieveContactsByUser(User user, int page, int limit, ConnectionLevel level) {
         log.info("Retrieving contacts for user {}",
                 user.getId());
 
@@ -52,7 +47,7 @@ public class ContactService {
                 PageRequest.of(page, limit));
     }
 
-    public void deleteAllContacts(byte[] userPublicKey) {
+    public void deleteAllContacts(String userPublicKey) {
         this.contactRepository.deleteAllByPublicKey(userPublicKey);
     }
 
@@ -60,20 +55,19 @@ public class ContactService {
         log.info("Deleting contacts for user {}",
                 user.getId());
 
-        List<byte[]> contactsByteList = deleteContactsRequest.getContactsToDelete().stream()
+        List<String> contactsToDelete = deleteContactsRequest.contactsToDelete().stream()
                 .map(String::trim)
-                .map(EncryptionUtils::decodeBase64String)
                 .collect(Collectors.toList());
 
-        this.contactRepository.deleteContacts(user.getHash(), contactsByteList);
+        this.contactRepository.deleteContacts(user.getHash(), contactsToDelete);
     }
 
     @Transactional(readOnly = true)
     public List<String> retrieveNewContacts(User user, NewContactsRequest contactsRequest) {
         List<String> newContacts = new ArrayList<>();
 
-        contactsRequest.getContacts().forEach(c -> {
-            if (!this.contactRepository.existsByHashFromAndHashTo(user.getHash(), calculateHmacSha256(c.trim()))) {
+        contactsRequest.contacts().forEach(c -> {
+            if (!this.contactRepository.existsByHashFromAndHashTo(user.getHash(), c.trim())) {
                 newContacts.add(c);
             }
         });
@@ -81,24 +75,24 @@ public class ContactService {
         return newContacts;
     }
 
-    public boolean existsByHashFromAndHashTo(byte[] hashFrom, byte[] hashTo) {
+    public boolean existsByHashFromAndHashTo(String hashFrom, String hashTo) {
         return this.contactRepository.existsByHashFromAndHashTo(hashFrom, hashTo);
     }
 
-    public boolean existsByHashFromAndHashTo(byte[] hashFrom, String hashToString) {
-        return existsByHashFromAndHashTo(hashFrom, calculateHmacSha256(hashToString));
-    }
-
-
-    public byte[] calculateHmacSha256(String value) {
-        return EncryptionUtils.calculateHmacSha256(
-                this.secretKey.getBytes(StandardCharsets.UTF_8),
-                value.getBytes(StandardCharsets.UTF_8)
-        );
+    @Transactional(readOnly = true)
+    public int getContactsCount(String hash) {
+        return this.contactRepository.countContactsByHash(hash);
     }
 
     @Transactional(readOnly = true)
-    public int getContactsCount(byte[] hash) {
-        return this.contactRepository.countContactsByHash(hash);
+    public CommonContactsResponse retrieveCommonContacts(String ownerPublicKey, List<String> publicKeys) {
+        List<CommonContactsResponse.Contacts> contacts = new ArrayList<>();
+        publicKeys.stream()
+                .map(String::trim)
+                .forEach(pk -> {
+                    List<String> commonContacts = this.contactRepository.retrieveCommonContacts(ownerPublicKey, pk);
+                    contacts.add(new CommonContactsResponse.Contacts(pk, new CommonContactsResponse.Contacts.CommonContacts(commonContacts)));
+                });
+        return new CommonContactsResponse(contacts);
     }
 }

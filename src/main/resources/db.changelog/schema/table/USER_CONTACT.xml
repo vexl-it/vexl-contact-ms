@@ -8,7 +8,6 @@
     <!-- ################# TABLE CHANGES (FROM OLDER TO NEW) ################# -->
     <!-- ##################################################################### -->
 
-
     <!-- ##################################################################### -->
     <!-- ###################### TABLE INSTALL CHANGESET ###################### -->
     <!-- ##################################################################### -->
@@ -22,10 +21,10 @@
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true" primaryKeyName="PK_USERS_CONTACT"/>
             </column>
-            <column name="hash_from" type="BINARY">
+            <column name="hash_from" type="varchar">
                 <constraints nullable="false"/>
             </column>
-            <column name="hash_to" type="BINARY">
+            <column name="hash_to" type="varchar">
                 <constraints nullable="false"/>
             </column>
         </createTable>

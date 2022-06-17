@@ -25,10 +25,10 @@ public class VContact {
     private Long id;
 
     @Column(name = "public_key")
-    private byte[] publicKey;
+    private String publicKey;
 
     @Column(name = "my_public_key")
-    private byte[] myPublicKey;
+    private String myPublicKey;
 
     @Column(name = "level")
     @Enumerated(EnumType.STRING)

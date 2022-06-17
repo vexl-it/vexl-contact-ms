@@ -35,23 +35,19 @@ public class ContactServiceTest {
 
     @BeforeEach
     public void setup() {
-        this.contactService = new ContactService(secretKey, contactRepository, vContactRepository);
-
+        this.contactService = new ContactService(contactRepository, vContactRepository);
     }
 
     @Test
     void deleteAllContacts_test() {
-        contactService.deleteAllContacts(PHONE_NUMBER.getBytes(StandardCharsets.UTF_8));
+        contactService.deleteAllContacts(PHONE_NUMBER);
         Mockito.verify(contactRepository).deleteAllByPublicKey(any());
-
     }
 
     @Test
     void deleteContacts_test() {
-        DeleteContactsRequest deleteContactsRequest = new DeleteContactsRequest();
-        deleteContactsRequest.setContactsToDelete(Collections.singletonList(PHONE_NUMBER));
+        DeleteContactsRequest deleteContactsRequest = new DeleteContactsRequest(Collections.singletonList(PHONE_NUMBER));
         contactService.deleteContacts(user, deleteContactsRequest);
         Mockito.verify(contactRepository).deleteContacts(any(), any());
-
     }
 }

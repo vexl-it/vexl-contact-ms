@@ -22,10 +22,10 @@
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true" primaryKeyName="PK_USERS"/>
             </column>
-            <column name="public_key" type="BINARY">
+            <column name="public_key" type="varchar">
                 <constraints nullable="false"/>
             </column>
-            <column name="hash" type="BINARY">
+            <column name="hash" type="varchar">
                 <constraints nullable="false"/>
             </column>
         </createTable>

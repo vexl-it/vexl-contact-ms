@@ -29,8 +29,8 @@ public class UserContact {
     private Long id;
 
     @Column(name = "hash_from")
-    private byte[] hashFrom;
+    private String hashFrom;
 
     @Column(name = "hash_to")
-    private byte[] hashTo;
+    private String hashTo;
 }

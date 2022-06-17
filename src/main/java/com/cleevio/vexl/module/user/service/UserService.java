@@ -22,18 +22,14 @@ public class UserService {
     private final ContactService contactService;
 
     @Transactional(rollbackFor = Exception.class)
-    public void createUser(String publicKeyString, String hashString) {
-
-        byte[] hash = EncryptionUtils.decodeBase64String(hashString);
+    public void createUser(String publicKey, String hash) {
 
         Optional<User> userByHash = this.userRepository.findByHash(hash);
         if (userByHash.isPresent()) {
             log.info("FacebookId or phone number is already in use by another user. Hash string: {}. Removing this user and create new one.",
-                    hashString);
+                    hash);
             this.removeUserAndContacts(userByHash.get());
         }
-
-        byte[] publicKey = EncryptionUtils.decodeBase64String(publicKeyString);
 
         log.info("Creating an user {} ",
                 publicKey);
@@ -50,18 +46,12 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Optional<User> findByPublicKeyAndHash(String publicKey, String hash) {
-        byte[] publicKeyByte = EncryptionUtils.decodeBase64String(publicKey);
-        byte[] hashByte = EncryptionUtils.decodeBase64String(hash);
-
-        return this.userRepository.findUserByPublicKeyAndHash(publicKeyByte, hashByte);
+        return this.userRepository.findUserByPublicKeyAndHash(publicKey, hash);
     }
 
     @Transactional(readOnly = true)
     public boolean existsByPublicKeyAndHash(String publicKey, String hash) {
-        byte[] publicKeyByte = EncryptionUtils.decodeBase64String(publicKey);
-        byte[] hashByte = EncryptionUtils.decodeBase64String(hash);
-
-        return this.userRepository.existsByPublicKeyAndHash(publicKeyByte, hashByte);
+        return this.userRepository.existsByPublicKeyAndHash(publicKey, hash);
     }
 
     public void removeUserAndContacts(User user) {
