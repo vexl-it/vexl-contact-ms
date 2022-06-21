@@ -17,9 +17,6 @@ import static org.mockito.ArgumentMatchers.any;
 @IntegrationTest
 public class ContactServiceTest {
 
-    @Value("${hmac.secret.key}")
-    private String secretKey;
-
     @Mock
     private ContactRepository contactRepository;
 

@@ -161,7 +161,7 @@ public class ContactController {
             description = "Send public keys and common contacts will be returned for every sent public key."
     )
     CommonContactsResponse retrieveCommonContacts(@RequestParam List<String> publicKeys,
-                                                         @RequestHeader(name = SecurityFilter.HEADER_PUBLIC_KEY) String ownerPublicKey) {
+                                                  @RequestHeader(name = SecurityFilter.HEADER_PUBLIC_KEY) String ownerPublicKey) {
         return this.contactService.retrieveCommonContacts(ownerPublicKey, publicKeys);
     }
 }

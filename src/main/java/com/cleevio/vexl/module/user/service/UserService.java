@@ -2,7 +2,6 @@ package com.cleevio.vexl.module.user.service;
 
 import com.cleevio.vexl.module.contact.service.ContactService;
 import com.cleevio.vexl.module.user.entity.User;
-import com.cleevio.vexl.utils.EncryptionUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

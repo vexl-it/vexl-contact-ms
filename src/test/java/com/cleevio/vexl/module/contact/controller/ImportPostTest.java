@@ -85,27 +85,4 @@ public class ImportPostTest extends BaseControllerTest {
                 .andExpect(jsonPath("$.newContacts", notNullValue()));
     }
 
-    @Test
-    public void getNotImportedContactsWrongRequest_emptyContacts() throws Exception {
-        mvc.perform(post(BASE_URL + "/not-imported/")
-                        .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
-                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
-                        .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(new NewContactsRequest(List.of("+11231321231", "+1113241231")))))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void importContactsWrongRequest_emptyContacts() throws Exception {
-        mvc.perform(post(BASE_URL + "/import")
-                        .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
-                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
-                        .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(new ImportRequest(Arrays.asList("+42085285282", "+42058965236")))))
-                .andExpect(status().isBadRequest());
-    }
-
-
 }

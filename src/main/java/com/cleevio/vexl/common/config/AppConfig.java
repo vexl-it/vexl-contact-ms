@@ -1,5 +1,6 @@
 package com.cleevio.vexl.common.config;
 
+import com.sun.jna.NativeLibrary;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -16,30 +17,34 @@ import java.util.TimeZone;
 @ComponentScan(basePackages = "com.cleevio")
 public class AppConfig {
 
-	@Bean
-	public CorsFilter corsFilter() {
-		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		final CorsConfiguration config = new CorsConfiguration();
-		config.setAllowCredentials(true);
-		config.setAllowedOrigins(Collections.singletonList("*"));
-		config.setAllowedHeaders(Collections.singletonList("*"));
-		config.setAllowedMethods(Collections.singletonList("*"));
-		source.registerCorsConfiguration("/**", config);
-		return new CorsFilter(source);
-	}
+    static {
+        NativeLibrary.addSearchPath("libvc", "src/main/resources/linux-x86-64/libvc.so");
+    }
 
-	@PostConstruct
-	void started() {
-		TimeZone.setDefault(TimeZone.getTimeZone("utc"));
-	}
+    @Bean
+    public CorsFilter corsFilter() {
+        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        final CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.setAllowedOrigins(Collections.singletonList("*"));
+        config.setAllowedHeaders(Collections.singletonList("*"));
+        config.setAllowedMethods(Collections.singletonList("*"));
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
+    }
 
-	@Bean
-	public CommonsRequestLoggingFilter requestLoggingFilter() {
-		CommonsRequestLoggingFilter loggingFilter = new CommonsRequestLoggingFilter();
-		loggingFilter.setIncludeClientInfo(true);
-		loggingFilter.setIncludeQueryString(true);
-		loggingFilter.setIncludePayload(true);
-		loggingFilter.setMaxPayloadLength(64000);
-		return loggingFilter;
-	}
+    @PostConstruct
+    void started() {
+        TimeZone.setDefault(TimeZone.getTimeZone("utc"));
+    }
+
+    @Bean
+    public CommonsRequestLoggingFilter requestLoggingFilter() {
+        CommonsRequestLoggingFilter loggingFilter = new CommonsRequestLoggingFilter();
+        loggingFilter.setIncludeClientInfo(true);
+        loggingFilter.setIncludeQueryString(true);
+        loggingFilter.setIncludePayload(true);
+        loggingFilter.setMaxPayloadLength(64000);
+        return loggingFilter;
+    }
 }

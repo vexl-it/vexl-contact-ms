@@ -12,6 +12,6 @@ import java.util.List;
 
 interface VContactRepository extends JpaRepository<VContact, Long>, JpaSpecificationExecutor<VContact> {
 
-    @Query("select v.publicKey from VContact v where v.myPublicKey = :myPublicKey AND v.level in (:level) ")
+    @Query("select distinct v.publicKey from VContact v where v.myPublicKey = :myPublicKey AND v.level in (:level) ")
     Page<String> findPublicKeysByMyPublicKeyAndLevel(String myPublicKey, List<ConnectionLevel> level, Pageable pageable);
 }
