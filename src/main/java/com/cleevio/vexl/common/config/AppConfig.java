@@ -1,5 +1,6 @@
 package com.cleevio.vexl.common.config;
 
+import com.cleevio.vexl.common.cryptolib.CLibrary;
 import com.sun.jna.NativeLibrary;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -18,7 +19,7 @@ import java.util.TimeZone;
 public class AppConfig {
 
     static {
-        NativeLibrary.addSearchPath("libvc", "src/main/resources/linux-x86-64/libvc.so");
+        NativeLibrary.addSearchPath(CLibrary.FULL_NAME_WIN, CLibrary.PATH_LINUX);
     }
 
     @Bean

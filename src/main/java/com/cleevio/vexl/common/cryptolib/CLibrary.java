@@ -6,7 +6,14 @@ import com.sun.jna.Platform;
 
 public interface CLibrary extends Library {
 
-    CLibrary CRYPTO_LIB = Native.load(Platform.isWindows() ? "libvc" : "vc", CLibrary.class);
+    String LIBRARY_VERSION = "-v0-0-15";
+    String LIBRARY_NAME = "libvc";
+    String LIBRARY_NAME_LINUX = "vc";
+    String FULL_NAME_WIN = LIBRARY_NAME + LIBRARY_VERSION;
+    String FULL_NAME_LINUX = LIBRARY_NAME_LINUX + LIBRARY_VERSION;
+    String PATH_LINUX = "src/main/resources/linux-x86-64/" + LIBRARY_NAME + LIBRARY_VERSION + ".so";
+
+    CLibrary CRYPTO_LIB = Native.load(Platform.isWindows() ? FULL_NAME_WIN : FULL_NAME_LINUX, CLibrary.class);
 
     /**
      * ECDSA
