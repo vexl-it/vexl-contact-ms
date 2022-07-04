@@ -21,7 +21,7 @@ public class UserService {
     private final ContactService contactService;
 
     @Transactional(rollbackFor = Exception.class)
-    public void createUser(String publicKey, String hash) {
+    public User createUser(String publicKey, String hash) {
 
         Optional<User> userByHash = this.userRepository.findByHash(hash);
         if (userByHash.isPresent()) {
@@ -41,6 +41,8 @@ public class UserService {
 
         log.info("User id - {} created",
                 savedUser.getId());
+
+        return savedUser;
     }
 
     @Transactional(readOnly = true)

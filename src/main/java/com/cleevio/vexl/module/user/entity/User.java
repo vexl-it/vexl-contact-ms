@@ -1,6 +1,5 @@
 package com.cleevio.vexl.module.user.entity;
 
-import com.cleevio.vexl.module.contact.entity.UserContact;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

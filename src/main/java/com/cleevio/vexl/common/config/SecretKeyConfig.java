@@ -10,7 +10,10 @@ import javax.validation.constraints.NotBlank;
 public record SecretKeyConfig(
 
         @NotBlank
-        String signaturePublicKey
+        String signaturePublicKey,
+
+        @NotBlank
+        String aesKey
 
 ) {
 }
