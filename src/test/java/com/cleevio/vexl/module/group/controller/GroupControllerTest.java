@@ -2,8 +2,10 @@ package com.cleevio.vexl.module.group.controller;
 
 import com.cleevio.vexl.common.BaseControllerTest;
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
+import com.cleevio.vexl.module.group.dto.mapper.GroupMapper;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.JoinGroupRequest;
+import com.cleevio.vexl.module.group.dto.request.LeaveGroupRequest;
 import com.cleevio.vexl.module.group.entity.Group;
 import com.cleevio.vexl.module.group.service.GroupService;
 import com.cleevio.vexl.module.user.entity.User;
@@ -24,6 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -38,6 +41,7 @@ class GroupControllerTest extends BaseControllerTest {
     private static final String DEFAULT_EP = "/api/v1/group";
     private static final String JOIN_EP = DEFAULT_EP + "/join";
     private static final String ME_EP = DEFAULT_EP + "/me";
+    private static final String LEAVE_EP = DEFAULT_EP + "/leave";
     private static final String GROUP_NAME = "dummy_name";
     private static final String GROUP_LOGO = "dummy_logo";
     private static final String GROUP_UUID = "dummy_group_uuid";
@@ -48,9 +52,13 @@ class GroupControllerTest extends BaseControllerTest {
     private static final CreateGroupRequest CREATE_GROUP_REQUEST;
     private static final CreateGroupRequest CREATE_GROUP_REQUEST_INVALID;
     private static final JoinGroupRequest JOIN_GROUP_REQUEST;
+    private static final LeaveGroupRequest LEAVE_GROUP_REQUEST;
 
     @MockBean
     private GroupService groupService;
+
+    @MockBean
+    private GroupMapper groupMapper;
 
     static {
         CREATE_GROUP_REQUEST = new CreateGroupRequest(
@@ -69,6 +77,10 @@ class GroupControllerTest extends BaseControllerTest {
 
         JOIN_GROUP_REQUEST = new JoinGroupRequest(
                 GROUP_UUID
+        );
+
+        LEAVE_GROUP_REQUEST = new LeaveGroupRequest(
+            GROUP_UUID
         );
 
         USER = new User();
@@ -146,5 +158,17 @@ class GroupControllerTest extends BaseControllerTest {
                 .andExpect(jsonPath("$.groupResponse[0].expirationAt", is(EXPIRATION)))
                 .andExpect(jsonPath("$.groupResponse[0].closureAt", is(CLOSURE_AT)))
                 .andExpect(jsonPath("$.groupResponse[0].code", is(CODE)));
+    }
+
+    @Test
+    @SneakyThrows
+    void testLeaveGroup_shouldReturn204() {
+        mvc.perform(put(LEAVE_EP)
+                        .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
+                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(LEAVE_GROUP_REQUEST)))
+                .andExpect(status().isNoContent());
     }
 }

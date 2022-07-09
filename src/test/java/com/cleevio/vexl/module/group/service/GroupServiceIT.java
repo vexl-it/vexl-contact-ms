@@ -1,7 +1,9 @@
 package com.cleevio.vexl.module.group.service;
 
 import com.cleevio.vexl.common.IntegrationTest;
+import com.cleevio.vexl.common.cryptolib.CLibrary;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
+import com.cleevio.vexl.module.group.dto.request.LeaveGroupRequest;
 import com.cleevio.vexl.module.group.entity.Group;
 import com.cleevio.vexl.module.group.exception.GroupNotFoundException;
 import com.cleevio.vexl.module.user.entity.User;
@@ -99,14 +101,35 @@ class GroupServiceIT {
         this.groupService.joinGroup(user, CreateRequestTestUtil.createJoinGroupRequest(group3.getUuid()));
         this.groupService.joinGroup(user2, CreateRequestTestUtil.createJoinGroupRequest(group4.getUuid()));
 
-        /**
-         * If user creates a group, he is automatically connected to it.
-         */
+        // If user creates a group, he is automatically connected to it.
 
-         final List<Group> user1Groups = this.groupService.retrieveMyGroups(user);
-         final List<Group> user2Groups = this.groupService.retrieveMyGroups(user2);
+        final List<Group> user1Groups = this.groupService.retrieveMyGroups(user);
+        final List<Group> user2Groups = this.groupService.retrieveMyGroups(user2);
 
-         assertThat(user1Groups).hasSize(4);
-         assertThat(user2Groups).hasSize(3);
+        assertThat(user1Groups).hasSize(4);
+        assertThat(user2Groups).hasSize(3);
+    }
+
+    @Test
+    void testLeaveGroup_shouldLeaveGroup() {
+        final User user = userService.createUser(PUBLIC_KEY_USER_1, HASH_USER_1);
+        final Group group = this.groupService.createGroup(user, CreateRequestTestUtil.createCreateGroupRequest());
+        final Group group2 = this.groupService.createGroup(user, CreateRequestTestUtil.createCreateGroupRequest());
+        final String group1UuidHash = CLibrary.CRYPTO_LIB.sha256_hash(group.getUuid(), group.getUuid().length());
+        final String group2UuidHash = CLibrary.CRYPTO_LIB.sha256_hash(group2.getUuid(), group2.getUuid().length());
+
+        final List<Group> groupsBeforeLeave = this.groupService.retrieveMyGroups(user);
+
+        this.groupService.leaveGroup(user, new LeaveGroupRequest(group1UuidHash));
+
+        final List<Group> groupsAfterLeave = this.groupService.retrieveMyGroups(user);
+
+        assertThat(groupsBeforeLeave).hasSize(2);
+        assertThat(groupsAfterLeave).hasSize(1);
+
+        // leave group 2 as well
+        this.groupService.leaveGroup(user, new LeaveGroupRequest(group2UuidHash));
+
+        assertThat(this.groupService.retrieveMyGroups(user)).hasSize(0);
     }
 }

@@ -63,6 +63,10 @@ public class ContactService {
         this.contactRepository.deleteContacts(user.getHash(), contactsToDelete);
     }
 
+    public void deleteContactByHash(String hash, String contactHash) {
+        this.contactRepository.deleteContactByHash(hash, contactHash);
+    }
+
     @Transactional(readOnly = true)
     public List<String> retrieveNewContacts(User user, NewContactsRequest contactsRequest) {
         List<String> newContacts = new ArrayList<>();

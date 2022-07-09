@@ -7,9 +7,11 @@ import com.cleevio.vexl.module.contact.service.ContactService;
 import com.cleevio.vexl.module.group.dto.mapper.GroupMapper;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.JoinGroupRequest;
+import com.cleevio.vexl.module.group.dto.request.LeaveGroupRequest;
 import com.cleevio.vexl.module.group.entity.Group;
 import com.cleevio.vexl.module.group.enums.GroupAdvisoryLock;
 import com.cleevio.vexl.module.group.event.ImportGroupEvent;
+import com.cleevio.vexl.module.group.event.LeaveGroupEvent;
 import com.cleevio.vexl.module.group.exception.GroupNotFoundException;
 import com.cleevio.vexl.module.group.util.QrCodeUtil;
 import com.cleevio.vexl.module.user.entity.User;
@@ -82,5 +84,9 @@ public class GroupService {
         });
 
         return this.groupRepository.findGroupsByUuids(userGroupUuid);
+    }
+
+    public void leaveGroup(User user, LeaveGroupRequest request) {
+        applicationEventPublisher.publishEvent(new LeaveGroupEvent(user.getHash(), request.groupUuid()));
     }
 }

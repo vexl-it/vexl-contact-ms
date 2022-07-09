@@ -4,6 +4,7 @@ import com.cleevio.vexl.common.security.filter.SecurityFilter;
 import com.cleevio.vexl.module.group.dto.mapper.GroupMapper;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.JoinGroupRequest;
+import com.cleevio.vexl.module.group.dto.request.LeaveGroupRequest;
 import com.cleevio.vexl.module.group.dto.response.GroupCreatedResponse;
 import com.cleevio.vexl.module.group.dto.response.GroupsResponse;
 import com.cleevio.vexl.module.group.service.GroupService;
@@ -19,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -85,6 +87,22 @@ public class GroupController {
                         this.groupService.retrieveMyGroups(user)
                 )
         );
+    }
+
+    @PutMapping("/leave")
+    @SecurityRequirements({
+            @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
+            @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
+            @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
+    })
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(
+            summary = "Leave group.",
+            description = "If user want to leave group, send hash 256 of group uuid in payload."
+    )
+    void leaveGroup(@Parameter(hidden = true) @AuthenticationPrincipal User user,
+                    @RequestBody LeaveGroupRequest request) {
+        this.groupService.leaveGroup(user, request);
     }
 
 }

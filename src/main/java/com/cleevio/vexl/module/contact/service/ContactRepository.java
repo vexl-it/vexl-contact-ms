@@ -39,4 +39,9 @@ interface ContactRepository extends JpaRepository<UserContact, Long>, JpaSpecifi
 
     @Query("select distinct uc.hashTo from UserContact uc where uc.hashFrom = :hash and uc.hashTo in (:groupUuidHashes) ")
     List<String> getGroups(String hash, Set<String> groupUuidHashes);
+
+    @Transactional
+    @Modifying
+    @Query("delete from UserContact uc where uc.hashFrom = :hash and uc.hashTo = :contactHash")
+    void deleteContactByHash(String hash, String contactHash);
 }
