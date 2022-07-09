@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 interface ContactRepository extends JpaRepository<UserContact, Long>, JpaSpecificationExecutor<UserContact> {
 
@@ -35,4 +36,7 @@ interface ContactRepository extends JpaRepository<UserContact, Long>, JpaSpecifi
             "and uc.hashTo in " +
             "(select uc.hashTo from UserContact uc where uc.hashFrom in (select u.hash from User u where u.publicKey = :publicKey))")
     List<String> retrieveCommonContacts(String ownerPublicKey, String publicKey);
+
+    @Query("select distinct uc.hashTo from UserContact uc where uc.hashFrom = :hash and uc.hashTo in (:groupUuidHashes) ")
+    List<String> getGroups(String hash, Set<String> groupUuidHashes);
 }

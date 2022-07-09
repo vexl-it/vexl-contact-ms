@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -94,5 +95,10 @@ public class ContactService {
                     contacts.add(new CommonContactsResponse.Contacts(pk, new CommonContactsResponse.Contacts.CommonContacts(commonContacts)));
                 });
         return new CommonContactsResponse(contacts);
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> getGroups(String hash, Set<String> groupUuidHashes) {
+        return this.contactRepository.getGroups(hash, groupUuidHashes);
     }
 }

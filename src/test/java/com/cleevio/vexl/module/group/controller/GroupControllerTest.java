@@ -16,10 +16,13 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 
 
+import java.util.List;
+
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -34,11 +37,13 @@ class GroupControllerTest extends BaseControllerTest {
 
     private static final String DEFAULT_EP = "/api/v1/group";
     private static final String JOIN_EP = DEFAULT_EP + "/join";
+    private static final String ME_EP = DEFAULT_EP + "/me";
     private static final String GROUP_NAME = "dummy_name";
     private static final String GROUP_LOGO = "dummy_logo";
     private static final String GROUP_UUID = "dummy_group_uuid";
     private static final int EXPIRATION = 46546545;
     private static final int CLOSURE_AT = 1616161156;
+    private static final int CODE = 456654;
     private static final String PUBLIC_KEY = "dummy_public_key";
     private static final CreateGroupRequest CREATE_GROUP_REQUEST;
     private static final CreateGroupRequest CREATE_GROUP_REQUEST_INVALID;
@@ -63,7 +68,7 @@ class GroupControllerTest extends BaseControllerTest {
         );
 
         JOIN_GROUP_REQUEST = new JoinGroupRequest(
-            GROUP_UUID
+                GROUP_UUID
         );
 
         USER = new User();
@@ -74,6 +79,7 @@ class GroupControllerTest extends BaseControllerTest {
         GROUP.setLogoUrl(GROUP_LOGO);
         GROUP.setExpirationAt(EXPIRATION);
         GROUP.setClosureAt(CLOSURE_AT);
+        GROUP.setCode(CODE);
     }
 
     @BeforeEach
@@ -121,5 +127,24 @@ class GroupControllerTest extends BaseControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(JOIN_GROUP_REQUEST)))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @SneakyThrows
+    void testGetMe_shouldReturn200() {
+        when(groupService.retrieveMyGroups(any())).thenReturn(List.of(GROUP));
+
+        mvc.perform(get(ME_EP)
+                        .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
+                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.groupResponse[0].uuid", notNullValue()))
+                .andExpect(jsonPath("$.groupResponse[0].name", is(GROUP_NAME)))
+                .andExpect(jsonPath("$.groupResponse[0].createdAt", notNullValue()))
+                .andExpect(jsonPath("$.groupResponse[0].expirationAt", is(EXPIRATION)))
+                .andExpect(jsonPath("$.groupResponse[0].closureAt", is(CLOSURE_AT)))
+                .andExpect(jsonPath("$.groupResponse[0].code", is(CODE)));
     }
 }

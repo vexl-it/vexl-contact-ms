@@ -8,8 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CreateRequestTestUtil {
 
-    public static final String GROUP_UUID = "dummy_group_uuid";
-
     public static CreateGroupRequest createCreateGroupRequest() {
         return new CreateGroupRequest(
                 "dummy_name",
@@ -19,9 +17,9 @@ public final class CreateRequestTestUtil {
         );
     }
 
-    public static JoinGroupRequest createJoinGroupRequest() {
+    public static JoinGroupRequest createJoinGroupRequest(String groupUuid) {
         return new JoinGroupRequest(
-                GROUP_UUID
+                groupUuid
         );
     }
 
