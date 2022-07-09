@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Optional;
 
-public abstract class ApiException extends Exception {
+public abstract class ApiException extends RuntimeException {
 
     protected abstract ErrorType getErrorType();
 
@@ -47,7 +47,9 @@ public abstract class ApiException extends Exception {
     public enum Module {
 
         USER("100", "User Module Error."),
-        CONTACT("101", "Contact Module Error.");
+        CONTACT("101", "Contact Module Error."),
+        GROUP("102", "Group Module Error."),
+        ;
 
         /**
          * Error custom code

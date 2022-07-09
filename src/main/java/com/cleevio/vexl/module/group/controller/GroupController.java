@@ -2,6 +2,7 @@ package com.cleevio.vexl.module.group.controller;
 
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
+import com.cleevio.vexl.module.group.dto.request.JoinGroupRequest;
 import com.cleevio.vexl.module.group.dto.response.GroupCreatedResponse;
 import com.cleevio.vexl.module.group.service.GroupService;
 import com.cleevio.vexl.module.user.entity.User;
@@ -45,6 +46,22 @@ public class GroupController {
     GroupCreatedResponse createGroup(@Parameter(hidden = true) @AuthenticationPrincipal User user,
                                      @Valid @RequestBody CreateGroupRequest request) {
         return new GroupCreatedResponse(this.groupService.createGroup(user, request));
+    }
+
+    @PostMapping("/join")
+    @SecurityRequirements({
+            @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
+            @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
+            @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
+    })
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(
+            summary = "Create a new group",
+            description = "Each user can create a new group."
+    )
+    void joinGroup(@Parameter(hidden = true) @AuthenticationPrincipal User user,
+                   @Valid @RequestBody JoinGroupRequest request) {
+        this.groupService.joinGroup(user, request);
     }
 
 }

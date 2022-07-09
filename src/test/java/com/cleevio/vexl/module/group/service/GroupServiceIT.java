@@ -16,18 +16,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class GroupServiceIT {
 
-    @Autowired
-    private GroupService groupService;
+    private final static String PUBLIC_KEY = "dummy_public_key";
+    private final static String HASH = "dummy_hash";
+    private final GroupService groupService;
+    private final GroupRepository groupRepository;
+    private final UserService userService;
 
     @Autowired
-    private UserService userService;
+    public GroupServiceIT(GroupService groupService, GroupRepository groupRepository, UserService userService) {
+        this.groupService = groupService;
+        this.groupRepository = groupRepository;
+        this.userService = userService;
+    }
 
     @Test
     void testCreateGroup_shouldBeCreated() {
-        final var public_key = "dummy_public_key";
-        final User user = userService.createUser(public_key, "dummy_hash");
-        CreateGroupRequest createGroupRequest = CreateRequestTestUtil.createCreateGroupRequest();
-        Group group = this.groupService.createGroup(user, createGroupRequest);
+        final User user = userService.createUser(PUBLIC_KEY, HASH);
+        final CreateGroupRequest createGroupRequest = CreateRequestTestUtil.createCreateGroupRequest();
+        final Group group = this.groupService.createGroup(user, createGroupRequest);
 
         assertThat(group.getUuid()).isNotBlank();
         assertThat(group.getName()).isEqualTo(createGroupRequest.name());
@@ -35,6 +41,6 @@ class GroupServiceIT {
         assertThat(group.getExpirationAt()).isEqualTo(createGroupRequest.expiration());
         assertThat(group.getClosureAt()).isEqualTo(createGroupRequest.closureAt());
         assertThat(group.getCreatedAt()).isNotNull();
-        assertThat(group.getCreatedBy()).isEqualTo(public_key);
+        assertThat(group.getCreatedBy()).isEqualTo(PUBLIC_KEY);
     }
 }

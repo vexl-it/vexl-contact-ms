@@ -3,6 +3,7 @@ package com.cleevio.vexl.module.group.controller;
 import com.cleevio.vexl.common.BaseControllerTest;
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
+import com.cleevio.vexl.module.group.dto.request.JoinGroupRequest;
 import com.cleevio.vexl.module.group.entity.Group;
 import com.cleevio.vexl.module.group.service.GroupService;
 import com.cleevio.vexl.module.user.entity.User;
@@ -32,13 +33,16 @@ class GroupControllerTest extends BaseControllerTest {
     private static final Group GROUP;
 
     private static final String DEFAULT_EP = "/api/v1/group";
+    private static final String JOIN_EP = DEFAULT_EP + "/join";
     private static final String GROUP_NAME = "dummy_name";
     private static final String GROUP_LOGO = "dummy_logo";
+    private static final String GROUP_UUID = "dummy_group_uuid";
     private static final int EXPIRATION = 46546545;
     private static final int CLOSURE_AT = 1616161156;
     private static final String PUBLIC_KEY = "dummy_public_key";
     private static final CreateGroupRequest CREATE_GROUP_REQUEST;
     private static final CreateGroupRequest CREATE_GROUP_REQUEST_INVALID;
+    private static final JoinGroupRequest JOIN_GROUP_REQUEST;
 
     @MockBean
     private GroupService groupService;
@@ -56,6 +60,10 @@ class GroupControllerTest extends BaseControllerTest {
                 GROUP_LOGO,
                 EXPIRATION,
                 CLOSURE_AT
+        );
+
+        JOIN_GROUP_REQUEST = new JoinGroupRequest(
+            GROUP_UUID
         );
 
         USER = new User();
@@ -101,5 +109,17 @@ class GroupControllerTest extends BaseControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(CREATE_GROUP_REQUEST_INVALID)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @SneakyThrows
+    void testJoin_validInput_shouldReturn204() {
+        mvc.perform(post(JOIN_EP)
+                        .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
+                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(JOIN_GROUP_REQUEST)))
+                .andExpect(status().isNoContent());
     }
 }

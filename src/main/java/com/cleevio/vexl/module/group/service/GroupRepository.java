@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 interface GroupRepository extends JpaRepository<Group, Long>, JpaSpecificationExecutor<Group> {
+    boolean existsByUuid(String groupUuid);
 }
