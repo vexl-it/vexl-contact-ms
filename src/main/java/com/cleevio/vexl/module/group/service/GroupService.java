@@ -89,4 +89,9 @@ public class GroupService {
     public void leaveGroup(User user, LeaveGroupRequest request) {
         applicationEventPublisher.publishEvent(new LeaveGroupEvent(user.getHash(), request.groupUuid()));
     }
+
+    @Transactional(readOnly = true)
+    public List<Group> retrieveGroupsByUuid(List<String> groupUuid) {
+        return this.groupRepository.findGroupsByUuids(groupUuid);
+    }
 }

@@ -113,9 +113,9 @@ class GroupServiceIT {
     @Test
     void testLeaveGroup_shouldLeaveGroup() {
         final User user = userService.createUser(PUBLIC_KEY_USER_1, HASH_USER_1);
-        final Group group = this.groupService.createGroup(user, CreateRequestTestUtil.createCreateGroupRequest());
+        final Group group1 = this.groupService.createGroup(user, CreateRequestTestUtil.createCreateGroupRequest());
         final Group group2 = this.groupService.createGroup(user, CreateRequestTestUtil.createCreateGroupRequest());
-        final String group1UuidHash = CLibrary.CRYPTO_LIB.sha256_hash(group.getUuid(), group.getUuid().length());
+        final String group1UuidHash = CLibrary.CRYPTO_LIB.sha256_hash(group1.getUuid(), group1.getUuid().length());
         final String group2UuidHash = CLibrary.CRYPTO_LIB.sha256_hash(group2.getUuid(), group2.getUuid().length());
 
         final List<Group> groupsBeforeLeave = this.groupService.retrieveMyGroups(user);
@@ -131,5 +131,24 @@ class GroupServiceIT {
         this.groupService.leaveGroup(user, new LeaveGroupRequest(group2UuidHash));
 
         assertThat(this.groupService.retrieveMyGroups(user)).hasSize(0);
+    }
+
+    @Test
+    void testRetrieveGroupsByUuid_shouldBeRetrieved() {
+        final User user = userService.createUser(PUBLIC_KEY_USER_1, HASH_USER_1);
+        final Group group1 = this.groupService.createGroup(user, CreateRequestTestUtil.createCreateGroupRequest());
+        final Group group2 = this.groupService.createGroup(user, CreateRequestTestUtil.createCreateGroupRequest());
+
+        final List<Group> groups = this.groupService.retrieveGroupsByUuid(List.of(group1.getUuid(), group2.getUuid()));
+        assertThat(groups).hasSize(2);
+
+        final Group group = this.groupService.retrieveGroupsByUuid(List.of(group1.getUuid())).get(0);
+        assertThat(group.getUuid()).isEqualTo(group1.getUuid());
+        assertThat(group.getName()).isEqualTo(group1.getName());
+        assertThat(group.getCode()).isEqualTo(group1.getCode());
+        assertThat(group.getExpirationAt()).isEqualTo(group1.getExpirationAt());
+        assertThat(group.getClosureAt()).isEqualTo(group1.getClosureAt());
+        assertThat(group.getCreatedBy()).isEqualTo(group1.getCreatedBy());
+        assertThat(group.getCreatedAt()).isEqualTo(group1.getCreatedAt());
     }
 }

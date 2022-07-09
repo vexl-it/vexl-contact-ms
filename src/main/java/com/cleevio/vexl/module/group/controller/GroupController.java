@@ -23,10 +23,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @Tag(name = "Group")
 @RestController
@@ -85,6 +87,25 @@ public class GroupController {
         return new GroupsResponse(
                 groupMapper.mapListToGroupResponse(
                         this.groupService.retrieveMyGroups(user)
+                )
+        );
+    }
+
+    @GetMapping
+    @SecurityRequirements({
+            @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
+            @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
+            @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
+    })
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "Get group by UUID.",
+            description = "Put group UUIDs you're interested in into request params."
+    )
+    GroupsResponse retrieveGroupsByUuid(@RequestParam List<String> groupUuids) {
+        return new GroupsResponse(
+                groupMapper.mapListToGroupResponse(
+                        this.groupService.retrieveGroupsByUuid(groupUuids)
                 )
         );
     }

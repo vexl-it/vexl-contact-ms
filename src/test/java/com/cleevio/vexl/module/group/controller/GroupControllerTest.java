@@ -6,6 +6,7 @@ import com.cleevio.vexl.module.group.dto.mapper.GroupMapper;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.JoinGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.LeaveGroupRequest;
+import com.cleevio.vexl.module.group.dto.response.GroupsResponse;
 import com.cleevio.vexl.module.group.entity.Group;
 import com.cleevio.vexl.module.group.service.GroupService;
 import com.cleevio.vexl.module.user.entity.User;
@@ -80,7 +81,7 @@ class GroupControllerTest extends BaseControllerTest {
         );
 
         LEAVE_GROUP_REQUEST = new LeaveGroupRequest(
-            GROUP_UUID
+                GROUP_UUID
         );
 
         USER = new User();
@@ -145,8 +146,29 @@ class GroupControllerTest extends BaseControllerTest {
     @SneakyThrows
     void testGetMe_shouldReturn200() {
         when(groupService.retrieveMyGroups(any())).thenReturn(List.of(GROUP));
+        when(groupMapper.mapListToGroupResponse(List.of(GROUP))).thenReturn(List.of(new GroupsResponse.GroupResponse(GROUP)));
 
         mvc.perform(get(ME_EP)
+                        .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
+                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.groupResponse[0].uuid", notNullValue()))
+                .andExpect(jsonPath("$.groupResponse[0].name", is(GROUP_NAME)))
+                .andExpect(jsonPath("$.groupResponse[0].createdAt", notNullValue()))
+                .andExpect(jsonPath("$.groupResponse[0].expirationAt", is(EXPIRATION)))
+                .andExpect(jsonPath("$.groupResponse[0].closureAt", is(CLOSURE_AT)))
+                .andExpect(jsonPath("$.groupResponse[0].code", is(CODE)));
+    }
+
+    @Test
+    @SneakyThrows
+    void testGetOffer_shouldReturn200() {
+        when(groupService.retrieveGroupsByUuid(any())).thenReturn(List.of(GROUP));
+        when(groupMapper.mapListToGroupResponse(List.of(GROUP))).thenReturn(List.of(new GroupsResponse.GroupResponse(GROUP)));
+
+        mvc.perform(get(DEFAULT_EP + "?groupUuids=783fb3e5-5828-4d19-801b-0cd3762579e0")
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
                         .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
