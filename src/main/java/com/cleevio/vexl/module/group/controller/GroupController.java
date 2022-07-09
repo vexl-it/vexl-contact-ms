@@ -5,8 +5,10 @@ import com.cleevio.vexl.module.group.dto.mapper.GroupMapper;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.JoinGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.LeaveGroupRequest;
+import com.cleevio.vexl.module.group.dto.request.NewMemberRequest;
 import com.cleevio.vexl.module.group.dto.response.GroupCreatedResponse;
 import com.cleevio.vexl.module.group.dto.response.GroupsResponse;
+import com.cleevio.vexl.module.group.dto.response.NewMembersResponse;
 import com.cleevio.vexl.module.group.service.GroupService;
 import com.cleevio.vexl.module.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
@@ -70,6 +72,28 @@ public class GroupController {
     void joinGroup(@Parameter(hidden = true) @AuthenticationPrincipal User user,
                    @Valid @RequestBody JoinGroupRequest request) {
         this.groupService.joinGroup(user, request);
+    }
+
+    @PostMapping("/members/new")
+    @SecurityRequirements({
+            @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
+            @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
+            @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
+    })
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "Get new members.",
+            description = """
+                    EP returns new members. It is a POST because of needed payload.
+                    You should have public keys of users you already know. Send them within this request.
+                    BE will return diff - that means BE will return public keys you do not have.
+                    """
+    )
+    NewMembersResponse retrieveNewMembers(@Parameter(hidden = true) @AuthenticationPrincipal User user,
+                                          @Valid @RequestBody NewMemberRequest request) {
+        List<String> publicKeys = request.publicKeys();
+        publicKeys.add(user.getPublicKey());
+        return new NewMembersResponse(this.groupService.retrieveNewMembers(request.groupUuids(), publicKeys));
     }
 
     @GetMapping("/me")

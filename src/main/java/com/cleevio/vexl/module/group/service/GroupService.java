@@ -91,7 +91,19 @@ public class GroupService {
     }
 
     @Transactional(readOnly = true)
-    public List<Group> retrieveGroupsByUuid(List<String> groupUuid) {
+    public List<Group> retrieveGroupsByUuid(final List<String> groupUuid) {
         return this.groupRepository.findGroupsByUuids(groupUuid);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, List<String>> retrieveNewMembers(final List<String> groupUuids, final List<String> publicKeys) {
+        Map<String, List<String>> newMembers = new HashMap<>();
+
+        groupUuids.forEach(uuid -> {
+            final String uuidHash = CLibrary.CRYPTO_LIB.sha256_hash(uuid, uuid.length());
+            newMembers.put(uuid, this.contactService.retrieveNewGroupMembers(uuidHash, publicKeys));
+        });
+
+        return newMembers;
     }
 }

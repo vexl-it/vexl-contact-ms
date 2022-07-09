@@ -6,6 +6,7 @@ import com.cleevio.vexl.module.group.dto.mapper.GroupMapper;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.JoinGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.LeaveGroupRequest;
+import com.cleevio.vexl.module.group.dto.request.NewMemberRequest;
 import com.cleevio.vexl.module.group.dto.response.GroupsResponse;
 import com.cleevio.vexl.module.group.entity.Group;
 import com.cleevio.vexl.module.group.service.GroupService;
@@ -20,6 +21,7 @@ import org.springframework.http.MediaType;
 
 
 import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
@@ -43,6 +45,7 @@ class GroupControllerTest extends BaseControllerTest {
     private static final String JOIN_EP = DEFAULT_EP + "/join";
     private static final String ME_EP = DEFAULT_EP + "/me";
     private static final String LEAVE_EP = DEFAULT_EP + "/leave";
+    private static final String NEW_MEMBERS_EP = DEFAULT_EP + "/members/new";
     private static final String GROUP_NAME = "dummy_name";
     private static final String GROUP_LOGO = "dummy_logo";
     private static final String GROUP_UUID = "dummy_group_uuid";
@@ -54,6 +57,7 @@ class GroupControllerTest extends BaseControllerTest {
     private static final CreateGroupRequest CREATE_GROUP_REQUEST_INVALID;
     private static final JoinGroupRequest JOIN_GROUP_REQUEST;
     private static final LeaveGroupRequest LEAVE_GROUP_REQUEST;
+    private static final NewMemberRequest NEW_MEMBER_REQUEST;
 
     @MockBean
     private GroupService groupService;
@@ -82,6 +86,11 @@ class GroupControllerTest extends BaseControllerTest {
 
         LEAVE_GROUP_REQUEST = new LeaveGroupRequest(
                 GROUP_UUID
+        );
+
+        NEW_MEMBER_REQUEST = new NewMemberRequest(
+                List.of(GROUP_UUID),
+                List.of(PUBLIC_KEY)
         );
 
         USER = new User();
@@ -140,6 +149,20 @@ class GroupControllerTest extends BaseControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(JOIN_GROUP_REQUEST)))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @SneakyThrows
+    void testNewMembers_validInput_shouldReturn200() {
+        when(this.groupService.retrieveNewMembers(List.of(GROUP_UUID), List.of(PUBLIC_KEY))).thenReturn(Map.of(GROUP_UUID, List.of(PUBLIC_KEY)));
+
+        mvc.perform(post(NEW_MEMBERS_EP)
+                        .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
+                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(NEW_MEMBER_REQUEST)))
+                .andExpect(status().isOk());
     }
 
     @Test

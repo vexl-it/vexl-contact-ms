@@ -105,4 +105,9 @@ public class ContactService {
     public List<String> getGroups(String hash, Set<String> groupUuidHashes) {
         return this.contactRepository.getGroups(hash, groupUuidHashes);
     }
+
+    @Transactional(readOnly = true)
+    public List<String> retrieveNewGroupMembers(final String groupUuidHash, final List<String> publicKeys) {
+        return this.contactRepository.retrieveNewGroupMembers(groupUuidHash, publicKeys);
+    }
 }
