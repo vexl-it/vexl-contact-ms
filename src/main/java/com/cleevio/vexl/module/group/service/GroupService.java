@@ -60,13 +60,10 @@ public class GroupService {
                 GroupAdvisoryLock.JOIN_GROUP.name()
         );
 
-        if (!this.groupRepository.existsByUuid(request.groupUuid())) {
-            log.warn("Group [{}] was not found.",
-                    request.groupUuid());
-            throw new GroupNotFoundException();
-        }
+        final String groupUuid = this.groupRepository.findGroupUuidByCode(request.code())
+                .orElseThrow(GroupNotFoundException::new);
 
-        applicationEventPublisher.publishEvent(new ImportGroupEvent(request.groupUuid(), user));
+        applicationEventPublisher.publishEvent(new ImportGroupEvent(groupUuid, user));
     }
 
     @Transactional(readOnly = true)

@@ -81,7 +81,7 @@ class GroupControllerTest extends BaseControllerTest {
         );
 
         JOIN_GROUP_REQUEST = new JoinGroupRequest(
-                GROUP_UUID
+                CODE
         );
 
         LEAVE_GROUP_REQUEST = new LeaveGroupRequest(

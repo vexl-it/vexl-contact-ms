@@ -17,7 +17,7 @@ public final class CreateRequestTestUtil {
         );
     }
 
-    public static JoinGroupRequest createJoinGroupRequest(String groupUuid) {
+    public static JoinGroupRequest createJoinGroupRequest(int groupUuid) {
         return new JoinGroupRequest(
                 groupUuid
         );

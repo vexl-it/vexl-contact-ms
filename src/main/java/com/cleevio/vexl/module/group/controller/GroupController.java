@@ -67,7 +67,7 @@ public class GroupController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(
             summary = "Join to a group",
-            description = "For joining to a group, you need UUID of a group."
+            description = "For joining to a group, you need QR code of a group."
     )
     void joinGroup(@Parameter(hidden = true) @AuthenticationPrincipal User user,
                    @Valid @RequestBody JoinGroupRequest request) {

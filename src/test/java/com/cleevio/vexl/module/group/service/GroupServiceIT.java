@@ -62,7 +62,7 @@ class GroupServiceIT {
         assertThat(groupsBefore).hasSize(0);
 
         final Group group = this.groupService.createGroup(user2, CreateRequestTestUtil.createCreateGroupRequest());
-        this.groupService.joinGroup(user, CreateRequestTestUtil.createJoinGroupRequest(group.getUuid()));
+        this.groupService.joinGroup(user, CreateRequestTestUtil.createJoinGroupRequest(group.getCode()));
 
         final List<Group> groups = this.groupService.retrieveMyGroups(user);
 
@@ -82,11 +82,11 @@ class GroupServiceIT {
     @Test
     void testJoinGroup_shouldReturnGroupNotFoundException() {
         final User user = userService.createUser(PUBLIC_KEY_USER_1, HASH_USER_1);
-        final var groupUuid = "dummy_uuid";
+        final var qrCode = 111256;
 
         assertThrows(
                 GroupNotFoundException.class,
-                () -> this.groupService.joinGroup(user, CreateRequestTestUtil.createJoinGroupRequest(groupUuid))
+                () -> this.groupService.joinGroup(user, CreateRequestTestUtil.createJoinGroupRequest(qrCode))
         );
     }
 
@@ -99,10 +99,10 @@ class GroupServiceIT {
         final Group group3 = this.groupService.createGroup(user, CreateRequestTestUtil.createCreateGroupRequest());
         final Group group4 = this.groupService.createGroup(user, CreateRequestTestUtil.createCreateGroupRequest());
 
-        this.groupService.joinGroup(user2, CreateRequestTestUtil.createJoinGroupRequest(group.getUuid()));
-        this.groupService.joinGroup(user, CreateRequestTestUtil.createJoinGroupRequest(group2.getUuid()));
-        this.groupService.joinGroup(user, CreateRequestTestUtil.createJoinGroupRequest(group3.getUuid()));
-        this.groupService.joinGroup(user2, CreateRequestTestUtil.createJoinGroupRequest(group4.getUuid()));
+        this.groupService.joinGroup(user2, CreateRequestTestUtil.createJoinGroupRequest(group.getCode()));
+        this.groupService.joinGroup(user, CreateRequestTestUtil.createJoinGroupRequest(group2.getCode()));
+        this.groupService.joinGroup(user, CreateRequestTestUtil.createJoinGroupRequest(group3.getCode()));
+        this.groupService.joinGroup(user2, CreateRequestTestUtil.createJoinGroupRequest(group4.getCode()));
 
         // If user creates a group, he is automatically connected to it.
 
@@ -166,7 +166,7 @@ class GroupServiceIT {
         assertThat(emptyResult.get(group.getUuid()).size()).isEqualTo(0);
 
         //a new user join group
-        this.groupService.joinGroup(user2, CreateRequestTestUtil.createJoinGroupRequest(group.getUuid()));
+        this.groupService.joinGroup(user2, CreateRequestTestUtil.createJoinGroupRequest(group.getCode()));
 
         final Map<String, List<String>> oneResult = this.groupService.retrieveNewMembers(List.of(group.getUuid()), List.of(user1.getPublicKey()));
         assertThat(oneResult.values().size()).isEqualTo(1);
@@ -188,12 +188,12 @@ class GroupServiceIT {
         final Group group4 = this.groupService.createGroup(user1, CreateRequestTestUtil.createCreateGroupRequest());
         final List<String> groupUuids = List.of(group1.getUuid(), group2.getUuid(), group3.getUuid(), group4.getUuid());
 
-        this.groupService.joinGroup(user2, CreateRequestTestUtil.createJoinGroupRequest(group1.getUuid()));
-        this.groupService.joinGroup(user2, CreateRequestTestUtil.createJoinGroupRequest(group2.getUuid()));
-        this.groupService.joinGroup(user2, CreateRequestTestUtil.createJoinGroupRequest(group3.getUuid()));
+        this.groupService.joinGroup(user2, CreateRequestTestUtil.createJoinGroupRequest(group1.getCode()));
+        this.groupService.joinGroup(user2, CreateRequestTestUtil.createJoinGroupRequest(group2.getCode()));
+        this.groupService.joinGroup(user2, CreateRequestTestUtil.createJoinGroupRequest(group3.getCode()));
 
-        this.groupService.joinGroup(user3, CreateRequestTestUtil.createJoinGroupRequest(group3.getUuid()));
-        this.groupService.joinGroup(user3, CreateRequestTestUtil.createJoinGroupRequest(group4.getUuid()));
+        this.groupService.joinGroup(user3, CreateRequestTestUtil.createJoinGroupRequest(group3.getCode()));
+        this.groupService.joinGroup(user3, CreateRequestTestUtil.createJoinGroupRequest(group4.getCode()));
 
         //everyone is unknown
         final Map<String, List<String>> allUsersResult = this.groupService.retrieveNewMembers(groupUuids, List.of(PUBLIC_KEY_USER_1));
