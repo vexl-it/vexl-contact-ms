@@ -241,4 +241,20 @@ class GroupServiceIT {
         assertThat(allIsKnown.get(group3.getUuid()).size()).isEqualTo(0);
         assertThat(allIsKnown.get(group4.getUuid()).size()).isEqualTo(0);
     }
+
+    @Test
+    void testFindExpiredGroups_shouldBeFound() {
+        final User user = userService.createUser(PUBLIC_KEY_USER_1, HASH_USER_1);
+        final Group expiredGroup1 = this.groupService.createGroup(user, CreateRequestTestUtil.createCreateGroupRequestExpired());
+        final Group nonExpiredGroup1 = this.groupService.createGroup(user, CreateRequestTestUtil.createCreateGroupRequest());
+        final Group nonExpiredGroup2 = this.groupService.createGroup(user, CreateRequestTestUtil.createCreateGroupRequest());
+        final Group expiredGroup2 = this.groupService.createGroup(user, CreateRequestTestUtil.createCreateGroupRequestExpired());
+        final List<String> groupUuids = List.of(expiredGroup1.getUuid(), nonExpiredGroup1.getUuid(), expiredGroup2.getUuid(), nonExpiredGroup2.getUuid());
+
+        final List<Group> expiredGroups = this.groupService.retrieveExpiredGroups(groupUuids);
+
+        assertThat(expiredGroups).hasSize(2);
+        assertThat(expiredGroups.get(0).getUuid()).doesNotContain(nonExpiredGroup1.getUuid(), nonExpiredGroup2.getUuid());
+        assertThat(expiredGroups.get(1).getUuid()).doesNotContain(nonExpiredGroup1.getUuid(), nonExpiredGroup2.getUuid());
+    }
 }

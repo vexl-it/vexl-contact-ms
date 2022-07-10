@@ -34,7 +34,7 @@ import java.util.List;
 
 @Tag(name = "Group")
 @RestController
-@RequestMapping(value = "/api/v1/group")
+@RequestMapping(value = "/api/v1/groups")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ROLE_USER')")
 public class GroupController {
@@ -130,6 +130,25 @@ public class GroupController {
         return new GroupsResponse(
                 groupMapper.mapListToGroupResponse(
                         this.groupService.retrieveGroupsByUuid(groupUuids)
+                )
+        );
+    }
+
+    @GetMapping("/expired")
+    @SecurityRequirements({
+            @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
+            @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
+            @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
+    })
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "Get expired groups.",
+            description = "Put group UUIDs you know about into request params and EP will return which of them are expired."
+    )
+    GroupsResponse retrieveExpiredGroups(@RequestParam List<String> groupUuids) {
+        return new GroupsResponse(
+                groupMapper.mapListToGroupResponse(
+                        this.groupService.retrieveExpiredGroups(groupUuids)
                 )
         );
     }

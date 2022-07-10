@@ -38,7 +38,7 @@ public class GroupService {
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
-    public Group createGroup(User user, CreateGroupRequest request) {
+    public Group createGroup(final User user, final CreateGroupRequest request) {
         advisoryLockService.lock(
                 ModuleLockNamespace.GROUP,
                 GroupAdvisoryLock.CREATE_GROUP.name()
@@ -54,7 +54,7 @@ public class GroupService {
     }
 
     @Transactional
-    public void joinGroup(User user, JoinGroupRequest request) {
+    public void joinGroup(final User user, final JoinGroupRequest request) {
         advisoryLockService.lock(
                 ModuleLockNamespace.GROUP,
                 GroupAdvisoryLock.JOIN_GROUP.name()
@@ -83,7 +83,7 @@ public class GroupService {
         return this.groupRepository.findGroupsByUuids(userGroupUuid);
     }
 
-    public void leaveGroup(User user, LeaveGroupRequest request) {
+    public void leaveGroup(final User user, final LeaveGroupRequest request) {
         applicationEventPublisher.publishEvent(new LeaveGroupEvent(user.getHash(), request.groupUuid()));
     }
 
@@ -102,5 +102,10 @@ public class GroupService {
         });
 
         return newMembers;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Group> retrieveExpiredGroups(final List<String> groupUuids) {
+        return this.groupRepository.retrieveExpiredGroups(groupUuids);
     }
 }

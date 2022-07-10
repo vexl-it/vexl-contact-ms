@@ -12,6 +12,15 @@ public final class CreateRequestTestUtil {
         return new CreateGroupRequest(
                 "dummy_name",
                 "dummy_logo",
+                9223372036854777L,
+                654654648
+        );
+    }
+
+    public static CreateGroupRequest createCreateGroupRequestExpired() {
+        return new CreateGroupRequest(
+                "dummy_name",
+                "dummy_logo",
                 65465465,
                 654654648
         );

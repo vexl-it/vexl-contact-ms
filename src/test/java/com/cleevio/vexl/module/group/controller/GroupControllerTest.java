@@ -41,11 +41,12 @@ class GroupControllerTest extends BaseControllerTest {
     private static final User USER;
     private static final Group GROUP;
 
-    private static final String DEFAULT_EP = "/api/v1/group";
+    private static final String DEFAULT_EP = "/api/v1/groups";
     private static final String JOIN_EP = DEFAULT_EP + "/join";
     private static final String ME_EP = DEFAULT_EP + "/me";
     private static final String LEAVE_EP = DEFAULT_EP + "/leave";
     private static final String NEW_MEMBERS_EP = DEFAULT_EP + "/members/new";
+    private static final String EXPIRED_EP = DEFAULT_EP + "/expired";
     private static final String GROUP_NAME = "dummy_name";
     private static final String GROUP_LOGO = "dummy_logo";
     private static final String GROUP_UUID = "dummy_group_uuid";
@@ -187,11 +188,31 @@ class GroupControllerTest extends BaseControllerTest {
 
     @Test
     @SneakyThrows
-    void testGetOffer_shouldReturn200() {
+    void testGetGroups_shouldReturn200() {
         when(groupService.retrieveGroupsByUuid(any())).thenReturn(List.of(GROUP));
         when(groupMapper.mapListToGroupResponse(List.of(GROUP))).thenReturn(List.of(new GroupsResponse.GroupResponse(GROUP)));
 
         mvc.perform(get(DEFAULT_EP + "?groupUuids=783fb3e5-5828-4d19-801b-0cd3762579e0")
+                        .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
+                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.groupResponse[0].uuid", notNullValue()))
+                .andExpect(jsonPath("$.groupResponse[0].name", is(GROUP_NAME)))
+                .andExpect(jsonPath("$.groupResponse[0].createdAt", notNullValue()))
+                .andExpect(jsonPath("$.groupResponse[0].expirationAt", is(EXPIRATION)))
+                .andExpect(jsonPath("$.groupResponse[0].closureAt", is(CLOSURE_AT)))
+                .andExpect(jsonPath("$.groupResponse[0].code", is(CODE)));
+    }
+
+    @Test
+    @SneakyThrows
+    void testGetExpiredGroups_shouldReturn200() {
+        when(groupService.retrieveExpiredGroups(any())).thenReturn(List.of(GROUP));
+        when(groupMapper.mapListToGroupResponse(List.of(GROUP))).thenReturn(List.of(new GroupsResponse.GroupResponse(GROUP)));
+
+        mvc.perform(get(EXPIRED_EP + "?groupUuids=783fb3e5-5828-4d19-801b-0cd3762579e0")
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
                         .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
