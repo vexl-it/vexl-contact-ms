@@ -2,7 +2,7 @@ package com.cleevio.vexl.module.user.service;
 
 import com.cleevio.vexl.module.contact.service.ContactService;
 import com.cleevio.vexl.module.user.entity.User;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,7 +14,7 @@ import java.util.Optional;
  */
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
