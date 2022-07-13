@@ -5,7 +5,7 @@ import com.cleevio.vexl.module.contact.dto.response.ImportResponse;
 import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.module.contact.entity.UserContact;
 import com.cleevio.vexl.module.contact.exception.ContactsMissingException;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,16 +19,16 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ImportService {
 
     private final ContactRepository contactRepository;
 
     @Transactional(rollbackFor = Exception.class)
-    public ImportResponse importContacts(User user, ImportRequest importRequest)
+    public ImportResponse importContacts(final User user, final ImportRequest importRequest)
             throws ContactsMissingException {
 
-        int importSize = importRequest.contacts().size();
+        final int importSize = importRequest.contacts().size();
 
         log.info("Importing new {} contacts for {}",
                 importRequest.contacts().size(),
@@ -38,7 +38,7 @@ public class ImportService {
             throw new ContactsMissingException();
         }
 
-        List<String> contacts = importRequest.contacts()
+        final List<String> contacts = importRequest.contacts()
                 .stream()
                 .map(String::trim)
                 .toList();
@@ -46,18 +46,18 @@ public class ImportService {
         AtomicInteger imported = new AtomicInteger();
 
         contacts
-                .forEach(p -> {
-                    if (!this.contactRepository.existsByHashFromAndHashTo(user.getHash(), p)) {
-                        UserContact contact = UserContact.builder()
+                .forEach(c -> {
+                    if (!this.contactRepository.existsByHashFromAndHashTo(user.getHash(), c)) {
+                        final UserContact contact = UserContact.builder()
                                 .hashFrom(user.getHash())
-                                .hashTo(p)
+                                .hashTo(c)
                                 .build();
                         this.contactRepository.save(contact);
                         imported.getAndIncrement();
                     }
                 });
 
-        String message = String.format("Imported %s / %s contacts.",
+        final String message = String.format("Imported %s / %s contacts.",
                 imported.get(),
                 importSize);
 

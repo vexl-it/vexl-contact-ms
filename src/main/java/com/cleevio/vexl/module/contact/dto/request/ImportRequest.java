@@ -12,5 +12,4 @@ public record ImportRequest(
         List<String> contacts
 
 ) {
-
 }

@@ -21,25 +21,26 @@ public class UserService {
     private final ContactService contactService;
 
     @Transactional(rollbackFor = Exception.class)
-    public User createUser(String publicKey, String hash) {
+    public User createUser(final String publicKey, final String hash) {
 
-        Optional<User> userByHash = this.userRepository.findByHash(hash);
+        final Optional<User> userByHash = this.userRepository.findByHash(hash);
         if (userByHash.isPresent()) {
-            log.info("FacebookId or phone number is already in use by another user. Hash string: {}. Removing this user and create new one.",
+            log.info("FacebookId or phone number is already in use by another user. Hash string: [{}]. Removing this user and create new one.",
                     hash);
             this.removeUserAndContacts(userByHash.get());
         }
 
-        log.info("Creating an user {} ",
+        log.info("Creating an user [{}] ",
                 publicKey);
 
-        User savedUser = this.userRepository.save(User.builder()
-                .publicKey(publicKey)
-                .hash(hash)
-                .build()
+        final User savedUser = this.userRepository.save(
+                User.builder()
+                        .publicKey(publicKey)
+                        .hash(hash)
+                        .build()
         );
 
-        log.info("User id - {} created",
+        log.info("User id - [{}] created",
                 savedUser.getId());
 
         return savedUser;

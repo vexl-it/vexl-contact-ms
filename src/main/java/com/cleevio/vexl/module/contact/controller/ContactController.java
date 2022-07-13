@@ -28,6 +28,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -38,6 +39,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -85,6 +87,7 @@ public class ContactController {
             @ApiResponse(responseCode = "200"),
             @ApiResponse(responseCode = "400 (101105)", description = "Invalid connection level. Options - first, second, all. No case sensitive.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
+    @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get all public keys of my contacts.")
     UserContactsResponse getContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user,
                                      @RequestParam(required = false, defaultValue = "0") int page,
@@ -111,6 +114,7 @@ public class ContactController {
             @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
     })
     @ApiResponse(responseCode = "200")
+    @ResponseStatus(HttpStatus.OK)
     @Operation(
             summary = "Get count of contacts by hash.",
             description = "If you send facebookId hash, you will get count of facebook connections. If you send phoneHash, you will get count of phone connections."
@@ -126,6 +130,7 @@ public class ContactController {
             @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
     })
     @ApiResponse(responseCode = "204")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Remove contacts by public key.")
     ResponseEntity<Void> deleteContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user,
                                         @Valid @RequestBody DeleteContactsRequest deleteContactsRequest) {
@@ -140,6 +145,7 @@ public class ContactController {
             @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
     })
     @ApiResponse(responseCode = "200")
+    @ResponseStatus(HttpStatus.OK)
     @Operation(
             summary = "Retrieve phone contacts which have not been imported yet",
             description = "You have to send all user's phone contacts. Endpoint then will return only contacts, which are not imported yet."
@@ -156,6 +162,7 @@ public class ContactController {
             @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
     })
     @ApiResponse(responseCode = "200")
+    @ResponseStatus(HttpStatus.OK)
     @Operation(
             summary = "Retrieve common connections.",
             description = "Send public keys and common contacts will be returned for every sent public key."

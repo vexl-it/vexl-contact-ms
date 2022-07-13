@@ -16,20 +16,22 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Facebook")
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/facebook")
-@AllArgsConstructor
+@RequiredArgsConstructor
 @PreAuthorize("hasRole('ROLE_USER')")
 public class FacebookController {
 
@@ -46,6 +48,7 @@ public class FacebookController {
             @ApiResponse(responseCode = "400 (101102)", description = "Bad request to Facebook", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "400 (101103)", description = "Invalid Facebook token", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
+    @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get Facebook contacts who use the app.",
             description = "We return the current user, in the friends' field we return his friends who use the application " +
                     "and in the friends.friends field we return mutual friends who use the application. " +
@@ -68,6 +71,7 @@ public class FacebookController {
             @ApiResponse(responseCode = "400 (101103)", description = "Invalid Facebook token", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 
     })
+    @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Returns contacts from Facebook which have not been imported yet.")
     FacebookContactResponse getNewFacebookContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user,
                                                    @PathVariable String facebookId,

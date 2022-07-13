@@ -117,7 +117,7 @@ class GroupControllerTest extends BaseControllerTest {
 
         mvc.perform(post(DEFAULT_EP)
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
-                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_HASH, HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(CREATE_GROUP_REQUEST)))
@@ -133,7 +133,7 @@ class GroupControllerTest extends BaseControllerTest {
     void testCreate_invalidInput_shouldReturn400() {
         mvc.perform(post(DEFAULT_EP)
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
-                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_HASH, HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(CREATE_GROUP_REQUEST_INVALID)))
@@ -145,7 +145,7 @@ class GroupControllerTest extends BaseControllerTest {
     void testJoin_validInput_shouldReturn204() {
         mvc.perform(post(JOIN_EP)
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
-                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_HASH, HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(JOIN_GROUP_REQUEST)))
@@ -159,7 +159,7 @@ class GroupControllerTest extends BaseControllerTest {
 
         mvc.perform(post(NEW_MEMBERS_EP)
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
-                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_HASH, HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(NEW_MEMBER_REQUEST)))
@@ -174,7 +174,7 @@ class GroupControllerTest extends BaseControllerTest {
 
         mvc.perform(get(ME_EP)
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
-                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_HASH, HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -194,7 +194,7 @@ class GroupControllerTest extends BaseControllerTest {
 
         mvc.perform(get(DEFAULT_EP + "?groupUuids=783fb3e5-5828-4d19-801b-0cd3762579e0")
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
-                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_HASH, HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -214,7 +214,7 @@ class GroupControllerTest extends BaseControllerTest {
 
         mvc.perform(get(EXPIRED_EP + "?groupUuids=783fb3e5-5828-4d19-801b-0cd3762579e0")
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
-                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_HASH, HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -231,7 +231,7 @@ class GroupControllerTest extends BaseControllerTest {
     void testLeaveGroup_shouldReturn204() {
         mvc.perform(put(LEAVE_EP)
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
-                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_HASH, HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(LEAVE_GROUP_REQUEST)))

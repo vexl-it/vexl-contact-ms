@@ -5,7 +5,7 @@ import com.cleevio.vexl.module.contact.dto.request.NewContactsRequest;
 import com.cleevio.vexl.module.contact.dto.response.CommonContactsResponse;
 import com.cleevio.vexl.module.contact.enums.ConnectionLevel;
 import com.cleevio.vexl.module.user.entity.User;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ContactService {
 
     private final ContactRepository contactRepository;
@@ -38,7 +38,7 @@ public class ContactService {
      * @return
      */
     @Transactional(readOnly = true)
-    public Page<String> retrieveContactsByUser(User user, int page, int limit, ConnectionLevel level) {
+    public Page<String> retrieveContactsByUser(final User user, final int page, final int limit, final ConnectionLevel level) {
         log.info("Retrieving contacts for user {}",
                 user.getId());
 
@@ -56,7 +56,7 @@ public class ContactService {
         log.info("Deleting contacts for user {}",
                 user.getId());
 
-        List<String> contactsToDelete = deleteContactsRequest.contactsToDelete().stream()
+        final List<String> contactsToDelete = deleteContactsRequest.contactsToDelete().stream()
                 .map(String::trim)
                 .collect(Collectors.toList());
 
@@ -85,7 +85,7 @@ public class ContactService {
     }
 
     @Transactional(readOnly = true)
-    public int getContactsCount(String hash) {
+    public int getContactsCount(final String hash) {
         return this.contactRepository.countContactsByHash(hash);
     }
 
@@ -95,7 +95,7 @@ public class ContactService {
         publicKeys.stream()
                 .map(String::trim)
                 .forEach(pk -> {
-                    List<String> commonContacts = this.contactRepository.retrieveCommonContacts(ownerPublicKey, pk);
+                    final List<String> commonContacts = this.contactRepository.retrieveCommonContacts(ownerPublicKey, pk);
                     contacts.add(new CommonContactsResponse.Contacts(pk, new CommonContactsResponse.Contacts.CommonContacts(commonContacts)));
                 });
         return new CommonContactsResponse(contacts);

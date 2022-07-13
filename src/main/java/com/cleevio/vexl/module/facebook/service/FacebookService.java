@@ -11,7 +11,7 @@ import com.restfb.FacebookClient;
 import com.restfb.Parameter;
 import com.restfb.Version;
 import com.restfb.exception.FacebookOAuthException;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +28,7 @@ import java.util.List;
  */
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class FacebookService {
 
     private final ContactService contactService;
@@ -40,8 +40,8 @@ public class FacebookService {
                 facebookId);
 
         try {
-            FacebookClient client = new DefaultFacebookClient(accessToken, Version.LATEST);
-            FacebookUser facebookUser = client.fetchObject(facebookId, FacebookUser.class,
+            final FacebookClient client = new DefaultFacebookClient(accessToken, Version.LATEST);
+            final FacebookUser facebookUser = client.fetchObject(facebookId, FacebookUser.class,
                     Parameter.with("fields", "id,name,picture,friends{id,name,picture,friends}")
             );
             log.info("Successfully fetched {} friends.",
@@ -66,7 +66,7 @@ public class FacebookService {
 
         List<FacebookUser> newConnections = new ArrayList<>();
 
-        FacebookUser facebookUser = retrieveContacts(facebookId, accessToken);
+        final FacebookUser facebookUser = retrieveContacts(facebookId, accessToken);
 
         facebookUser.getFriends().stream()
                 .map(FacebookUser::getId)

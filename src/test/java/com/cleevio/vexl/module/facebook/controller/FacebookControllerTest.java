@@ -2,56 +2,69 @@ package com.cleevio.vexl.module.facebook.controller;
 
 import com.cleevio.vexl.common.BaseControllerTest;
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
+import com.cleevio.vexl.module.facebook.dto.FacebookUser;
 import com.cleevio.vexl.module.facebook.dto.response.FacebookContactResponse;
-import com.cleevio.vexl.module.user.entity.User;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-
-import java.util.List;
-import java.util.Optional;
 
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(FacebookController.class)
-public class GetFacebookContactsTest extends BaseControllerTest {
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class FacebookControllerTest extends BaseControllerTest {
 
     private static final String BASE_URL = "/api/v1/facebook/";
+    private static final String NOT_IMPORTED = "/not-imported";
     private static final String TOKEN_URL = "/token/";
-    private static final String FB_ID = "109753111611432";
-    private static final String TOKEN = "EAALQyH4cEwgBANa2kAuKGf50XmV02pKleLUnKdwadHYujRNmN2hr7I11JPR5HZCgxTfzxVVHLjoRZAhDK0cvXYDEkVYZAeGRZBz50A2VKeHgYSYhVIlxTF7tDp0hDeIjToJ5VSZA71VSrtxZBcKnnPVtaT0mofr0j2byi9PEhw7T5rBl4TmDOmyLRCje9PGNTkbrVXELrFBAZDZD";
+    private static final String FB_ID = "dummy_fb_id";
+    private static final String TOKEN = "dummy_fb_id";
+
+    private static final FacebookContactResponse FACEBOOK_CONTACT_RESPONSE;
+    private static final FacebookUser FACEBOOK_USER;
+    private static final String FACEBOOK_USER_ID = "dummy_id";
+    private static final String FACEBOOK_USER_NAME = "Davidoff Tilseroz";
 
     @BeforeEach
     @SneakyThrows
     public void setup() {
         super.setup();
+    }
 
-        Mockito.when(facebookService.retrieveContacts(any(String.class), any(String.class))).thenReturn(getFacebookUser());
-        Mockito.when(facebookService.retrieveFacebookNotImportedConnection(any(User.class), any(String.class), any(String.class))).thenReturn(new FacebookContactResponse(getFacebookUser(), List.of(getFacebookUser())));
-        Mockito.when(userService.findByPublicKeyAndHash(any(String.class), any(String.class))).thenReturn(Optional.of(getUser()));
+    static {
+        FACEBOOK_USER = new FacebookUser();
+        FACEBOOK_USER.setId(FACEBOOK_USER_ID);
+        FACEBOOK_USER.setName(FACEBOOK_USER_NAME);
+
+        FACEBOOK_CONTACT_RESPONSE = new FacebookContactResponse(FACEBOOK_USER);
     }
 
     @Test
-    public void registerNewUser() throws Exception {
+    public void testGetFacebookFriends_validInput_shouldReturn200() throws Exception {
+        when(facebookService.retrieveContacts(any(String.class), any(String.class))).thenReturn(FACEBOOK_USER);
+
         mvc.perform(get(BASE_URL + FB_ID + TOKEN_URL + TOKEN)
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
-                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_HASH, HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.facebookUser", notNullValue()));
     }
 
     @Test
-    public void getNotImported() throws Exception {
-        mvc.perform(get(BASE_URL + FB_ID + TOKEN_URL + TOKEN)
+    public void testGetNotImported_validInput_shouldReturn200() throws Exception {
+        when(facebookService.retrieveFacebookNotImportedConnection(any(), any(), any())).thenReturn(FACEBOOK_CONTACT_RESPONSE);
+
+        mvc.perform(get(BASE_URL + FB_ID + TOKEN_URL + TOKEN + NOT_IMPORTED)
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
-                        .header(SecurityFilter.HEADER_HASH, PHONE_HASH)
+                        .header(SecurityFilter.HEADER_HASH, HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.facebookUser", notNullValue()));
