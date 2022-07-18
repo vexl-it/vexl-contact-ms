@@ -155,7 +155,7 @@ class GroupControllerTest extends BaseControllerTest {
     @Test
     @SneakyThrows
     void testNewMembers_validInput_shouldReturn200() {
-        when(this.groupService.retrieveNewMembers(List.of(GROUP_UUID), List.of(PUBLIC_KEY))).thenReturn(Map.of(GROUP_UUID, List.of(PUBLIC_KEY)));
+        when(this.groupService.retrieveNewMembers(any(), any())).thenReturn(Map.of(GROUP_UUID, List.of(PUBLIC_KEY)));
 
         mvc.perform(post(NEW_MEMBERS_EP)
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
@@ -163,7 +163,9 @@ class GroupControllerTest extends BaseControllerTest {
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(NEW_MEMBER_REQUEST)))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.newMembers[0].groupUuid", is(GROUP_UUID)))
+                .andExpect(jsonPath("$.newMembers[0].publicKeys", is(List.of(PUBLIC_KEY))));
     }
 
     @Test
