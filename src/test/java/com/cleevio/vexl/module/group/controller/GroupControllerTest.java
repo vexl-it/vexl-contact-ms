@@ -59,6 +59,7 @@ class GroupControllerTest extends BaseControllerTest {
     private static final JoinGroupRequest JOIN_GROUP_REQUEST;
     private static final LeaveGroupRequest LEAVE_GROUP_REQUEST;
     private static final NewMemberRequest NEW_MEMBER_REQUEST;
+    private static final NewMemberRequest.GroupRequest GROUP_REQUEST;
 
     @MockBean
     private GroupService groupService;
@@ -89,9 +90,13 @@ class GroupControllerTest extends BaseControllerTest {
                 GROUP_UUID
         );
 
-        NEW_MEMBER_REQUEST = new NewMemberRequest(
-                List.of(GROUP_UUID),
+        GROUP_REQUEST = new NewMemberRequest.GroupRequest(
+                GROUP_UUID,
                 List.of(PUBLIC_KEY)
+        );
+
+        NEW_MEMBER_REQUEST = new NewMemberRequest(
+                List.of(GROUP_REQUEST)
         );
 
         USER = new User();

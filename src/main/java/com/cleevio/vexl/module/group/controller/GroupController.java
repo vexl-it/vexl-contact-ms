@@ -91,9 +91,7 @@ public class GroupController {
     )
     NewMembersResponse retrieveNewMembers(@Parameter(hidden = true) @AuthenticationPrincipal User user,
                                           @Valid @RequestBody NewMemberRequest request) {
-        List<String> publicKeys = request.publicKeys();
-        publicKeys.add(user.getPublicKey());
-        return new NewMembersResponse(this.groupService.retrieveNewMembers(request.groupUuids(), publicKeys));
+        return new NewMembersResponse(this.groupService.retrieveNewMembers(request.groups(), user));
     }
 
     @GetMapping("/me")

@@ -8,6 +8,7 @@ import com.cleevio.vexl.module.group.dto.mapper.GroupMapper;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.JoinGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.LeaveGroupRequest;
+import com.cleevio.vexl.module.group.dto.request.NewMemberRequest;
 import com.cleevio.vexl.module.group.entity.Group;
 import com.cleevio.vexl.module.group.enums.GroupAdvisoryLock;
 import com.cleevio.vexl.module.group.event.ImportGroupEvent;
@@ -93,12 +94,16 @@ public class GroupService {
     }
 
     @Transactional(readOnly = true)
-    public Map<String, List<String>> retrieveNewMembers(final List<String> groupUuids, final List<String> publicKeys) {
-        Map<String, List<String>> newMembers = new HashMap<>();
+    public Map<String, List<String>> retrieveNewMembers(final List<NewMemberRequest.GroupRequest> groups, final User user) {
+        final Map<String, List<String>> newMembers = new HashMap<>();
+        final List<String> userPublicKey = List.of(user.getPublicKey());
 
-        groupUuids.forEach(uuid -> {
-            final String uuidHash = CLibrary.CRYPTO_LIB.sha256_hash(uuid, uuid.length());
-            newMembers.put(uuid, this.contactService.retrieveNewGroupMembers(uuidHash, publicKeys));
+        groups.forEach(group -> {
+            final String groupUuid = group.groupUuid();
+            final List<String> publicKeys = new ArrayList<>(userPublicKey);
+            publicKeys.addAll(group.publicKeys());
+            final String uuidHash = CLibrary.CRYPTO_LIB.sha256_hash(groupUuid, groupUuid.length());
+            newMembers.put(groupUuid, this.contactService.retrieveNewGroupMembers(uuidHash, publicKeys));
         });
 
         return newMembers;

@@ -14,10 +14,10 @@ public record CreateGroupRequest(
     @Schema(required = true)
     String logo,
 
-    @Schema(required = true, description = "When the group will be deleted. Unix timestamp format.")
+    @Schema(required = true, description = "When the group will be deleted. Unix timestamp seconds format.")
     long expiration,
 
-    @Schema(required = true, description = "Since no-one will be able to join the group. Unix timestamp format.")
+    @Schema(required = true, description = "Since no-one will be able to join the group. Unix timestamp seconds format.")
     long closureAt
 
 ) {
