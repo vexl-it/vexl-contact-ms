@@ -1,6 +1,7 @@
 package com.cleevio.vexl.module.group.dto.response;
 
 import com.cleevio.vexl.module.group.entity.Group;
+import org.springframework.lang.Nullable;
 
 public record GroupCreatedResponse(
 
@@ -8,9 +9,16 @@ public record GroupCreatedResponse(
 
         String name,
 
+        @Nullable
+        String logoUrl,
+
+        long createdAt,
+
         long expiration,
 
-        long closure
+        long closure,
+
+        int code
 
 ) {
 
@@ -18,8 +26,11 @@ public record GroupCreatedResponse(
         this(
                 group.getUuid(),
                 group.getName(),
+                group.getLogoUrl(),
+                group.getCreatedAt(),
                 group.getExpirationAt(),
-                group.getClosureAt()
+                group.getClosureAt(),
+                group.getCode()
         );
     }
 }
