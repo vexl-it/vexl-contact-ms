@@ -1,9 +1,10 @@
 package com.cleevio.vexl.module.user.service;
 
-import com.cleevio.vexl.module.contact.service.ContactService;
 import com.cleevio.vexl.module.user.entity.User;
+import com.cleevio.vexl.module.user.event.UserRemovedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,9 +19,9 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final ContactService contactService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public User createUser(final String publicKey, final String hash) {
 
         final Optional<User> userByHash = this.userRepository.findByHash(hash);
@@ -59,7 +60,7 @@ public class UserService {
     public void removeUserAndContacts(User user) {
         log.info("Removing user with id {} and all his contacts",
                 user.getId());
-        this.contactService.deleteAllContacts(user.getPublicKey());
+        this.applicationEventPublisher.publishEvent(new UserRemovedEvent(user.getPublicKey()));
         this.userRepository.delete(user);
     }
 

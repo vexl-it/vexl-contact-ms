@@ -1,6 +1,7 @@
 package com.cleevio.vexl.common;
 
 import com.cleevio.vexl.common.service.SignatureService;
+import com.cleevio.vexl.common.service.query.CheckSignatureValidityQuery;
 import com.cleevio.vexl.module.contact.service.ContactService;
 import com.cleevio.vexl.module.facebook.service.FacebookService;
 import com.cleevio.vexl.module.contact.service.ImportService;
@@ -52,7 +53,7 @@ public class BaseControllerTest {
     @BeforeEach
     @SneakyThrows
     public void setup() {
-        when(signatureService.isSignatureValid(any(String.class), any(String.class), any(String.class))).thenReturn(true);
+        when(signatureService.isSignatureValid(any(CheckSignatureValidityQuery.class))).thenReturn(true);
         when(userService.findByPublicKeyAndHash(any(String.class), any(String.class))).thenReturn(Optional.of(USER));
         when(userService.existsByPublicKeyAndHash(any(String.class), any(String.class))).thenReturn(true);
     }

@@ -73,7 +73,7 @@ public class FacebookController {
     })
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Returns contacts from Facebook which have not been imported yet.")
-    FacebookContactResponse getNewFacebookContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user,
+    FacebookContactResponse getNewFacebookContacts(@AuthenticationPrincipal User user,
                                                    @PathVariable String facebookId,
                                                    @PathVariable String accessToken)
             throws FacebookException, InvalidFacebookToken {

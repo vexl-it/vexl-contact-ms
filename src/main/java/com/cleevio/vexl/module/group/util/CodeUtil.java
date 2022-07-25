@@ -3,13 +3,13 @@ package com.cleevio.vexl.module.group.util;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-import java.util.Random;
+import java.security.SecureRandom;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class QrCodeUtil {
+public final class CodeUtil {
 
     public static int generateQRCode() {
-        Random rnd = new Random();
+        SecureRandom rnd = new SecureRandom();
         return rnd.nextInt(999999);
     }
 }

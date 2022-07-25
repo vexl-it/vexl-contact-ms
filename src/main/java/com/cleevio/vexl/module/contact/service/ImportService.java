@@ -9,23 +9,26 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
+import javax.validation.Valid;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Set;
 
 /**
  * Service for importing contacts. All contacts are from phoneHash/facebookIdHash and contact encrypted with HmacSHA256.
  * We get contacts not encrypted, so we need to encrypt them on BE.
  */
-@Service
 @Slf4j
+@Service
+@Validated
 @RequiredArgsConstructor
 public class ImportService {
 
     private final ContactRepository contactRepository;
 
-    @Transactional(rollbackFor = Exception.class)
-    public ImportResponse importContacts(final User user, final ImportRequest importRequest)
+    @Transactional
+    public ImportResponse importContacts(final User user, final @Valid ImportRequest importRequest)
             throws ContactsMissingException {
 
         final int importSize = importRequest.contacts().size();
@@ -38,27 +41,28 @@ public class ImportService {
             throw new ContactsMissingException();
         }
 
-        final List<String> contacts = importRequest.contacts()
+        final List<String> trimContacts = importRequest.contacts()
                 .stream()
                 .map(String::trim)
                 .toList();
 
-        AtomicInteger imported = new AtomicInteger();
+        int imported = 0;
 
-        contacts
-                .forEach(c -> {
-                    if (!this.contactRepository.existsByHashFromAndHashTo(user.getHash(), c)) {
-                        final UserContact contact = UserContact.builder()
+        final Set<String> existingContacts = this.contactRepository.retrieveExistingContacts(user.getHash(), trimContacts);
+
+        for (final String trimContact : trimContacts) {
+            if (existingContacts.add(trimContact)) {
+                final UserContact contact = UserContact.builder()
                                 .hashFrom(user.getHash())
-                                .hashTo(c)
+                                .hashTo(trimContact)
                                 .build();
                         this.contactRepository.save(contact);
-                        imported.getAndIncrement();
-                    }
-                });
+                        imported++;
+            }
+        }
 
         final String message = String.format("Imported %s / %s contacts.",
-                imported.get(),
+                imported,
                 importSize);
 
         log.info(message);

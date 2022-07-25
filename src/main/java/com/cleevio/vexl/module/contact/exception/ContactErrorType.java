@@ -8,10 +8,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ContactErrorType implements ErrorType {
 
-    FACEBOOK("102", "Issue on Facebook side"),
-    INVALID_TOKEN("103", "Expired Facebook token"),
-    MISSING_CONTACTS("104", "Import list is empty. Nothing to import."),
-    INVALID_LEVEL("105", "Invalid connection level. Options - first, second, all. No case sensitive."),
+    FACEBOOK("100", "Issue on Facebook side"),
+    INVALID_TOKEN("101", "Expired Facebook token"),
+    MISSING_CONTACTS("102", "Import list is empty. Nothing to import."),
+    INVALID_LEVEL("103", "Invalid connection level. Options - first, second, all. No case sensitive."),
     ;
 
 	/**

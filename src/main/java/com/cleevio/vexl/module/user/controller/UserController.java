@@ -46,10 +46,9 @@ public class UserController {
     )
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasRole('ROLE_NEW_USER')")
-    ResponseEntity<Void> createUser(@RequestHeader(name = SecurityFilter.HEADER_PUBLIC_KEY) String publicKey,
+    void createUser(@RequestHeader(name = SecurityFilter.HEADER_PUBLIC_KEY) String publicKey,
                                     @RequestHeader(name = SecurityFilter.HEADER_HASH) String hash) {
         this.userService.createUser(publicKey, hash);
-        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/me")
@@ -62,7 +61,7 @@ public class UserController {
     @Operation(summary = "Delete a user and his contacts.")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ROLE_USER')")
-    void deleteMe(@Parameter(hidden = true) @AuthenticationPrincipal User user) {
+    void deleteMe(@AuthenticationPrincipal User user) {
         this.userService.removeUserAndContacts(user);
     }
 }

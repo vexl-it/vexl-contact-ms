@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 enum GroupErrorType implements ErrorType {
 
-    GROUP_NOT_FOUND("102", "Group not found."),
+    GROUP_NOT_FOUND("100", "Group not found."),
     ;
 
 	private final String code;

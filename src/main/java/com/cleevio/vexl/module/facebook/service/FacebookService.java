@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Service for connection to Facebook service.
@@ -68,17 +69,17 @@ public class FacebookService {
 
         final FacebookUser facebookUser = retrieveContacts(facebookId, accessToken);
 
-        facebookUser.getFriends().stream()
-                .map(FacebookUser::getId)
-                .toList()
-                .forEach(fbId -> {
-                    if (!this.contactService.existsByHashFromAndHashTo(user.getHash(), fbId)) {
-                        newConnections.addAll(facebookUser.getFriends()
-                                .stream()
-                                .filter(fu -> fbId.equals(fu.getId()))
-                                .toList());
-                    }
-                });
+        final Set<String> existingFriends = this.contactService.retrieveExistingContacts(
+                user.getHash(),
+                facebookUser.getFriends().stream()
+                        .map(FacebookUser::getId)
+                        .toList());
+
+        facebookUser.getFriends().forEach(f -> {
+            if (!existingFriends.contains(f.getId())) {
+                newConnections.add(f);
+            }
+        });
 
         log.info("Found {} new Facebook contacts",
                 newConnections.size());

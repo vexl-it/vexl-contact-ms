@@ -12,8 +12,6 @@ import java.util.Set;
 
 interface ContactRepository extends JpaRepository<UserContact, Long>, JpaSpecificationExecutor<UserContact> {
 
-    boolean existsByHashFromAndHashTo(String hashFrom, String hashTo);
-
     @Transactional
     @Modifying
     @Query("delete from UserContact uc where uc.hashFrom in (select u.hash from User u where u.publicKey = :publicKey) ")
@@ -21,32 +19,54 @@ interface ContactRepository extends JpaRepository<UserContact, Long>, JpaSpecifi
 
     @Transactional
     @Modifying
-    @Query("delete from UserContact uc " +
-            "where uc.hashTo in ( " +
-            "select u.hash from User u " +
-            "where u.publicKey in (:publicKeys) ) " +
-            "AND uc.hashFrom = :hash ")
+    @Query("""
+            delete from UserContact uc 
+            where uc.hashTo in ( 
+            select u.hash from User u 
+            where u.publicKey in (:publicKeys)) 
+            AND uc.hashFrom = :hash
+            """)
     void deleteContacts(String hash, List<String> publicKeys);
 
     @Query("select count(distinct uc) from UserContact uc where uc.hashFrom = :hash ")
     int countContactsByHash(String hash);
 
-    @Query("select distinct uc.hashTo from UserContact uc where uc.hashTo in " +
-            "(select uc.hashTo from UserContact uc where uc.hashFrom in (select u.hash from User u where u.publicKey = :ownerPublicKey)) " +
-            "and uc.hashTo in " +
-            "(select uc.hashTo from UserContact uc where uc.hashFrom in (select u.hash from User u where u.publicKey = :publicKey))")
+    @Query("""
+            select distinct uc.hashTo from UserContact uc where uc.hashTo in 
+            (select uc.hashTo from UserContact uc where uc.hashFrom in (select u.hash from User u where u.publicKey = :ownerPublicKey)) 
+            and uc.hashTo in 
+            (select uc.hashTo from UserContact uc where uc.hashFrom in (select u.hash from User u where u.publicKey = :publicKey))
+            """)
     List<String> retrieveCommonContacts(String ownerPublicKey, String publicKey);
 
-    @Query("select distinct uc.hashTo from UserContact uc where uc.hashFrom = :hash and uc.hashTo in (:groupUuidHashes) ")
-    List<String> getGroups(String hash, Set<String> groupUuidHashes);
+    @Query("""
+            select distinct uc from UserContact uc where uc.hashTo in 
+            (select uc.hashTo from UserContact uc where uc.hashFrom in (select u.hash from User u where u.publicKey = :ownerPublicKey)) 
+            and uc.hashTo in 
+            (select uc.hashTo from UserContact uc where uc.hashFrom in (select u.hash from User u where u.publicKey = :publicKeys))
+            """)
+    List<UserContact> retrieveCommonContacts(String ownerPublicKey, List<String> publicKeys);
+
+    @Query("""
+            select distinct uc.hashTo from UserContact uc where uc.hashFrom = :hash 
+            and uc.hashTo in (select g.uuid from Group g where g.expirationAt > (extract(epoch from now())) ) 
+            """
+    )
+    List<String> getGroupsUuidsByHash(String hash);
 
     @Transactional
     @Modifying
     @Query("delete from UserContact uc where uc.hashFrom = :hash and uc.hashTo = :contactHash")
     void deleteContactByHash(String hash, String contactHash);
 
-    @Query("select u.publicKey from User u " +
-            "inner join UserContact uc on u.hash = uc.hashFrom " +
-            "where uc.hashTo = :groupUuidHash and u.publicKey not in (:publicKeys) ")
+    @Query("""
+            select u.publicKey from User u 
+            inner join UserContact uc on u.hash = uc.hashFrom 
+            where uc.hashTo = :groupUuidHash and u.publicKey not in (:publicKeys)
+            """
+    )
     List<String> retrieveNewGroupMembers(String groupUuidHash, List<String> publicKeys);
+
+    @Query("select uc.hashTo from UserContact uc where uc.hashFrom = :hash and uc.hashTo in (:trimContacts) ")
+    Set<String> retrieveExistingContacts(String hash, List<String> trimContacts);
 }

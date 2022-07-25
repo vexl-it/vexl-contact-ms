@@ -1,25 +1,36 @@
 package com.cleevio.vexl.integration.sentry;
 
 import com.cleevio.vexl.common.exception.ApiException;
-import io.sentry.EventProcessor;
-import io.sentry.SentryEvent;
-import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Component;
+import io.sentry.SentryOptions;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import java.util.Optional;
+@Configuration
+public class SentryEventProcessor {
 
-@Component
-public class SentryEventProcessor implements EventProcessor {
+	@Bean
+	public SentryOptions.BeforeSendCallback customBeforeSendCallback() {
+		return (event, hint) -> {
+			Throwable rootCause = event.getThrowable();
 
-	@Override
-	@Nullable
-	public SentryEvent process(SentryEvent event, @Nullable Object o) {
-		boolean isLogged = Optional.ofNullable(event.getOriginThrowable())
-				.filter(ex -> ex instanceof ApiException)
-				.map(ex -> ((ApiException) ex).shouldBeLogged())
-				.orElse(true);
+			if (rootCause == null) {
+				return event;
+			}
 
-		return isLogged ? event : null;
+			while (rootCause.getCause() != null && rootCause.getCause() != rootCause) {
+				if (rootCause.getMessage() != null && rootCause.getMessage().contains("Broken pipe")) {
+					return null;
+				}
+
+				rootCause = rootCause.getCause();
+			}
+
+			if (rootCause instanceof ApiException apiException && !apiException.shouldBeLogged()) {
+				return null;
+			}
+
+			return event;
+		};
 	}
 }
 

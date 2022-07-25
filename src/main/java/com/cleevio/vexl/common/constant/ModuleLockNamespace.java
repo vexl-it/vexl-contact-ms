@@ -1,7 +1,5 @@
-package com.cleevio.vexl.common.enums;
+package com.cleevio.vexl.common.constant;
 
 public enum ModuleLockNamespace {
-
     GROUP
-
 }

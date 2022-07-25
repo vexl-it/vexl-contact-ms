@@ -1,6 +1,7 @@
 package com.cleevio.vexl.module.contact.controller;
 
 import com.cleevio.vexl.common.dto.ErrorResponse;
+import com.cleevio.vexl.common.dto.PaginatedResponse;
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
 import com.cleevio.vexl.module.contact.dto.request.DeleteContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.ImportRequest;
@@ -10,15 +11,12 @@ import com.cleevio.vexl.module.contact.dto.response.ContactsCountResponse;
 import com.cleevio.vexl.module.contact.dto.response.NewContactsResponse;
 import com.cleevio.vexl.module.contact.dto.response.UserContactResponse;
 import com.cleevio.vexl.module.contact.dto.response.ImportResponse;
-import com.cleevio.vexl.module.contact.dto.response.UserContactsResponse;
-import com.cleevio.vexl.module.contact.enums.ConnectionLevel;
+import com.cleevio.vexl.module.contact.constant.ConnectionLevel;
 import com.cleevio.vexl.module.contact.exception.InvalidLevelException;
 import com.cleevio.vexl.module.contact.service.ContactService;
 import com.cleevio.vexl.module.user.entity.User;
-import com.cleevio.vexl.module.contact.exception.ContactsMissingException;
 import com.cleevio.vexl.module.contact.service.ImportService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -29,7 +27,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -43,7 +40,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import java.util.List;
 
 @Tag(name = "Contact")
@@ -65,15 +61,14 @@ public class ContactController {
     })
     @ApiResponses({
             @ApiResponse(responseCode = "200"),
-            @ApiResponse(responseCode = "400 (101104)", description = "Import list is empty. Nothing to import.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            @ApiResponse(responseCode = "400 (101102)", description = "Import list is empty. Nothing to import.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Operation(
             summary = "Import contacts.",
-            description = "Contacts have to be sent unencrypted, they will be encrypted on BE with HMAC-SHA256."
+            description = "Contacts have to be sent encrypted with HMAC-SHA256."
     )
-    ImportResponse importContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user,
-                                  @Valid @RequestBody ImportRequest importRequest)
-            throws ContactsMissingException {
+    ImportResponse importContacts(@AuthenticationPrincipal User user,
+                                  @RequestBody ImportRequest importRequest) {
         return this.importService.importContacts(user, importRequest);
     }
 
@@ -85,20 +80,19 @@ public class ContactController {
     })
     @ApiResponses({
             @ApiResponse(responseCode = "200"),
-            @ApiResponse(responseCode = "400 (101105)", description = "Invalid connection level. Options - first, second, all. No case sensitive.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            @ApiResponse(responseCode = "400 (101103)", description = "Invalid connection level. Options - first, second, all. No case sensitive.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get all public keys of my contacts.")
-    UserContactsResponse getContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user,
-                                     @RequestParam(required = false, defaultValue = "0") int page,
-                                     @RequestParam(required = false, defaultValue = "10") int limit,
-                                     @RequestParam(required = false, defaultValue = "ALL") String level,
-                                     HttpServletRequest request)
-            throws InvalidLevelException {
+    PaginatedResponse<UserContactResponse> getContacts(@AuthenticationPrincipal User user,
+                                                       @RequestParam(required = false, defaultValue = "0") int page,
+                                                       @RequestParam(required = false, defaultValue = "10") int limit,
+                                                       @RequestParam(required = false) ConnectionLevel level,
+                                                       HttpServletRequest request) {
         try {
-            return new UserContactsResponse(
+            return new PaginatedResponse<>(
                     request,
-                    this.contactService.retrieveContactsByUser(user, page, limit, ConnectionLevel.valueOf(level.toUpperCase()))
+                    this.contactService.retrieveContactsByUser(user, page, limit, level)
                             .map(UserContactResponse::new)
             );
         } catch (IllegalArgumentException e) {
@@ -119,7 +113,7 @@ public class ContactController {
             summary = "Get count of contacts by hash.",
             description = "If you send facebookId hash, you will get count of facebook connections. If you send phoneHash, you will get count of phone connections."
     )
-    ContactsCountResponse getContactsCount(@Parameter(hidden = true) @AuthenticationPrincipal User user) {
+    ContactsCountResponse getContactsCount(@AuthenticationPrincipal User user) {
         return new ContactsCountResponse(this.contactService.getContactsCount(user.getHash()));
     }
 
@@ -132,10 +126,9 @@ public class ContactController {
     @ApiResponse(responseCode = "204")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Remove contacts by public key.")
-    ResponseEntity<Void> deleteContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user,
-                                        @Valid @RequestBody DeleteContactsRequest deleteContactsRequest) {
+    void deleteContacts(@AuthenticationPrincipal User user,
+                        @RequestBody DeleteContactsRequest deleteContactsRequest) {
         this.contactService.deleteContacts(user, deleteContactsRequest);
-        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/not-imported")
@@ -150,8 +143,8 @@ public class ContactController {
             summary = "Retrieve phone contacts which have not been imported yet",
             description = "You have to send all user's phone contacts. Endpoint then will return only contacts, which are not imported yet."
     )
-    NewContactsResponse getNewPhoneContacts(@Parameter(hidden = true) @AuthenticationPrincipal User user,
-                                            @Valid @RequestBody NewContactsRequest contactsRequest) {
+    NewContactsResponse getNewPhoneContacts(@AuthenticationPrincipal User user,
+                                            @RequestBody NewContactsRequest contactsRequest) {
         return new NewContactsResponse(this.contactService.retrieveNewContacts(user, contactsRequest));
     }
 

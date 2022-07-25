@@ -3,7 +3,7 @@ package com.cleevio.vexl.module.contact.service;
 import com.cleevio.vexl.module.contact.dto.request.DeleteContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.NewContactsRequest;
 import com.cleevio.vexl.module.contact.dto.response.CommonContactsResponse;
-import com.cleevio.vexl.module.contact.enums.ConnectionLevel;
+import com.cleevio.vexl.module.contact.constant.ConnectionLevel;
 import com.cleevio.vexl.module.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,32 +11,27 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of receiving and deleting contacts. Adding (importing) contacts is done in ImportService.
  */
-@Service
 @Slf4j
+@Service
+@Validated
 @RequiredArgsConstructor
 public class ContactService {
 
     private final ContactRepository contactRepository;
     private final VContactRepository vContactRepository;
 
-    /**
-     * Retrieve public keys of my connections (friends)
-     *
-     * @param user
-     * @param page
-     * @param limit
-     * @return
-     */
     @Transactional(readOnly = true)
     public Page<String> retrieveContactsByUser(final User user, final int page, final int limit, final ConnectionLevel level) {
         log.info("Retrieving contacts for user {}",
@@ -44,7 +39,7 @@ public class ContactService {
 
         return vContactRepository.findPublicKeysByMyPublicKeyAndLevel(
                 user.getPublicKey(),
-                ConnectionLevel.ALL.equals(level) ? List.of(ConnectionLevel.FIRST, ConnectionLevel.SECOND) : Collections.singletonList(level),
+                ConnectionLevel.ALL == level ? EnumSet.complementOf(EnumSet.of(ConnectionLevel.ALL)) : EnumSet.of(level),
                 PageRequest.of(page, limit));
     }
 
@@ -52,13 +47,13 @@ public class ContactService {
         this.contactRepository.deleteAllByPublicKey(userPublicKey);
     }
 
-    public void deleteContacts(User user, DeleteContactsRequest deleteContactsRequest) {
+    public void deleteContacts(User user, @Valid DeleteContactsRequest deleteContactsRequest) {
         log.info("Deleting contacts for user {}",
                 user.getId());
 
         final List<String> contactsToDelete = deleteContactsRequest.contactsToDelete().stream()
                 .map(String::trim)
-                .collect(Collectors.toList());
+                .toList();
 
         this.contactRepository.deleteContacts(user.getHash(), contactsToDelete);
     }
@@ -68,20 +63,28 @@ public class ContactService {
     }
 
     @Transactional(readOnly = true)
-    public List<String> retrieveNewContacts(User user, NewContactsRequest contactsRequest) {
-        List<String> newContacts = new ArrayList<>();
+    public List<String> retrieveNewContacts(User user, @Valid NewContactsRequest contactsRequest) {
+        final List<String> newContacts = new ArrayList<>();
 
-        contactsRequest.contacts().forEach(c -> {
-            if (!this.contactRepository.existsByHashFromAndHashTo(user.getHash(), c.trim())) {
-                newContacts.add(c);
+        final List<String> trimContacts = contactsRequest.contacts()
+                .stream()
+                .map(String::trim)
+                .toList();
+
+        final Set<String> existingContacts = this.contactRepository.retrieveExistingContacts(user.getHash(), trimContacts);
+
+        trimContacts.forEach(tr -> {
+            if (existingContacts.add(tr)) {
+                newContacts.add(tr);
             }
         });
 
         return newContacts;
     }
 
-    public boolean existsByHashFromAndHashTo(String hashFrom, String hashTo) {
-        return this.contactRepository.existsByHashFromAndHashTo(hashFrom, hashTo);
+    @Transactional(readOnly = true)
+    public Set<String> retrieveExistingContacts(String hashFrom, List<String> trimContactsHashTo) {
+        return this.contactRepository.retrieveExistingContacts(hashFrom, trimContactsHashTo);
     }
 
     @Transactional(readOnly = true)
@@ -102,12 +105,14 @@ public class ContactService {
     }
 
     @Transactional(readOnly = true)
-    public List<String> getGroups(String hash, Set<String> groupUuidHashes) {
-        return this.contactRepository.getGroups(hash, groupUuidHashes);
+    public List<String> getGroupsUuidsByHash(String hash) {
+        return this.contactRepository.getGroupsUuidsByHash(hash);
     }
 
     @Transactional(readOnly = true)
     public List<String> retrieveNewGroupMembers(final String groupUuidHash, final List<String> publicKeys) {
-        return this.contactRepository.retrieveNewGroupMembers(groupUuidHash, publicKeys);
+        return publicKeys.isEmpty() ?
+                Collections.emptyList() :
+                this.contactRepository.retrieveNewGroupMembers(groupUuidHash, publicKeys);
     }
 }

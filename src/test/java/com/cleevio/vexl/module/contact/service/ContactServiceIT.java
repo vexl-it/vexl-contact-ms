@@ -2,7 +2,7 @@ package com.cleevio.vexl.module.contact.service;
 
 import com.cleevio.vexl.common.IntegrationTest;
 import com.cleevio.vexl.module.contact.dto.response.ImportResponse;
-import com.cleevio.vexl.module.contact.enums.ConnectionLevel;
+import com.cleevio.vexl.module.contact.constant.ConnectionLevel;
 import com.cleevio.vexl.module.contact.exception.ContactsMissingException;
 import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.module.user.service.UserService;

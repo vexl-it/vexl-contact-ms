@@ -1,6 +1,6 @@
 package com.cleevio.vexl.module.contact.entity;
 
-import com.cleevio.vexl.module.contact.enums.ConnectionLevel;
+import com.cleevio.vexl.module.contact.constant.ConnectionLevel;
 import lombok.Data;
 import org.hibernate.annotations.Immutable;
 
