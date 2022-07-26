@@ -1,4 +1,4 @@
-package com.cleevio.vexl.integration.sentry;
+package com.cleevio.vexl.common.integration.sentry;
 
 import com.cleevio.vexl.common.exception.ApiException;
 import io.sentry.SentryOptions;

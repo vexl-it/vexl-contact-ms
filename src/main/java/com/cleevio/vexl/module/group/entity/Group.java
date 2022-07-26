@@ -1,7 +1,7 @@
 package com.cleevio.vexl.module.group.entity;
 
 import com.cleevio.vexl.common.convertor.AesEncryptionConvertor;
-import com.cleevio.vexl.common.convertor.Sha256HashConvertor;
+import com.cleevio.vexl.common.cryptolib.CLibrary;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -38,8 +38,7 @@ public class Group {
 
 	@EqualsAndHashCode.Include
 	@Column(updatable = false, nullable = false)
-	@Convert(converter = Sha256HashConvertor.class)
-    private final String uuid = UUID.randomUUID().toString();
+    private final String uuid = CLibrary.CRYPTO_LIB.sha256_hash(UUID.randomUUID().toString(), UUID.randomUUID().toString().length());
 
     @Column(nullable = false)
     @Convert(converter = AesEncryptionConvertor.class)

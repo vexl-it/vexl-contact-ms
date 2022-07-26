@@ -8,6 +8,19 @@
     <!-- ################# TABLE CHANGES (FROM OLDER TO NEW) ################# -->
     <!-- ##################################################################### -->
 
+    <!-- ################################ V2 ################################# -->
+    <changeSet author="David Tilser" id="create_indexes_public_key_hash">
+        <preConditions onSqlOutput="TEST" onFail="MARK_RAN">
+            <tableExists tableName="users" schemaName="public"/>
+        </preConditions>
+
+        <createIndex tableName="users" indexName="fa8fa5318f0b4b298baa_ix">
+            <column name="public_key"/>
+        </createIndex>
+        <createIndex tableName="users" indexName="5834a3584c634d0fab53_ix">
+            <column name="hash"/>
+        </createIndex>
+    </changeSet>
 
     <!-- ##################################################################### -->
     <!-- ###################### TABLE INSTALL CHANGESET ###################### -->
@@ -29,5 +42,12 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+
+        <createIndex tableName="users" indexName="fa8fa5318f0b4b298baa_ix">
+            <column name="public_key"/>
+        </createIndex>
+        <createIndex tableName="users" indexName="5834a3584c634d0fab53_ix">
+            <column name="hash"/>
+        </createIndex>
     </changeSet>
 </databaseChangeLog>

@@ -3,6 +3,7 @@ package com.cleevio.vexl.module.group.service;
 import com.cleevio.vexl.common.IntegrationTest;
 import com.cleevio.vexl.common.cryptolib.CLibrary;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
+import com.cleevio.vexl.module.group.dto.request.ExpiredGroupsRequest;
 import com.cleevio.vexl.module.group.dto.request.LeaveGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.NewMemberRequest;
 import com.cleevio.vexl.module.group.entity.Group;
@@ -34,11 +35,13 @@ class GroupServiceIT {
     private final static String HASH_USER_3 = "dummy_hash_3";
     private final GroupService groupService;
     private final UserService userService;
+    private final GroupRepository groupRepository;
 
     @Autowired
-    public GroupServiceIT(GroupService groupService, UserService userService) {
+    public GroupServiceIT(GroupService groupService, UserService userService, GroupRepository groupRepository) {
         this.groupService = groupService;
         this.userService = userService;
+        this.groupRepository = groupRepository;
     }
 
     @Test
@@ -121,12 +124,10 @@ class GroupServiceIT {
         final User user = userService.createUser(PUBLIC_KEY_USER_1, HASH_USER_1);
         final Group group1 = this.groupService.createGroup(user, CreateRequestTestUtil.createCreateGroupRequest());
         final Group group2 = this.groupService.createGroup(user, CreateRequestTestUtil.createCreateGroupRequest());
-        final String group1UuidHash = CLibrary.CRYPTO_LIB.sha256_hash(group1.getUuid(), group1.getUuid().length());
-        final String group2UuidHash = CLibrary.CRYPTO_LIB.sha256_hash(group2.getUuid(), group2.getUuid().length());
 
         final List<Group> groupsBeforeLeave = this.groupService.retrieveMyGroups(user);
 
-        this.groupService.leaveGroup(user, new LeaveGroupRequest(group1UuidHash));
+        this.groupService.leaveGroup(user, new LeaveGroupRequest(group1.getUuid()));
 
         final List<Group> groupsAfterLeave = this.groupService.retrieveMyGroups(user);
 
@@ -134,7 +135,7 @@ class GroupServiceIT {
         assertThat(groupsAfterLeave).hasSize(1);
 
         // leave group 2 as well
-        this.groupService.leaveGroup(user, new LeaveGroupRequest(group2UuidHash));
+        this.groupService.leaveGroup(user, new LeaveGroupRequest(group2.getUuid()));
 
         assertThat(this.groupService.retrieveMyGroups(user)).hasSize(0);
     }
@@ -143,12 +144,12 @@ class GroupServiceIT {
     void testRetrieveGroupsByUuid_shouldBeRetrieved() {
         final User user = userService.createUser(PUBLIC_KEY_USER_1, HASH_USER_1);
         final Group group1 = this.groupService.createGroup(user, CreateRequestTestUtil.createCreateGroupRequest());
-        final Group group2 = this.groupService.createGroup(user, CreateRequestTestUtil.createCreateGroupRequest());
+        this.groupService.createGroup(user, CreateRequestTestUtil.createCreateGroupRequest());
 
-        final List<Group> groups = this.groupService.retrieveGroupsByUuid(List.of(group1.getUuid(), group2.getUuid()));
+        final List<Group> groups = this.groupRepository.findAll();
         assertThat(groups).hasSize(2);
 
-        final Group group = this.groupService.retrieveGroupsByUuid(List.of(group1.getUuid())).get(0);
+        final Group group = this.groupService.retrieveGroupByCode(group1.getCode());
         assertThat(group.getUuid()).isEqualTo(group1.getUuid());
         assertThat(group.getName()).isEqualTo(group1.getName());
         assertThat(group.getCode()).isEqualTo(group1.getCode());
@@ -277,7 +278,7 @@ class GroupServiceIT {
         final Group expiredGroup2 = this.groupService.createGroup(user, CreateRequestTestUtil.createCreateGroupRequestExpired());
         final List<String> groupUuids = List.of(expiredGroup1.getUuid(), nonExpiredGroup1.getUuid(), expiredGroup2.getUuid(), nonExpiredGroup2.getUuid());
 
-        final List<Group> expiredGroups = this.groupService.retrieveExpiredGroups(groupUuids);
+        final List<Group> expiredGroups = this.groupService.retrieveExpiredGroups(new ExpiredGroupsRequest(groupUuids));
 
         assertThat(expiredGroups).hasSize(2);
         assertThat(expiredGroups.get(0).getUuid()).doesNotContain(nonExpiredGroup1.getUuid(), nonExpiredGroup2.getUuid());

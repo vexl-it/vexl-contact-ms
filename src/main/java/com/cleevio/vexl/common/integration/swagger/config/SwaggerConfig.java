@@ -1,4 +1,4 @@
-package com.cleevio.vexl.integration.swagger.config;
+package com.cleevio.vexl.common.integration.swagger.config;
 
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;

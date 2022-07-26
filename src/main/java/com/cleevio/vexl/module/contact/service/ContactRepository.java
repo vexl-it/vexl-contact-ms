@@ -40,14 +40,6 @@ interface ContactRepository extends JpaRepository<UserContact, Long>, JpaSpecifi
     List<String> retrieveCommonContacts(String ownerPublicKey, String publicKey);
 
     @Query("""
-            select distinct uc from UserContact uc where uc.hashTo in 
-            (select uc.hashTo from UserContact uc where uc.hashFrom in (select u.hash from User u where u.publicKey = :ownerPublicKey)) 
-            and uc.hashTo in 
-            (select uc.hashTo from UserContact uc where uc.hashFrom in (select u.hash from User u where u.publicKey = :publicKeys))
-            """)
-    List<UserContact> retrieveCommonContacts(String ownerPublicKey, List<String> publicKeys);
-
-    @Query("""
             select distinct uc.hashTo from UserContact uc where uc.hashFrom = :hash 
             and uc.hashTo in (select g.uuid from Group g where g.expirationAt > (extract(epoch from now())) ) 
             """

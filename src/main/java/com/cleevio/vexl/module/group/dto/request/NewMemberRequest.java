@@ -16,7 +16,7 @@ public record NewMemberRequest(
     public record GroupRequest(
 
             @NotEmpty
-            @Schema(required = true, description = "UUIDs of the groups you are interested in.")
+            @Schema(required = true, description = "UUIDs hashes of the groups you are interested in.")
             String groupUuid,
 
             @NotNull

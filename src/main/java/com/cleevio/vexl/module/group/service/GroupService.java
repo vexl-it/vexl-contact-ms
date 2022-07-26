@@ -5,6 +5,7 @@ import com.cleevio.vexl.common.service.AdvisoryLockService;
 import com.cleevio.vexl.module.contact.service.ContactService;
 import com.cleevio.vexl.module.group.dto.mapper.GroupMapper;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
+import com.cleevio.vexl.module.group.dto.request.ExpiredGroupsRequest;
 import com.cleevio.vexl.module.group.dto.request.JoinGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.LeaveGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.NewMemberRequest;
@@ -83,8 +84,8 @@ public class GroupService {
     }
 
     @Transactional(readOnly = true)
-    public List<Group> retrieveGroupsByUuid(final List<String> groupUuid) {
-        return this.groupRepository.findGroupsByUuids(groupUuid);
+    public Group retrieveGroupByCode(final int code) {
+        return this.groupRepository.findGroupsByCode(code);
     }
 
     @Transactional(readOnly = true)
@@ -102,7 +103,7 @@ public class GroupService {
     }
 
     @Transactional(readOnly = true)
-    public List<Group> retrieveExpiredGroups(final List<String> groupUuids) {
-        return this.groupRepository.retrieveExpiredGroups(groupUuids);
+    public List<Group> retrieveExpiredGroups(@Valid final ExpiredGroupsRequest request) {
+        return this.groupRepository.retrieveExpiredGroups(request.uuids());
     }
 }

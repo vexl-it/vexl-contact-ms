@@ -8,6 +8,20 @@
     <!-- ################# TABLE CHANGES (FROM OLDER TO NEW) ################# -->
     <!-- ##################################################################### -->
 
+    <!-- ################################ V2 ################################# -->
+    <changeSet author="David Tilser" id="create_indexes_uuid_expiration_at">
+        <preConditions onSqlOutput="TEST" onFail="MARK_RAN">
+            <tableExists tableName="group" schemaName="public"/>
+        </preConditions>
+
+        <createIndex tableName="group" indexName="086cc4a8540b4d579438_ix">
+            <column name="uuid"/>
+        </createIndex>
+        <createIndex tableName="group" indexName="88c6403cdcd7415d9c8c_ix">
+            <column name="expiration_at"/>
+        </createIndex>
+    </changeSet>
+
     <!-- ##################################################################### -->
     <!-- ###################### TABLE INSTALL CHANGESET ###################### -->
     <!-- ##################################################################### -->
@@ -44,5 +58,12 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+
+        <createIndex tableName="group" indexName="086cc4a8540b4d579438_ix">
+            <column name="uuid"/>
+        </createIndex>
+        <createIndex tableName="group" indexName="88c6403cdcd7415d9c8c_ix">
+            <column name="expiration_at"/>
+        </createIndex>
     </changeSet>
 </databaseChangeLog>

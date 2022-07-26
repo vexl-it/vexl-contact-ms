@@ -1,6 +1,5 @@
 package com.cleevio.vexl.module.contact.event.listener;
 
-import com.cleevio.vexl.common.cryptolib.CLibrary;
 import com.cleevio.vexl.module.contact.dto.request.ImportRequest;
 import com.cleevio.vexl.module.contact.service.ContactService;
 import com.cleevio.vexl.module.contact.service.ImportService;
@@ -25,9 +24,7 @@ class GroupContactEventListener {
 
     @EventListener
     public void onGroupImportedEvent(@Valid final GroupImportedEvent event) {
-        final String groupUuid = event.groupUuid();
-        final List<String> groupUuidHashInList = List.of(CLibrary.CRYPTO_LIB.sha256_hash(groupUuid, groupUuid.length()));
-        this.importService.importContacts(event.user(), new ImportRequest(groupUuidHashInList));
+        this.importService.importContacts(event.user(), new ImportRequest(List.of(event.groupUuid())));
     }
 
     @EventListener

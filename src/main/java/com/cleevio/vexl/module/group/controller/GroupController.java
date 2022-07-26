@@ -3,6 +3,7 @@ package com.cleevio.vexl.module.group.controller;
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
 import com.cleevio.vexl.module.group.dto.mapper.GroupMapper;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
+import com.cleevio.vexl.module.group.dto.request.ExpiredGroupsRequest;
 import com.cleevio.vexl.module.group.dto.request.JoinGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.LeaveGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.NewMemberRequest;
@@ -119,18 +120,16 @@ public class GroupController {
     })
     @ResponseStatus(HttpStatus.OK)
     @Operation(
-            summary = "Get group by UUID.",
-            description = "Put group UUIDs you're interested in into request params."
+            summary = "Get group by code.",
+            description = "Put group code you're interested in into request params."
     )
-    GroupsResponse retrieveGroupsByUuid(@RequestParam List<String> groupUuids) {
-        return new GroupsResponse(
-                groupMapper.mapListToGroupResponse(
-                        this.groupService.retrieveGroupsByUuid(groupUuids)
-                )
+    GroupsResponse.GroupResponse retrieveGroupsByCode(@RequestParam int code) {
+        return new GroupsResponse.GroupResponse(
+                this.groupService.retrieveGroupByCode(code)
         );
     }
 
-    @GetMapping("/expired")
+    @PostMapping("/expired")
     @SecurityRequirements({
             @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
             @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
@@ -139,12 +138,12 @@ public class GroupController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(
             summary = "Get expired groups.",
-            description = "Put group UUIDs you know about into request params and EP will return which of them are expired."
+            description = "Put group UUID hashes you know about into request params and EP will return which of them are expired."
     )
-    GroupsResponse retrieveExpiredGroups(@RequestParam List<String> groupUuids) {
+    GroupsResponse retrieveExpiredGroups(@RequestBody ExpiredGroupsRequest request) {
         return new GroupsResponse(
                 groupMapper.mapListToGroupResponse(
-                        this.groupService.retrieveExpiredGroups(groupUuids)
+                        this.groupService.retrieveExpiredGroups(request)
                 )
         );
     }
