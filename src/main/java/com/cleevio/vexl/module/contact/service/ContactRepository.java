@@ -29,7 +29,10 @@ interface ContactRepository extends JpaRepository<UserContact, Long>, JpaSpecifi
     void deleteContacts(String hash, List<String> publicKeys);
 
     @Query("select count(distinct uc) from UserContact uc where uc.hashFrom = :hash ")
-    int countContactsByHash(String hash);
+    int countContactsByHashFrom(String hash);
+
+    @Query("select count(distinct uc) from UserContact uc where uc.hashTo = :hash")
+    int countContactsByHashTo(String hash);
 
     @Query("""
             select distinct uc.hashTo from UserContact uc where uc.hashTo in 
@@ -61,4 +64,7 @@ interface ContactRepository extends JpaRepository<UserContact, Long>, JpaSpecifi
 
     @Query("select uc.hashTo from UserContact uc where uc.hashFrom = :hash and uc.hashTo in (:trimContacts) ")
     Set<String> retrieveExistingContacts(String hash, List<String> trimContacts);
+
+    @Query("select u.firebaseToken from User u where u.hash in (select uc.hashFrom from UserContact uc where uc.hashTo = :hash) and u.publicKey <> :publicKey")
+    List<String> retrieveMembersFirebaseTokens(String hash, String publicKey);
 }

@@ -3,6 +3,8 @@ package com.cleevio.vexl.module.group.service;
 import com.cleevio.vexl.common.constant.ModuleLockNamespace;
 import com.cleevio.vexl.common.service.AdvisoryLockService;
 import com.cleevio.vexl.module.contact.service.ContactService;
+import com.cleevio.vexl.module.file.service.ImageService;
+import com.cleevio.vexl.module.group.dto.GroupModel;
 import com.cleevio.vexl.module.group.dto.mapper.GroupMapper;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.ExpiredGroupsRequest;
@@ -12,6 +14,7 @@ import com.cleevio.vexl.module.group.dto.request.NewMemberRequest;
 import com.cleevio.vexl.module.group.entity.Group;
 import com.cleevio.vexl.module.group.constant.GroupAdvisoryLock;
 import com.cleevio.vexl.module.group.event.GroupImportedEvent;
+import com.cleevio.vexl.module.group.event.GroupJoinRequestedEvent;
 import com.cleevio.vexl.module.group.event.GroupLeftEvent;
 import com.cleevio.vexl.module.group.exception.GroupNotFoundException;
 import com.cleevio.vexl.module.group.util.CodeUtil;
@@ -35,10 +38,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class GroupService {
 
-//todo ještě domyslet jak dělat ty groups
-
     private final AdvisoryLockService advisoryLockService;
     private final ContactService contactService;
+    private final ImageService imageService;
     private final GroupRepository groupRepository;
     private final GroupMapper groupMapper;
     private final ApplicationEventPublisher applicationEventPublisher;
@@ -53,6 +55,11 @@ public class GroupService {
         Group group = groupMapper.mapSingleToGroup(request);
         group.setCode(CodeUtil.generateQRCode());
         group.setCreatedBy(user.getPublicKey());
+
+        if (request.logo() != null) {
+            final String destination = this.imageService.save(request.logo());
+            group.setLogoUrl(destination);
+        }
 
         final Group savedGroup = this.groupRepository.save(group);
         applicationEventPublisher.publishEvent(new GroupImportedEvent(savedGroup.getUuid(), user));
@@ -69,14 +76,15 @@ public class GroupService {
         final String groupUuid = this.groupRepository.findGroupUuidByCode(request.code())
                 .orElseThrow(GroupNotFoundException::new);
 
-        applicationEventPublisher.publishEvent(new GroupImportedEvent(groupUuid, user));
+        applicationEventPublisher.publishEvent(new GroupJoinRequestedEvent(groupUuid, user));
     }
 
     @Transactional(readOnly = true)
-    public List<Group> retrieveMyGroups(final User user) {
+    public List<GroupModel> retrieveMyGroups(final User user) {
         final List<String> userGroupUuid = this.contactService.getGroupsUuidsByHash(user.getHash());
 
-        return this.groupRepository.findGroupsByUuids(userGroupUuid);
+        return createGroupModelMapWithMemberCount(
+                this.groupRepository.findGroupsByUuids(userGroupUuid));
     }
 
     public void leaveGroup(final User user, final LeaveGroupRequest request) {
@@ -84,8 +92,12 @@ public class GroupService {
     }
 
     @Transactional(readOnly = true)
-    public Group retrieveGroupByCode(final int code) {
-        return this.groupRepository.findGroupsByCode(code);
+    public GroupModel retrieveGroupByCode(final int code) {
+        final Group group = this.groupRepository.findGroupsByCode(code);
+        return new GroupModel(
+                group,
+                contactService.getContactsCountByHashTo(group.getUuid())
+        );
     }
 
     @Transactional(readOnly = true)
@@ -103,7 +115,13 @@ public class GroupService {
     }
 
     @Transactional(readOnly = true)
-    public List<Group> retrieveExpiredGroups(@Valid final ExpiredGroupsRequest request) {
-        return this.groupRepository.retrieveExpiredGroups(request.uuids());
+    public List<GroupModel> retrieveExpiredGroups(@Valid final ExpiredGroupsRequest request) {
+        return createGroupModelMapWithMemberCount(this.groupRepository.retrieveExpiredGroups(request.uuids()));
+    }
+
+    private List<GroupModel> createGroupModelMapWithMemberCount(List<Group> groups) {
+        final List<GroupModel> groupModels = new ArrayList<>();
+        groups.forEach(g -> groupModels.add(new GroupModel(g, contactService.getContactsCountByHashTo(g.getUuid()))));
+        return groupModels;
     }
 }

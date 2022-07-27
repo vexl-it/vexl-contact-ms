@@ -114,7 +114,7 @@ public class ContactController {
             description = "If you send facebookId hash, you will get count of facebook connections. If you send phoneHash, you will get count of phone connections."
     )
     ContactsCountResponse getContactsCount(@AuthenticationPrincipal User user) {
-        return new ContactsCountResponse(this.contactService.getContactsCount(user.getHash()));
+        return new ContactsCountResponse(this.contactService.getContactsCountByHashFrom(user.getHash()));
     }
 
     @DeleteMapping

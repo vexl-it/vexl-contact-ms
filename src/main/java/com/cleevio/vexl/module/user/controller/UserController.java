@@ -1,6 +1,8 @@
 package com.cleevio.vexl.module.user.controller;
 
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
+import com.cleevio.vexl.module.user.dto.request.CreateUserRequest;
+import com.cleevio.vexl.module.user.dto.request.FirebaseTokenUpdateRequest;
 import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.module.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,10 +15,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -47,8 +52,30 @@ public class UserController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasRole('ROLE_NEW_USER')")
     void createUser(@RequestHeader(name = SecurityFilter.HEADER_PUBLIC_KEY) String publicKey,
-                                    @RequestHeader(name = SecurityFilter.HEADER_HASH) String hash) {
-        this.userService.createUser(publicKey, hash);
+                    @RequestHeader(name = SecurityFilter.HEADER_HASH) String hash,
+                    @RequestBody(required = false) @Nullable CreateUserRequest request) {
+        this.userService.createUser(publicKey, hash, request == null ? new CreateUserRequest(null) : request);
+    }
+
+    @PutMapping
+    @SecurityRequirements({
+            @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
+            @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
+            @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
+    })
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Firebase Token has been updated"),
+    })
+    @Operation(
+            summary = "Update Firebase Token",
+            description = "If your Firebase token has been expired, or you want to add new one, call this endpoint."
+    )
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ROLE_USER')")
+    void updateFirebaseToken(@RequestHeader(name = SecurityFilter.HEADER_PUBLIC_KEY) String publicKey,
+                             @RequestHeader(name = SecurityFilter.HEADER_HASH) String hash,
+                             @RequestBody FirebaseTokenUpdateRequest request) {
+        this.userService.updateFirebaseToken(publicKey, hash, request);
     }
 
     @DeleteMapping("/me")

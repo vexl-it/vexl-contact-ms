@@ -1,5 +1,6 @@
 package com.cleevio.vexl.module.group.dto.mapper;
 
+import com.cleevio.vexl.module.group.dto.GroupModel;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
 import com.cleevio.vexl.module.group.dto.response.GroupsResponse;
 import com.cleevio.vexl.module.group.entity.Group;
@@ -13,20 +14,19 @@ public class GroupMapper {
     public Group mapSingleToGroup(CreateGroupRequest request) {
         return Group.builder()
                 .name(request.name())
-                .logoUrl(request.logo())
                 .expirationAt(request.expiration())
                 .closureAt(request.closureAt())
                 .build();
     }
 
-    public List<GroupsResponse.GroupResponse> mapListToGroupResponse(List<Group> group) {
-        return group.stream()
-                .map(this::mapSigleToGroupResponse)
+    public List<GroupsResponse.GroupResponse> mapGroupModelToGroupResponse(List<GroupModel> groups) {
+        return groups.stream()
+                .map(this::mapSingleToGroupResponse)
                 .toList();
     }
 
-    public GroupsResponse.GroupResponse mapSigleToGroupResponse(Group group) {
-        return new GroupsResponse.GroupResponse(group);
+    public GroupsResponse.GroupResponse mapSingleToGroupResponse(GroupModel groupModel) {
+        return new GroupsResponse.GroupResponse(groupModel.group(), groupModel.countMembers());
     }
 
 }

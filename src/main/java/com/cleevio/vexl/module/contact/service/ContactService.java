@@ -4,9 +4,11 @@ import com.cleevio.vexl.module.contact.dto.request.DeleteContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.NewContactsRequest;
 import com.cleevio.vexl.module.contact.dto.response.CommonContactsResponse;
 import com.cleevio.vexl.module.contact.constant.ConnectionLevel;
+import com.cleevio.vexl.module.contact.event.GroupJoinedEvent;
 import com.cleevio.vexl.module.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -31,6 +33,7 @@ public class ContactService {
 
     private final ContactRepository contactRepository;
     private final VContactRepository vContactRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional(readOnly = true)
     public Page<String> retrieveContactsByUser(final User user, final int page, final int limit, final ConnectionLevel level) {
@@ -88,8 +91,13 @@ public class ContactService {
     }
 
     @Transactional(readOnly = true)
-    public int getContactsCount(final String hash) {
-        return this.contactRepository.countContactsByHash(hash);
+    public int getContactsCountByHashFrom(final String hash) {
+        return this.contactRepository.countContactsByHashFrom(hash);
+    }
+
+    @Transactional(readOnly = true)
+    public int getContactsCountByHashTo(final String hash) {
+        return this.contactRepository.countContactsByHashTo(hash);
     }
 
     @Transactional(readOnly = true)
@@ -114,5 +122,17 @@ public class ContactService {
         return publicKeys.isEmpty() ?
                 Collections.emptyList() :
                 this.contactRepository.retrieveNewGroupMembers(groupUuidHash, publicKeys);
+    }
+
+    @Transactional(readOnly = true)
+    public void sendNotificationsToGroupMembers(final String groupUuid, final String publicKey) {
+        final List<String> membersFirebaseTokens = this.contactRepository.retrieveMembersFirebaseTokens(groupUuid, publicKey);
+        if (membersFirebaseTokens.isEmpty()) return;
+        applicationEventPublisher.publishEvent(new GroupJoinedEvent(groupUuid, membersFirebaseTokens));
+    }
+
+    @Transactional(readOnly = true)
+    public int retrieveCountByHash(final String hash) {
+        return this.contactRepository.countContactsByHashTo(hash);
     }
 }

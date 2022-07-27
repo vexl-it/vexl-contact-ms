@@ -1,6 +1,7 @@
 package com.cleevio.vexl.module.group.controller;
 
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
+import com.cleevio.vexl.module.group.dto.GroupModel;
 import com.cleevio.vexl.module.group.dto.mapper.GroupMapper;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.ExpiredGroupsRequest;
@@ -28,8 +29,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @Tag(name = "Group")
 @RestController
@@ -106,7 +105,7 @@ public class GroupController {
     )
     GroupsResponse retrieveMyGroups(@AuthenticationPrincipal User user) {
         return new GroupsResponse(
-                groupMapper.mapListToGroupResponse(
+                groupMapper.mapGroupModelToGroupResponse(
                         this.groupService.retrieveMyGroups(user)
                 )
         );
@@ -124,8 +123,10 @@ public class GroupController {
             description = "Put group code you're interested in into request params."
     )
     GroupsResponse.GroupResponse retrieveGroupsByCode(@RequestParam int code) {
+        final GroupModel groupModel = this.groupService.retrieveGroupByCode(code);
         return new GroupsResponse.GroupResponse(
-                this.groupService.retrieveGroupByCode(code)
+                groupModel.group(),
+                groupModel.countMembers()
         );
     }
 
@@ -142,7 +143,7 @@ public class GroupController {
     )
     GroupsResponse retrieveExpiredGroups(@RequestBody ExpiredGroupsRequest request) {
         return new GroupsResponse(
-                groupMapper.mapListToGroupResponse(
+                groupMapper.mapGroupModelToGroupResponse(
                         this.groupService.retrieveExpiredGroups(request)
                 )
         );

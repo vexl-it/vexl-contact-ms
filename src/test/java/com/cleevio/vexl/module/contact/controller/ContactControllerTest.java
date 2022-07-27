@@ -99,7 +99,7 @@ public class ContactControllerTest extends BaseControllerTest {
 
     @Test
     public void getContactsCount_validInput_shouldReturn200() throws Exception {
-        when(contactService.getContactsCount(HASH)).thenReturn(COUNT);
+        when(contactService.getContactsCountByHashFrom(HASH)).thenReturn(COUNT);
 
         mvc.perform(get(COUNT_EP)
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)

@@ -22,6 +22,17 @@
         </createIndex>
     </changeSet>
 
+    <!-- ################################ V3 ################################# -->
+    <changeSet author="David Tilser" id="add_firebase_token_column">
+        <preConditions onSqlOutput="TEST" onFail="MARK_RAN">
+            <tableExists tableName="users" schemaName="public"/>
+        </preConditions>
+
+        <addColumn tableName="users" schemaName="public">
+            <column name="firebase_token" type="varchar"/>
+        </addColumn>
+    </changeSet>
+
     <!-- ##################################################################### -->
     <!-- ###################### TABLE INSTALL CHANGESET ###################### -->
     <!-- ##################################################################### -->
@@ -41,6 +52,7 @@
             <column name="hash" type="varchar">
                 <constraints nullable="false"/>
             </column>
+            <column name="firebase_token" type="varchar"/>
         </createTable>
 
         <createIndex tableName="users" indexName="fa8fa5318f0b4b298baa_ix">

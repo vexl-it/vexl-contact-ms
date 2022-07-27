@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserController.class)
@@ -20,6 +21,12 @@ class UserControllerTest extends BaseControllerTest {
 
     private static final String BASE_URL = "/api/v1/users";
     private static final String DELETE_ME_EP = BASE_URL + "/me";
+
+    private static final String UPDATE_FIREBASE_TOKEN = """
+             {
+                  "firebaseToken": "123"
+              }
+            """;
 
     @BeforeEach
     @SneakyThrows
@@ -47,6 +54,17 @@ class UserControllerTest extends BaseControllerTest {
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void testUpdateFirebaseToken_validInput_shouldReturn204() throws Exception {
+        mvc.perform(put(BASE_URL)
+                        .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
+                        .header(SecurityFilter.HEADER_HASH, HASH)
+                        .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(UPDATE_FIREBASE_TOKEN))
+                .andExpect(status().isNoContent());
     }
 
 }

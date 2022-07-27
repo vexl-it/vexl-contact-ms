@@ -1,19 +1,25 @@
 package com.cleevio.vexl.module.user.service;
 
+import com.cleevio.vexl.module.user.dto.request.CreateUserRequest;
+import com.cleevio.vexl.module.user.dto.request.FirebaseTokenUpdateRequest;
 import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.module.user.event.UserRemovedEvent;
+import com.cleevio.vexl.module.user.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
+import javax.validation.Valid;
 import java.util.Optional;
 
 /**
  * Service for creating, searching and deleting of users.
  */
 @Service
+@Validated
 @Slf4j
 @RequiredArgsConstructor
 public class UserService {
@@ -23,6 +29,11 @@ public class UserService {
 
     @Transactional
     public User createUser(final String publicKey, final String hash) {
+        return createUser(publicKey, hash, new CreateUserRequest(null));
+    }
+
+    @Transactional
+    public User createUser(final String publicKey, final String hash, @Valid CreateUserRequest request) {
 
         final Optional<User> userByHash = this.userRepository.findByHash(hash);
         if (userByHash.isPresent()) {
@@ -38,6 +49,7 @@ public class UserService {
                 User.builder()
                         .publicKey(publicKey)
                         .hash(hash)
+                        .firebaseToken(request.firebaseToken())
                         .build()
         );
 
@@ -64,8 +76,15 @@ public class UserService {
         this.userRepository.delete(user);
     }
 
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public User save(User user) {
         return this.userRepository.save(user);
+    }
+
+    @Transactional
+    public void updateFirebaseToken(final String publicKey, final String hash, @Valid final FirebaseTokenUpdateRequest request) {
+        final User user = this.userRepository.findUserByPublicKeyAndHash(publicKey, hash)
+                .orElseThrow(UserNotFoundException::new);
+        user.setFirebaseToken(request.firebaseToken());
     }
 }
