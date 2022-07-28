@@ -26,11 +26,13 @@ public record GroupsResponse(
 
             long closureAt,
 
-            int code
+            int code,
+
+            int memberCount
 
     ) {
 
-        public GroupResponse(Group group) {
+        public GroupResponse(Group group, int memberCount) {
             this(
                     group.getUuid(),
                     group.getName(),
@@ -38,7 +40,8 @@ public record GroupsResponse(
                     group.getCreatedAt(),
                     group.getExpirationAt(),
                     group.getClosureAt(),
-                    group.getCode()
+                    group.getCode(),
+                    memberCount
             );
         }
     }

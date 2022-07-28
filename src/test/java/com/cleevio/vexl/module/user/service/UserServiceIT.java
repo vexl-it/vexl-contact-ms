@@ -2,6 +2,7 @@ package com.cleevio.vexl.module.user.service;
 
 import com.cleevio.vexl.common.IntegrationTest;
 import com.cleevio.vexl.module.user.entity.User;
+import com.cleevio.vexl.util.CreateRequestTestUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ class UserServiceIT {
 
     private final static String PUBLIC_KEY_USER_2 = "dummy_public_key_2";
     private final static String HASH_USER = "dummy_hash";
+    private final static String FIREBASE_TOKEN = "dummy_firebase_token";
     private final UserService userService;
     private final UserRepository userRepository;
 
@@ -37,6 +39,19 @@ class UserServiceIT {
         assertThat(size).isEqualTo(1);
         assertThat(savedUser.getPublicKey()).isEqualTo(PUBLIC_KEY_USER_1);
         assertThat(savedUser.getHash()).isEqualTo(HASH_USER);
+    }
+
+    @Test
+    void testCreateUserWithFirebaseToken_shouldBeCreated() {
+        final User user = this.userService.createUser(PUBLIC_KEY_USER_1, HASH_USER, CreateRequestTestUtil.createCreateUserRequest(FIREBASE_TOKEN));
+
+        final User savedUser = this.userRepository.findById(user.getId()).get();
+        final int size = this.userRepository.findAll().size();
+
+        assertThat(size).isEqualTo(1);
+        assertThat(savedUser.getPublicKey()).isEqualTo(PUBLIC_KEY_USER_1);
+        assertThat(savedUser.getHash()).isEqualTo(HASH_USER);
+        assertThat(savedUser.getFirebaseToken()).isEqualTo(FIREBASE_TOKEN);
     }
 
     @Test

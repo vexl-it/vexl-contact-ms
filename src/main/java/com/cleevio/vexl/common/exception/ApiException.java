@@ -49,6 +49,7 @@ public abstract class ApiException extends RuntimeException {
         USER("100", "User Module Error."),
         CONTACT("101", "Contact Module Error."),
         GROUP("102", "Group Module Error."),
+        FILE("103", "File Module Error."),
         ;
 
         /**

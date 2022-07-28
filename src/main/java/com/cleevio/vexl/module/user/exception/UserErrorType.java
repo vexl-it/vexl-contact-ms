@@ -8,7 +8,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum UserErrorType implements ErrorType {
 
-    USER_DUPLICATE("101", "User already exists"),
+    USER_DUPLICATE("100", "User already exists"),
+    USER_NOT_FOUND("101", "User not found"),
     ;
 
 	/**

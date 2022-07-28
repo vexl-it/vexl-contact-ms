@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Immutable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -22,7 +21,6 @@ import javax.persistence.Table;
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Immutable
 public class User {
 
     @Id
@@ -30,9 +28,11 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "public_key")
+    @Column(name = "public_key", updatable = false, nullable = false, unique = true)
     private String publicKey;
 
-    @Column(name = "hash")
+    @Column(name = "hash", updatable = false, nullable = false)
     private String hash;
+
+    private String firebaseToken;
 }

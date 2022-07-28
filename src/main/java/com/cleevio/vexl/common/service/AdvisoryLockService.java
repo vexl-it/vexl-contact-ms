@@ -1,6 +1,6 @@
 package com.cleevio.vexl.common.service;
 
-import com.cleevio.vexl.common.enums.ModuleLockNamespace;
+import com.cleevio.vexl.common.constant.ModuleLockNamespace;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.Nullable;

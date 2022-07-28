@@ -2,6 +2,7 @@ package com.cleevio.vexl.common;
 
 import com.cleevio.vexl.Application;
 import com.cleevio.vexl.common.service.SignatureService;
+import com.cleevio.vexl.common.service.query.CheckSignatureValidityQuery;
 import com.cleevio.vexl.module.contact.service.ContactService;
 import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.module.user.service.UserService;
@@ -21,7 +22,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.transaction.Transactional;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -61,7 +61,7 @@ public abstract class BaseIntegrationTest {
         this.mvc = MockMvcBuilders.webAppContextSetup(this.wac).apply(springSecurity()).build();
         this.userService.save(getUser());
 
-        Mockito.when(signatureService.isSignatureValid(any(String.class), any(String.class), any(String.class))).thenReturn(true);
+        Mockito.when(signatureService.isSignatureValid(any(CheckSignatureValidityQuery.class))).thenReturn(true);
         Mockito.when(userService.findByPublicKeyAndHash(any(String.class), any(String.class))).thenReturn(Optional.of(getUser()));
         Mockito.when(userService.existsByPublicKeyAndHash(any(String.class), any(String.class))).thenReturn(true);
 

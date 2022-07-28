@@ -1,10 +1,11 @@
 package com.cleevio.vexl.module.facebook.service;
 
+import com.cleevio.vexl.common.cryptolib.CLibrary;
 import com.cleevio.vexl.module.contact.exception.InvalidFacebookToken;
 import com.cleevio.vexl.module.contact.service.ContactService;
 import com.cleevio.vexl.module.facebook.dto.FacebookUser;
 import com.cleevio.vexl.module.contact.exception.FacebookException;
-import com.cleevio.vexl.module.facebook.dto.response.FacebookContactResponse;
+import com.cleevio.vexl.module.facebook.dto.NewFacebookFriends;
 import com.cleevio.vexl.module.user.entity.User;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Service for connection to Facebook service.
@@ -59,7 +61,7 @@ public class FacebookService {
     }
 
     @Transactional(readOnly = true)
-    public FacebookContactResponse retrieveFacebookNotImportedConnection(User user, String facebookId, String accessToken)
+    public NewFacebookFriends retrieveFacebookNotImportedConnection(User user, String facebookId, String accessToken)
             throws FacebookException, InvalidFacebookToken {
         log.info("Checking for new Facebook connections for user {}",
                 user.getId());
@@ -68,22 +70,22 @@ public class FacebookService {
 
         final FacebookUser facebookUser = retrieveContacts(facebookId, accessToken);
 
-        facebookUser.getFriends().stream()
-                .map(FacebookUser::getId)
-                .toList()
-                .forEach(fbId -> {
-                    if (!this.contactService.existsByHashFromAndHashTo(user.getHash(), fbId)) {
-                        newConnections.addAll(facebookUser.getFriends()
-                                .stream()
-                                .filter(fu -> fbId.equals(fu.getId()))
-                                .toList());
-                    }
-                });
+        final Set<String> existingFriends = this.contactService.retrieveExistingContacts(
+                user.getHash(),
+                facebookUser.getFriends().stream()
+                        .map(FacebookUser::getId)
+                        .map(id -> CLibrary.CRYPTO_LIB.sha256_hash(id, id.length()))
+                        .toList());
+
+        facebookUser.getFriends().forEach(f -> {
+            if (!existingFriends.contains(CLibrary.CRYPTO_LIB.sha256_hash(f.getId(), f.getId().length()))) {
+                newConnections.add(f);
+            }
+        });
 
         log.info("Found {} new Facebook contacts",
                 newConnections.size());
 
-        return new FacebookContactResponse(facebookUser, newConnections);
-
+        return new NewFacebookFriends(facebookUser, newConnections);
     }
 }

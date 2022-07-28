@@ -1,8 +1,10 @@
 package com.cleevio.vexl.module.group.controller;
 
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
+import com.cleevio.vexl.module.group.dto.GroupModel;
 import com.cleevio.vexl.module.group.dto.mapper.GroupMapper;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
+import com.cleevio.vexl.module.group.dto.request.ExpiredGroupsRequest;
 import com.cleevio.vexl.module.group.dto.request.JoinGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.LeaveGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.NewMemberRequest;
@@ -12,7 +14,6 @@ import com.cleevio.vexl.module.group.dto.response.NewMembersResponse;
 import com.cleevio.vexl.module.group.service.GroupService;
 import com.cleevio.vexl.module.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,9 +29,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.validation.Valid;
-import java.util.List;
 
 @Tag(name = "Group")
 @RestController
@@ -53,8 +51,8 @@ public class GroupController {
             summary = "Create a new group",
             description = "Each user can create a new group."
     )
-    GroupCreatedResponse createGroup(@Parameter(hidden = true) @AuthenticationPrincipal User user,
-                                     @Valid @RequestBody CreateGroupRequest request) {
+    GroupCreatedResponse createGroup(@AuthenticationPrincipal User user,
+                                     @RequestBody CreateGroupRequest request) {
         return new GroupCreatedResponse(this.groupService.createGroup(user, request));
     }
 
@@ -69,8 +67,8 @@ public class GroupController {
             summary = "Join to a group",
             description = "For joining to a group, you need QR code of a group."
     )
-    void joinGroup(@Parameter(hidden = true) @AuthenticationPrincipal User user,
-                   @Valid @RequestBody JoinGroupRequest request) {
+    void joinGroup(@AuthenticationPrincipal User user,
+                   @RequestBody JoinGroupRequest request) {
         this.groupService.joinGroup(user, request);
     }
 
@@ -89,8 +87,8 @@ public class GroupController {
                     BE will return diff - that means BE will return public keys you do not have.
                     """
     )
-    NewMembersResponse retrieveNewMembers(@Parameter(hidden = true) @AuthenticationPrincipal User user,
-                                          @Valid @RequestBody NewMemberRequest request) {
+    NewMembersResponse retrieveNewMembers(@AuthenticationPrincipal User user,
+                                          @RequestBody NewMemberRequest request) {
         return new NewMembersResponse(this.groupService.retrieveNewMembers(request.groups(), user));
     }
 
@@ -105,9 +103,9 @@ public class GroupController {
             summary = "Find my groups.",
             description = "EP returns the groups the user is in."
     )
-    GroupsResponse retrieveMyGroups(@Parameter(hidden = true) @AuthenticationPrincipal User user) {
+    GroupsResponse retrieveMyGroups(@AuthenticationPrincipal User user) {
         return new GroupsResponse(
-                groupMapper.mapListToGroupResponse(
+                groupMapper.mapGroupModelToGroupResponse(
                         this.groupService.retrieveMyGroups(user)
                 )
         );
@@ -121,18 +119,18 @@ public class GroupController {
     })
     @ResponseStatus(HttpStatus.OK)
     @Operation(
-            summary = "Get group by UUID.",
-            description = "Put group UUIDs you're interested in into request params."
+            summary = "Get group by code.",
+            description = "Put group code you're interested in into request params."
     )
-    GroupsResponse retrieveGroupsByUuid(@RequestParam List<String> groupUuids) {
-        return new GroupsResponse(
-                groupMapper.mapListToGroupResponse(
-                        this.groupService.retrieveGroupsByUuid(groupUuids)
-                )
+    GroupsResponse.GroupResponse retrieveGroupsByCode(@RequestParam int code) {
+        final GroupModel groupModel = this.groupService.retrieveGroupByCode(code);
+        return new GroupsResponse.GroupResponse(
+                groupModel.group(),
+                groupModel.countMembers()
         );
     }
 
-    @GetMapping("/expired")
+    @PostMapping("/expired")
     @SecurityRequirements({
             @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
             @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
@@ -141,12 +139,12 @@ public class GroupController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(
             summary = "Get expired groups.",
-            description = "Put group UUIDs you know about into request params and EP will return which of them are expired."
+            description = "Put group UUID hashes you know about into request params and EP will return which of them are expired."
     )
-    GroupsResponse retrieveExpiredGroups(@RequestParam List<String> groupUuids) {
+    GroupsResponse retrieveExpiredGroups(@RequestBody ExpiredGroupsRequest request) {
         return new GroupsResponse(
-                groupMapper.mapListToGroupResponse(
-                        this.groupService.retrieveExpiredGroups(groupUuids)
+                groupMapper.mapGroupModelToGroupResponse(
+                        this.groupService.retrieveExpiredGroups(request)
                 )
         );
     }
@@ -162,7 +160,7 @@ public class GroupController {
             summary = "Leave group.",
             description = "If user want to leave group, send hash 256 of group uuid in payload."
     )
-    void leaveGroup(@Parameter(hidden = true) @AuthenticationPrincipal User user,
+    void leaveGroup(@AuthenticationPrincipal User user,
                     @RequestBody LeaveGroupRequest request) {
         this.groupService.leaveGroup(user, request);
     }

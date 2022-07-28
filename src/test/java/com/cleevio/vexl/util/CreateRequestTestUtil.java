@@ -5,6 +5,7 @@ import com.cleevio.vexl.module.contact.dto.request.ImportRequest;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.JoinGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.NewMemberRequest;
+import com.cleevio.vexl.module.user.dto.request.CreateUserRequest;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -16,7 +17,7 @@ public final class CreateRequestTestUtil {
     public static CreateGroupRequest createCreateGroupRequest() {
         return new CreateGroupRequest(
                 "dummy_name",
-                "dummy_logo",
+                null,
                 9223372036854777L,
                 654654648
         );
@@ -25,7 +26,7 @@ public final class CreateRequestTestUtil {
     public static CreateGroupRequest createCreateGroupRequestExpired() {
         return new CreateGroupRequest(
                 "dummy_name",
-                "dummy_logo",
+                null,
                 65465465,
                 654654648
         );
@@ -61,6 +62,12 @@ public final class CreateRequestTestUtil {
     public static DeleteContactsRequest createDeleteContactsRequest(List<String> contactsToDelete) {
         return new DeleteContactsRequest(
                 contactsToDelete
+        );
+    }
+
+    public static CreateUserRequest createCreateUserRequest(String firebaseToken) {
+        return new CreateUserRequest(
+                firebaseToken
         );
     }
 

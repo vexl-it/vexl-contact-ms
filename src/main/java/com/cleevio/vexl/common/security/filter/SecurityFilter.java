@@ -1,10 +1,10 @@
 package com.cleevio.vexl.common.security.filter;
 
 import com.cleevio.vexl.common.dto.ErrorResponse;
-import com.cleevio.vexl.common.enums.RoleEnum;
-import com.cleevio.vexl.common.exception.DigitalSignatureException;
+import com.cleevio.vexl.common.constant.RoleEnum;
 import com.cleevio.vexl.common.security.AuthenticationHolder;
 import com.cleevio.vexl.common.service.SignatureService;
+import com.cleevio.vexl.common.service.query.CheckSignatureValidityQuery;
 import com.cleevio.vexl.module.user.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -40,21 +40,21 @@ public class SecurityFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        String publicKey = request.getHeader(HEADER_PUBLIC_KEY);
-        String phoneHash = request.getHeader(HEADER_HASH);
-        String signature = request.getHeader(HEADER_SIGNATURE);
+        final String publicKey = request.getHeader(HEADER_PUBLIC_KEY);
+        final String hash = request.getHeader(HEADER_HASH);
+        final String signature = request.getHeader(HEADER_SIGNATURE);
 
-        if (signature == null || publicKey == null || phoneHash == null) {
+        if (signature == null || publicKey == null || hash == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
-            if (signatureService.isSignatureValid(publicKey, phoneHash, signature)) {
+            if (signatureService.isSignatureValid(new CheckSignatureValidityQuery(publicKey, hash, signature))) {
                 AuthenticationHolder authenticationHolder;
 
-                if (userService.existsByPublicKeyAndHash(publicKey, phoneHash)) {
-                    authenticationHolder = new AuthenticationHolder(userService.findByPublicKeyAndHash(publicKey, phoneHash).get(),
+                if (userService.existsByPublicKeyAndHash(publicKey, hash)) {
+                    authenticationHolder = new AuthenticationHolder(userService.findByPublicKeyAndHash(publicKey, hash).get(),
                             List.of(new SimpleGrantedAuthority(RoleEnum.ROLE_USER.name())));
                     authenticationHolder.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 } else {

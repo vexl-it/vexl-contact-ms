@@ -2,6 +2,7 @@ package com.cleevio.vexl.module.group.controller;
 
 import com.cleevio.vexl.common.BaseControllerTest;
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
+import com.cleevio.vexl.module.group.dto.GroupModel;
 import com.cleevio.vexl.module.group.dto.mapper.GroupMapper;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.JoinGroupRequest;
@@ -26,6 +27,7 @@ import java.util.Map;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -40,6 +42,7 @@ class GroupControllerTest extends BaseControllerTest {
 
     private static final User USER;
     private static final Group GROUP;
+    private static final GroupModel GROUP_MODEL;
 
     private static final String DEFAULT_EP = "/api/v1/groups";
     private static final String JOIN_EP = DEFAULT_EP + "/join";
@@ -53,9 +56,9 @@ class GroupControllerTest extends BaseControllerTest {
     private static final int EXPIRATION = 46546545;
     private static final int CLOSURE_AT = 1616161156;
     private static final int CODE = 456654;
+    private static final int MEMBERS_COUNT = 10;
     private static final String PUBLIC_KEY = "dummy_public_key";
     private static final CreateGroupRequest CREATE_GROUP_REQUEST;
-    private static final CreateGroupRequest CREATE_GROUP_REQUEST_INVALID;
     private static final JoinGroupRequest JOIN_GROUP_REQUEST;
     private static final LeaveGroupRequest LEAVE_GROUP_REQUEST;
     private static final NewMemberRequest NEW_MEMBER_REQUEST;
@@ -70,14 +73,7 @@ class GroupControllerTest extends BaseControllerTest {
     static {
         CREATE_GROUP_REQUEST = new CreateGroupRequest(
                 GROUP_NAME,
-                GROUP_LOGO,
-                EXPIRATION,
-                CLOSURE_AT
-        );
-
-        CREATE_GROUP_REQUEST_INVALID = new CreateGroupRequest(
-                "",
-                GROUP_LOGO,
+                null,
                 EXPIRATION,
                 CLOSURE_AT
         );
@@ -108,6 +104,8 @@ class GroupControllerTest extends BaseControllerTest {
         GROUP.setExpirationAt(EXPIRATION);
         GROUP.setClosureAt(CLOSURE_AT);
         GROUP.setCode(CODE);
+
+        GROUP_MODEL = new GroupModel(GROUP, MEMBERS_COUNT);
     }
 
     @BeforeEach
@@ -134,18 +132,6 @@ class GroupControllerTest extends BaseControllerTest {
                 .andExpect(jsonPath("$.expiration", is(EXPIRATION)))
                 .andExpect(jsonPath("$.closure", is(CLOSURE_AT)))
                 .andExpect(jsonPath("$.code", is(CODE)));
-    }
-
-    @Test
-    @SneakyThrows
-    void testCreate_invalidInput_shouldReturn400() {
-        mvc.perform(post(DEFAULT_EP)
-                        .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
-                        .header(SecurityFilter.HEADER_HASH, HASH)
-                        .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(CREATE_GROUP_REQUEST_INVALID)))
-                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -179,8 +165,8 @@ class GroupControllerTest extends BaseControllerTest {
     @Test
     @SneakyThrows
     void testGetMe_shouldReturn200() {
-        when(groupService.retrieveMyGroups(any())).thenReturn(List.of(GROUP));
-        when(groupMapper.mapListToGroupResponse(List.of(GROUP))).thenReturn(List.of(new GroupsResponse.GroupResponse(GROUP)));
+        when(groupService.retrieveMyGroups(any())).thenReturn(List.of(GROUP_MODEL));
+        when(groupMapper.mapGroupModelToGroupResponse(List.of(GROUP_MODEL))).thenReturn(List.of(new GroupsResponse.GroupResponse(GROUP, MEMBERS_COUNT)));
 
         mvc.perform(get(ME_EP)
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
@@ -193,47 +179,51 @@ class GroupControllerTest extends BaseControllerTest {
                 .andExpect(jsonPath("$.groupResponse[0].createdAt", notNullValue()))
                 .andExpect(jsonPath("$.groupResponse[0].expirationAt", is(EXPIRATION)))
                 .andExpect(jsonPath("$.groupResponse[0].closureAt", is(CLOSURE_AT)))
-                .andExpect(jsonPath("$.groupResponse[0].code", is(CODE)));
+                .andExpect(jsonPath("$.groupResponse[0].code", is(CODE)))
+                .andExpect(jsonPath("$.groupResponse[0].memberCount", is(MEMBERS_COUNT)));
     }
 
     @Test
     @SneakyThrows
-    void testGetGroups_shouldReturn200() {
-        when(groupService.retrieveGroupsByUuid(any())).thenReturn(List.of(GROUP));
-        when(groupMapper.mapListToGroupResponse(List.of(GROUP))).thenReturn(List.of(new GroupsResponse.GroupResponse(GROUP)));
+    void testGetGroup_shouldReturn200() {
+        when(groupService.retrieveGroupByCode(anyInt())).thenReturn(GROUP_MODEL);
+        when(groupMapper.mapGroupModelToGroupResponse(List.of(GROUP_MODEL))).thenReturn(List.of(new GroupsResponse.GroupResponse(GROUP, MEMBERS_COUNT)));
 
-        mvc.perform(get(DEFAULT_EP + "?groupUuids=783fb3e5-5828-4d19-801b-0cd3762579e0")
+        mvc.perform(get(DEFAULT_EP + "?code=783456")
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
                         .header(SecurityFilter.HEADER_HASH, HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.groupResponse[0].uuid", notNullValue()))
-                .andExpect(jsonPath("$.groupResponse[0].name", is(GROUP_NAME)))
-                .andExpect(jsonPath("$.groupResponse[0].createdAt", notNullValue()))
-                .andExpect(jsonPath("$.groupResponse[0].expirationAt", is(EXPIRATION)))
-                .andExpect(jsonPath("$.groupResponse[0].closureAt", is(CLOSURE_AT)))
-                .andExpect(jsonPath("$.groupResponse[0].code", is(CODE)));
+                .andExpect(jsonPath("$.uuid", notNullValue()))
+                .andExpect(jsonPath("$.name", is(GROUP_NAME)))
+                .andExpect(jsonPath("$.createdAt", notNullValue()))
+                .andExpect(jsonPath("$.expirationAt", is(EXPIRATION)))
+                .andExpect(jsonPath("$.closureAt", is(CLOSURE_AT)))
+                .andExpect(jsonPath("$.code", is(CODE)))
+                .andExpect(jsonPath("$.memberCount", is(MEMBERS_COUNT)));
     }
 
     @Test
     @SneakyThrows
     void testGetExpiredGroups_shouldReturn200() {
-        when(groupService.retrieveExpiredGroups(any())).thenReturn(List.of(GROUP));
-        when(groupMapper.mapListToGroupResponse(List.of(GROUP))).thenReturn(List.of(new GroupsResponse.GroupResponse(GROUP)));
+        when(groupService.retrieveExpiredGroups(any())).thenReturn(List.of(GROUP_MODEL));
+        when(groupMapper.mapGroupModelToGroupResponse(List.of(GROUP_MODEL))).thenReturn(List.of(new GroupsResponse.GroupResponse(GROUP, MEMBERS_COUNT)));
 
-        mvc.perform(get(EXPIRED_EP + "?groupUuids=783fb3e5-5828-4d19-801b-0cd3762579e0")
+        mvc.perform(post(EXPIRED_EP)
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
                         .header(SecurityFilter.HEADER_HASH, HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(NEW_MEMBER_REQUEST)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.groupResponse[0].uuid", notNullValue()))
                 .andExpect(jsonPath("$.groupResponse[0].name", is(GROUP_NAME)))
                 .andExpect(jsonPath("$.groupResponse[0].createdAt", notNullValue()))
                 .andExpect(jsonPath("$.groupResponse[0].expirationAt", is(EXPIRATION)))
                 .andExpect(jsonPath("$.groupResponse[0].closureAt", is(CLOSURE_AT)))
-                .andExpect(jsonPath("$.groupResponse[0].code", is(CODE)));
+                .andExpect(jsonPath("$.groupResponse[0].code", is(CODE)))
+                .andExpect(jsonPath("$.groupResponse[0].memberCount", is(MEMBERS_COUNT)));
     }
 
     @Test

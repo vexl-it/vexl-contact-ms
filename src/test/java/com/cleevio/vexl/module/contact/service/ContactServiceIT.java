@@ -2,8 +2,9 @@ package com.cleevio.vexl.module.contact.service;
 
 import com.cleevio.vexl.common.IntegrationTest;
 import com.cleevio.vexl.module.contact.dto.response.ImportResponse;
-import com.cleevio.vexl.module.contact.enums.ConnectionLevel;
+import com.cleevio.vexl.module.contact.constant.ConnectionLevel;
 import com.cleevio.vexl.module.contact.exception.ContactsMissingException;
+import com.cleevio.vexl.module.user.dto.request.CreateUserRequest;
 import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.module.user.service.UserService;
 import com.cleevio.vexl.util.CreateRequestTestUtil;
@@ -32,18 +33,25 @@ class ContactServiceIT {
     private final static String PHONE_2 = "dummy_phone_2";
     private final static String PHONE_3 = "dummy_phone_3";
     private final static String PHONE_4 = "dummy_phone_4";
+    private final static String FIREBASE_TOKEN_1 = "dummy_firebase_token_1";
+    private final static String FIREBASE_TOKEN_2 = "dummy_firebase_token_2";
+    private final static String FIREBASE_TOKEN_3 = "dummy_firebase_token_3";
+    private final static String FIREBASE_TOKEN_4 = "dummy_firebase_token_4";
+    private final static String GROUP_UUID = "dummy_group_uuid";
     private final static List<String> CONTACTS_1 = List.of(PHONE_1, PHONE_2);
     private final static List<String> CONTACTS_2 = List.of(PHONE_3, PHONE_4);
     private final ContactService contactService;
     private final ImportService importService;
     private final UserService userService;
+    private final ContactRepository contactRepository;
 
     @Autowired
     public ContactServiceIT(ContactService contactService, ImportService importService,
-                            UserService userService) {
+                            UserService userService, ContactRepository contactRepository) {
         this.contactService = contactService;
         this.importService = importService;
         this.userService = userService;
+        this.contactRepository = contactRepository;
     }
 
     @Test
@@ -55,7 +63,7 @@ class ContactServiceIT {
 
         assertThat(importResponse.imported()).isTrue();
 
-        final int contactsCount = contactService.getContactsCount(HASH_USER);
+        final int contactsCount = contactService.getContactsCountByHashFrom(HASH_USER);
 
         assertThat(contactsCount).isEqualTo(CONTACTS_1.size());
 
@@ -91,7 +99,7 @@ class ContactServiceIT {
         assertThat(importResponse2.imported()).isTrue();
         assertThat(importResponse3.imported()).isTrue();
 
-        final int contactsCount = contactService.getContactsCount(HASH_USER);
+        final int contactsCount = contactService.getContactsCountByHashFrom(HASH_USER);
 
         assertThat(contactsCount).isEqualTo(CONTACTS_1.size());
 
@@ -120,7 +128,7 @@ class ContactServiceIT {
         assertThat(importResponse1.imported()).isTrue();
         assertThat(importResponse2.imported()).isTrue();
 
-        final int contactsCount = contactService.getContactsCount(HASH_USER);
+        final int contactsCount = contactService.getContactsCountByHashFrom(HASH_USER);
 
         assertThat(contactsCount).isEqualTo(CONTACTS_1.size()); //returns only first level, it is used for count of how many contacts user imported
 
@@ -152,7 +160,7 @@ class ContactServiceIT {
         assertThat(importResponse1.imported()).isTrue();
         assertThat(importResponse2.imported()).isTrue();
 
-        final int contactsCount = contactService.getContactsCount(HASH_USER);
+        final int contactsCount = contactService.getContactsCountByHashFrom(HASH_USER);
 
         assertThat(contactsCount).isEqualTo(CONTACTS_1.size()); //returns only first level, it is used for count of how many contacts user imported
 
@@ -182,7 +190,7 @@ class ContactServiceIT {
         assertThat(importResponse1.imported()).isTrue();
         assertThat(importResponse2.imported()).isTrue();
 
-        final int contactsCount = contactService.getContactsCount(HASH_USER);
+        final int contactsCount = contactService.getContactsCountByHashFrom(HASH_USER);
 
         assertThat(contactsCount).isEqualTo(CONTACTS_1.size()); //returns only first level, it is used for count of how many contacts user imported
 
@@ -208,27 +216,27 @@ class ContactServiceIT {
         assertThat(importResponse1.imported()).isTrue();
         assertThat(importResponse2.imported()).isTrue();
 
-        final int contactsCount = contactService.getContactsCount(HASH_USER);
+        final int contactsCount = contactService.getContactsCountByHashFrom(HASH_USER);
         assertThat(contactsCount).isEqualTo(CONTACTS_1.size() + CONTACTS_2.size());
 
         //deleting contact by hash
         this.contactService.deleteContactByHash(HASH_USER, CONTACTS_1.get(0));
 
-        final int contactsCountAfterOneDelete = contactService.getContactsCount(HASH_USER);
+        final int contactsCountAfterOneDelete = contactService.getContactsCountByHashFrom(HASH_USER);
         final List<String> contactsAfterOneDelete = contactService.retrieveContactsByUser(user, 0, 10, ConnectionLevel.ALL).get().toList();
         assertThat(contactsCountAfterOneDelete).isEqualTo(CONTACTS_1.size() + CONTACTS_2.size() - 1);
         assertThat(contactsAfterOneDelete).doesNotContain(CONTACTS_1.get(0));
 
         //deleting contacts by hash
         this.contactService.deleteContacts(user, CreateRequestTestUtil.createDeleteContactsRequest(List.of(userFriend.getPublicKey())));
-        final int contactsCountAfterTwoDelete = contactService.getContactsCount(HASH_USER);
+        final int contactsCountAfterTwoDelete = contactService.getContactsCountByHashFrom(HASH_USER);
         final List<String> contactsAfterTwoDelete = contactService.retrieveContactsByUser(user, 0, 10, ConnectionLevel.ALL).get().toList();
         assertThat(contactsCountAfterTwoDelete).isEqualTo(CONTACTS_2.size());
         assertThat(contactsAfterTwoDelete).doesNotContain(CONTACTS_1.get(0), CONTACTS_1.get(0));
 
         //deleting everything
         this.contactService.deleteAllContacts(PUBLIC_KEY_USER_1);
-        final int contactsCountAfterRemovingAll = contactService.getContactsCount(HASH_USER);
+        final int contactsCountAfterRemovingAll = contactService.getContactsCountByHashFrom(HASH_USER);
         final List<String> contactsAfterRemovingAll = contactService.retrieveContactsByUser(user, 0, 10, ConnectionLevel.ALL).get().toList();
         assertThat(contactsCountAfterRemovingAll).isEqualTo(0);
         assertThat(contactsAfterRemovingAll).isEmpty();
@@ -254,6 +262,28 @@ class ContactServiceIT {
         assertThat(contacts.publicKey()).isEqualTo(PUBLIC_KEY_USER_2);
         assertThat(common.get(0)).isEqualTo(CONTACTS_2.get(0));
         assertThat(common.get(1)).isEqualTo(CONTACTS_2.get(1));
+    }
+
+    @Test
+    void testRetrieveFirebaseTokensByGroupUuid_shouldRetrieveFirebaseTokens() {
+        final User mainUser = this.userService.createUser(PUBLIC_KEY_USER_1, HASH_USER, new CreateUserRequest(FIREBASE_TOKEN_4));
+        importService.importContacts(mainUser, CreateRequestTestUtil.createImportRequest(List.of(GROUP_UUID)));
+
+        final User groupMember1 = this.userService.createUser(PUBLIC_KEY_USER_2, PHONE_1, new CreateUserRequest(FIREBASE_TOKEN_1));
+        importService.importContacts(groupMember1, CreateRequestTestUtil.createImportRequest(List.of(GROUP_UUID)));
+
+        final User groupMember2 = this.userService.createUser(PUBLIC_KEY_USER_3, PHONE_2, new CreateUserRequest(FIREBASE_TOKEN_2));
+        importService.importContacts(groupMember2, CreateRequestTestUtil.createImportRequest(List.of(GROUP_UUID)));
+
+        final User notMember = this.userService.createUser(PUBLIC_KEY_USER_4, PHONE_3, new CreateUserRequest(FIREBASE_TOKEN_3));
+        importService.importContacts(notMember, CreateRequestTestUtil.createImportRequest(List.of(PUBLIC_KEY_USER_1)));
+
+        final List<String> membersFirebaseTokens = contactRepository.retrieveMembersFirebaseTokens(GROUP_UUID, PUBLIC_KEY_USER_1);
+
+        assertThat(membersFirebaseTokens).hasSize(2);
+        assertThat(membersFirebaseTokens.get(0)).contains(groupMember1.getFirebaseToken());
+        assertThat(membersFirebaseTokens.get(1)).isEqualTo(groupMember2.getFirebaseToken());
+        assertThat(membersFirebaseTokens).doesNotContain(FIREBASE_TOKEN_3, FIREBASE_TOKEN_4);
     }
 
 
