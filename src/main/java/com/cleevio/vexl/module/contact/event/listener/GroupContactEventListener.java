@@ -28,7 +28,7 @@ class GroupContactEventListener {
     }
 
     @EventListener
-    public void onGroupJoinedEvent(@Valid final GroupJoinRequestedEvent event) {
+    public void onGroupJoinRequestedEvent(@Valid final GroupJoinRequestedEvent event) {
         this.importService.importContacts(event.user(), new ImportRequest(List.of(event.groupUuid())));
         this.contactService.sendNotificationsToGroupMembers(event.groupUuid(), event.user().getPublicKey());
     }
