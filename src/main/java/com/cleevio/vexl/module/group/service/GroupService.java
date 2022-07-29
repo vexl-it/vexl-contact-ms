@@ -93,7 +93,8 @@ public class GroupService {
 
     @Transactional(readOnly = true)
     public GroupModel retrieveGroupByCode(final int code) {
-        final Group group = this.groupRepository.findGroupsByCode(code);
+        final Group group = this.groupRepository.findGroupsByCode(code)
+                .orElseThrow(GroupNotFoundException::new);
         return new GroupModel(
                 group,
                 contactService.getContactsCountByHashTo(group.getUuid())
