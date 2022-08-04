@@ -4,6 +4,7 @@ import com.cleevio.vexl.common.IntegrationTest;
 import com.cleevio.vexl.module.contact.dto.response.ImportResponse;
 import com.cleevio.vexl.module.contact.constant.ConnectionLevel;
 import com.cleevio.vexl.module.contact.exception.ContactsMissingException;
+import com.cleevio.vexl.module.contact.exception.InvalidCommonContactsException;
 import com.cleevio.vexl.module.user.dto.request.CreateUserRequest;
 import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.module.user.service.UserService;
@@ -255,13 +256,38 @@ class ContactServiceIT {
         assertThat(importResponse2.imported()).isTrue();
         assertThat(importResponse3.imported()).isTrue();
 
-        final var commonContactsResponse = this.contactService.retrieveCommonContacts(PUBLIC_KEY_USER_1, List.of(PUBLIC_KEY_USER_2));
+        final var commonContactsResponse = this.contactService.retrieveCommonContacts(
+                PUBLIC_KEY_USER_1,
+                CreateRequestTestUtil.createCommonContactsRequest(List.of(PUBLIC_KEY_USER_2))
+        );
         final var contacts = commonContactsResponse.commonContacts().get(0);
         final var common = contacts.common().hashes().stream().sorted().toList();
 
         assertThat(contacts.publicKey()).isEqualTo(PUBLIC_KEY_USER_2);
         assertThat(common.get(0)).isEqualTo(CONTACTS_2.get(0));
         assertThat(common.get(1)).isEqualTo(CONTACTS_2.get(1));
+    }
+
+    @Test
+    void testRetrieveCommonContacts_invalidInput_sentOwnPublicKey_shouldReturnException() {
+        final User mainUser = this.userService.createUser(PUBLIC_KEY_USER_1, HASH_USER);
+        ImportResponse importResponse1 = importService.importContacts(mainUser, CreateRequestTestUtil.createImportRequest(CONTACTS_1));
+        ImportResponse importResponse2 = importService.importContacts(mainUser, CreateRequestTestUtil.createImportRequest(CONTACTS_2));
+
+        final User userFriend = this.userService.createUser(PUBLIC_KEY_USER_2, CONTACTS_1.get(1));
+        ImportResponse importResponse3 = importService.importContacts(userFriend, CreateRequestTestUtil.createImportRequest(CONTACTS_2));
+
+        assertThat(importResponse1.imported()).isTrue();
+        assertThat(importResponse2.imported()).isTrue();
+        assertThat(importResponse3.imported()).isTrue();
+
+        assertThrows(
+                InvalidCommonContactsException.class,
+                () -> this.contactService.retrieveCommonContacts(
+                        PUBLIC_KEY_USER_1,
+                        CreateRequestTestUtil.createCommonContactsRequest(List.of(PUBLIC_KEY_USER_2, PUBLIC_KEY_USER_1))
+                )
+        );
     }
 
     @Test

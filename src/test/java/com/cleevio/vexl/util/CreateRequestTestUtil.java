@@ -1,5 +1,6 @@
 package com.cleevio.vexl.util;
 
+import com.cleevio.vexl.module.contact.dto.request.CommonContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.DeleteContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.ImportRequest;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
@@ -40,6 +41,12 @@ public final class CreateRequestTestUtil {
 
     public static ImportRequest createImportRequest(List<String> contacts) {
         return new ImportRequest(
+                contacts
+        );
+    }
+
+    public static CommonContactsRequest createCommonContactsRequest(List<String> contacts) {
+        return new CommonContactsRequest(
                 contacts
         );
     }

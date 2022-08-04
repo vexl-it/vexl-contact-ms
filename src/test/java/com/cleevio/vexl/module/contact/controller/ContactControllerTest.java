@@ -2,6 +2,7 @@ package com.cleevio.vexl.module.contact.controller;
 
 import com.cleevio.vexl.common.BaseControllerTest;
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
+import com.cleevio.vexl.module.contact.dto.request.CommonContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.DeleteContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.ImportRequest;
 import com.cleevio.vexl.module.contact.dto.request.NewContactsRequest;
@@ -50,6 +51,7 @@ public class ContactControllerTest extends BaseControllerTest {
     private static final NewContactsRequest NEW_CONTACTS_REQUEST;
     private static final DeleteContactsRequest DELETE_CONTACTS_REQUEST;
     private static final CommonContactsResponse COMMON_CONTACTS_RESPONSE;
+    private static final CommonContactsRequest COMMON_CONTACTS_REQUEST;
 
     @BeforeEach
     @SneakyThrows
@@ -66,6 +68,8 @@ public class ContactControllerTest extends BaseControllerTest {
 
         COMMON_CONTACTS_RESPONSE = new CommonContactsResponse(
                 List.of(new CommonContactsResponse.Contacts(PUBLIC_KEY, new CommonContactsResponse.Contacts.CommonContacts(List.of(HASH)))));
+
+        COMMON_CONTACTS_REQUEST = new CommonContactsRequest(List.of(PUBLIC_KEY));
     }
 
 
@@ -139,12 +143,12 @@ public class ContactControllerTest extends BaseControllerTest {
     public void getCommonFriends_validInput_shouldReturn200() throws Exception {
         when(contactService.retrieveCommonContacts(any(), any())).thenReturn(COMMON_CONTACTS_RESPONSE);
 
-        mvc.perform(get(COMMON_EP + String.format("?publicKeys=%s&%s", PUBLIC_KEY, PUBLIC_KEY_2))
+        mvc.perform(post(COMMON_EP)
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
                         .header(SecurityFilter.HEADER_HASH, HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(DELETE_CONTACTS_REQUEST)))
+                        .content(asJsonString(COMMON_CONTACTS_REQUEST)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.commonContacts[0].publicKey", is(PUBLIC_KEY)))
                 .andExpect(jsonPath("$.commonContacts[0].common.hashes", is(List.of(HASH))));

@@ -3,6 +3,7 @@ package com.cleevio.vexl.module.contact.controller;
 import com.cleevio.vexl.common.dto.ErrorResponse;
 import com.cleevio.vexl.common.dto.PaginatedResponse;
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
+import com.cleevio.vexl.module.contact.dto.request.CommonContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.DeleteContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.ImportRequest;
 import com.cleevio.vexl.module.contact.dto.request.NewContactsRequest;
@@ -40,7 +41,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 @Tag(name = "Contact")
 @Slf4j
@@ -148,7 +148,7 @@ public class ContactController {
         return new NewContactsResponse(this.contactService.retrieveNewContacts(user, contactsRequest));
     }
 
-    @GetMapping("/common")
+    @PostMapping("/common")
     @SecurityRequirements({
             @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
             @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
@@ -160,8 +160,8 @@ public class ContactController {
             summary = "Retrieve common connections.",
             description = "Send public keys and common contacts will be returned for every sent public key."
     )
-    CommonContactsResponse retrieveCommonContacts(@RequestParam List<String> publicKeys,
+    CommonContactsResponse retrieveCommonContacts(@RequestBody CommonContactsRequest request,
                                                   @RequestHeader(name = SecurityFilter.HEADER_PUBLIC_KEY) String ownerPublicKey) {
-        return this.contactService.retrieveCommonContacts(ownerPublicKey, publicKeys);
+        return this.contactService.retrieveCommonContacts(ownerPublicKey, request);
     }
 }

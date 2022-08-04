@@ -1,10 +1,12 @@
 package com.cleevio.vexl.module.contact.service;
 
+import com.cleevio.vexl.module.contact.dto.request.CommonContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.DeleteContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.NewContactsRequest;
 import com.cleevio.vexl.module.contact.dto.response.CommonContactsResponse;
 import com.cleevio.vexl.module.contact.constant.ConnectionLevel;
 import com.cleevio.vexl.module.contact.event.GroupJoinedEvent;
+import com.cleevio.vexl.module.contact.exception.InvalidCommonContactsException;
 import com.cleevio.vexl.module.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -101,7 +103,11 @@ public class ContactService {
     }
 
     @Transactional(readOnly = true)
-    public CommonContactsResponse retrieveCommonContacts(String ownerPublicKey, List<String> publicKeys) {
+    public CommonContactsResponse retrieveCommonContacts(final String ownerPublicKey, @Valid final CommonContactsRequest request) {
+        final List<String> publicKeys = request.publicKeys();
+        if (publicKeys.contains(ownerPublicKey)) {
+            throw new InvalidCommonContactsException();
+        }
         List<CommonContactsResponse.Contacts> contacts = new ArrayList<>();
         publicKeys.stream()
                 .map(String::trim)
@@ -129,10 +135,5 @@ public class ContactService {
         final List<String> membersFirebaseTokens = this.contactRepository.retrieveMembersFirebaseTokens(groupUuid, publicKey);
         if (membersFirebaseTokens.isEmpty()) return;
         applicationEventPublisher.publishEvent(new GroupJoinedEvent(groupUuid, membersFirebaseTokens));
-    }
-
-    @Transactional(readOnly = true)
-    public int retrieveCountByHash(final String hash) {
-        return this.contactRepository.countContactsByHashTo(hash);
     }
 }
