@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -61,6 +62,28 @@ class ContactServiceIT {
         this.userService.createUser(PUBLIC_KEY_USER_2, CONTACTS_1.get(0));
         this.userService.createUser(PUBLIC_KEY_USER_3, CONTACTS_1.get(1));
         final ImportResponse importResponse = importService.importContacts(user, CreateRequestTestUtil.createImportRequest(CONTACTS_1));
+
+        assertThat(importResponse.imported()).isTrue();
+
+        final int contactsCount = contactService.getContactsCountByHashFrom(HASH_USER);
+
+        assertThat(contactsCount).isEqualTo(CONTACTS_1.size());
+
+        final List<String> contacts = contactService.retrieveContactsByUser(user, 0, 10, ConnectionLevel.ALL).get().toList();
+
+        assertThat(contacts).hasSize(CONTACTS_1.size());
+        assertThat(contacts.get(0)).isEqualTo(PUBLIC_KEY_USER_2);
+        assertThat(contacts.get(1)).isEqualTo(PUBLIC_KEY_USER_3);
+    }
+
+    @Test
+    void testImportContacts_sendingMyOwnNumber_shouldBeImportedWithoutMyNumber() {
+        final User user = this.userService.createUser(PUBLIC_KEY_USER_1, HASH_USER);
+        this.userService.createUser(PUBLIC_KEY_USER_2, CONTACTS_1.get(0));
+        this.userService.createUser(PUBLIC_KEY_USER_3, CONTACTS_1.get(1));
+
+        final List<String> contactsToImport = Arrays.asList(CONTACTS_1.get(0), CONTACTS_1.get(1), HASH_USER);
+        final ImportResponse importResponse = importService.importContacts(user, CreateRequestTestUtil.createImportRequest(contactsToImport));
 
         assertThat(importResponse.imported()).isTrue();
 

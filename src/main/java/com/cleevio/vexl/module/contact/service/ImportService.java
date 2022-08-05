@@ -44,6 +44,7 @@ public class ImportService {
         final List<String> trimContacts = importRequest.contacts()
                 .stream()
                 .map(String::trim)
+                .filter(c -> !c.equals(user.getHash()))
                 .toList();
 
         int imported = 0;
@@ -53,11 +54,11 @@ public class ImportService {
         for (final String trimContact : trimContacts) {
             if (existingContacts.add(trimContact)) {
                 final UserContact contact = UserContact.builder()
-                                .hashFrom(user.getHash())
-                                .hashTo(trimContact)
-                                .build();
-                        this.contactRepository.save(contact);
-                        imported++;
+                        .hashFrom(user.getHash())
+                        .hashTo(trimContact)
+                        .build();
+                this.contactRepository.save(contact);
+                imported++;
             }
         }
 
