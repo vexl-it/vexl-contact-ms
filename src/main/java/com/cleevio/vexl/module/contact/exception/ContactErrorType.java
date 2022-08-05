@@ -12,7 +12,6 @@ public enum ContactErrorType implements ErrorType {
     INVALID_TOKEN("101", "Expired Facebook token"),
     MISSING_CONTACTS("102", "Import list is empty. Nothing to import."),
     INVALID_LEVEL("103", "Invalid connection level. Options - first, second, all. No case sensitive."),
-    INVALID_COMMON_CONTACTS("104", "Invalid common contacts. You've sent your own public key in the request."),
     ;
 
 	/**

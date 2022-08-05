@@ -6,7 +6,6 @@ import com.cleevio.vexl.module.contact.dto.request.NewContactsRequest;
 import com.cleevio.vexl.module.contact.dto.response.CommonContactsResponse;
 import com.cleevio.vexl.module.contact.constant.ConnectionLevel;
 import com.cleevio.vexl.module.contact.event.GroupJoinedEvent;
-import com.cleevio.vexl.module.contact.exception.InvalidCommonContactsException;
 import com.cleevio.vexl.module.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -105,12 +104,10 @@ public class ContactService {
     @Transactional(readOnly = true)
     public CommonContactsResponse retrieveCommonContacts(final String ownerPublicKey, @Valid final CommonContactsRequest request) {
         final List<String> publicKeys = request.publicKeys();
-        if (publicKeys.contains(ownerPublicKey)) {
-            throw new InvalidCommonContactsException();
-        }
         List<CommonContactsResponse.Contacts> contacts = new ArrayList<>();
         publicKeys.stream()
                 .map(String::trim)
+                .filter(pk -> !pk.equals(ownerPublicKey))
                 .forEach(pk -> {
                     final List<String> commonContacts = this.contactRepository.retrieveCommonContacts(ownerPublicKey, pk);
                     contacts.add(new CommonContactsResponse.Contacts(pk, new CommonContactsResponse.Contacts.CommonContacts(commonContacts)));
