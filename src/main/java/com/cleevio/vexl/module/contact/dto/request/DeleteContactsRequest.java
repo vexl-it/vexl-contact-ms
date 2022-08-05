@@ -7,7 +7,7 @@ import java.util.List;
 
 public record DeleteContactsRequest(
 
-        @Schema(required = true, description = "Public keys of contacts to delete.")
+        @Schema(required = true, description = "Hashes of contacts to delete.")
         List<@NotBlank String> contactsToDelete
 
 ) {

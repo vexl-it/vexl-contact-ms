@@ -21,12 +21,10 @@ interface ContactRepository extends JpaRepository<UserContact, Long>, JpaSpecifi
     @Modifying
     @Query("""
             delete from UserContact uc 
-            where uc.hashTo in ( 
-            select u.hash from User u 
-            where u.publicKey in (:publicKeys)) 
-            AND uc.hashFrom = :hash
+            where uc.hashFrom = :hash and 
+            uc.hashTo in (:hashes)
             """)
-    void deleteContacts(String hash, List<String> publicKeys);
+    void deleteContactsByHashes(String hash, List<String> hashes);
 
     @Query("select count(distinct uc) from UserContact uc where uc.hashFrom = :hash ")
     int countContactsByHashFrom(String hash);

@@ -125,7 +125,11 @@ public class ContactController {
     })
     @ApiResponse(responseCode = "204")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "Remove contacts by public key.")
+    @Operation(summary = "Remove contacts by hashes.", description = """
+            Hashes are deleted for user according hash in headers. 
+            If you want to delete phone contacts, you have to have your phone hash in headers.
+            If you want to delete facebook contacts, you have to have your facebook hash in headers.
+            """)
     void deleteContacts(@AuthenticationPrincipal User user,
                         @RequestBody DeleteContactsRequest deleteContactsRequest) {
         this.contactService.deleteContacts(user, deleteContactsRequest);

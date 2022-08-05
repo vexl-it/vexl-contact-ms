@@ -59,7 +59,7 @@ public class ContactService {
                 .map(String::trim)
                 .toList();
 
-        this.contactRepository.deleteContacts(user.getHash(), contactsToDelete);
+        this.contactRepository.deleteContactsByHashes(user.getHash(), contactsToDelete);
     }
 
     public void deleteContactByHash(String hash, String contactHash) {

@@ -250,8 +250,8 @@ class ContactServiceIT {
         assertThat(contactsCountAfterOneDelete).isEqualTo(CONTACTS_1.size() + CONTACTS_2.size() - 1);
         assertThat(contactsAfterOneDelete).doesNotContain(CONTACTS_1.get(0));
 
-        //deleting contacts by hash
-        this.contactService.deleteContacts(user, CreateRequestTestUtil.createDeleteContactsRequest(List.of(userFriend.getPublicKey())));
+        //deleting contacts by hashes
+        this.contactService.deleteContacts(user, CreateRequestTestUtil.createDeleteContactsRequest(List.of(userFriend.getHash())));
         final int contactsCountAfterTwoDelete = contactService.getContactsCountByHashFrom(HASH_USER);
         final List<String> contactsAfterTwoDelete = contactService.retrieveContactsByUser(user, 0, 10, ConnectionLevel.ALL).get().toList();
         assertThat(contactsCountAfterTwoDelete).isEqualTo(CONTACTS_2.size());
