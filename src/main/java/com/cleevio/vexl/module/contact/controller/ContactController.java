@@ -13,7 +13,6 @@ import com.cleevio.vexl.module.contact.dto.response.NewContactsResponse;
 import com.cleevio.vexl.module.contact.dto.response.UserContactResponse;
 import com.cleevio.vexl.module.contact.dto.response.ImportResponse;
 import com.cleevio.vexl.module.contact.constant.ConnectionLevel;
-import com.cleevio.vexl.module.contact.exception.InvalidLevelException;
 import com.cleevio.vexl.module.contact.service.ContactService;
 import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.module.contact.service.ImportService;
@@ -89,16 +88,11 @@ public class ContactController {
                                                        @RequestParam(required = false, defaultValue = "10") int limit,
                                                        @RequestParam(required = false) ConnectionLevel level,
                                                        HttpServletRequest request) {
-        try {
-            return new PaginatedResponse<>(
-                    request,
-                    this.contactService.retrieveContactsByUser(user, page, limit, level)
-                            .map(UserContactResponse::new)
-            );
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid level {} ", level);
-            throw new InvalidLevelException();
-        }
+        return new PaginatedResponse<>(
+                request,
+                this.contactService.retrieveContactsByUser(user, page, limit, level)
+                        .map(UserContactResponse::new)
+        );
     }
 
     @GetMapping("/count")

@@ -13,7 +13,7 @@ interface GroupRepository extends JpaRepository<Group, Long>, JpaSpecificationEx
     @Query("select g from Group g where g.uuid in (:uuids) and g.expirationAt > extract(epoch from now())")
     List<Group> findGroupsByUuids(List<String> uuids);
 
-    @Query("select g.uuid from Group g where g.code = :code and g.expirationAt > extract(epoch from now())")
+    @Query("select g.uuid from Group g where g.code = :code and g.expirationAt > extract(epoch from now()) and g.closureAt > extract(epoch from now())")
     Optional<String> findGroupUuidByCode(int code);
 
     @Query("select g from Group g where g.uuid in (:groupUuids) and g.expirationAt < extract(epoch from now())")

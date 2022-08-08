@@ -130,7 +130,7 @@ public class ContactService {
     }
 
     @Transactional(readOnly = true)
-    public void sendNotificationsToGroupMembers(final String groupUuid, final String publicKey) {
+    public void storeNotificationsForLaterProcessing(final String groupUuid, final String publicKey) {
         final Set<String> membersFirebaseTokens = this.contactRepository.retrieveGroupMembersFirebaseTokens(groupUuid, publicKey);
         if (membersFirebaseTokens.isEmpty()) return;
         applicationEventPublisher.publishEvent(new GroupJoinedEvent(groupUuid, membersFirebaseTokens));
