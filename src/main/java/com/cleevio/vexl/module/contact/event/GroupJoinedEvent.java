@@ -1,14 +1,14 @@
 package com.cleevio.vexl.module.contact.event;
 
 import javax.validation.constraints.NotBlank;
-import java.util.List;
+import java.util.Set;
 
 public record GroupJoinedEvent(
 
         @NotBlank
         String groupUuid,
 
-        List<@NotBlank String> membersFirebaseTokens
+        Set<@NotBlank String> membersFirebaseTokens
 
 ) {
 }

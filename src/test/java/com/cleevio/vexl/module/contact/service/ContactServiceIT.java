@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -331,12 +332,36 @@ class ContactServiceIT {
         final User notMember = this.userService.createUser(PUBLIC_KEY_USER_4, PHONE_3, new CreateUserRequest(FIREBASE_TOKEN_3));
         importService.importContacts(notMember, CreateRequestTestUtil.createImportRequest(List.of(PUBLIC_KEY_USER_1)));
 
-        final List<String> membersFirebaseTokens = contactRepository.retrieveMembersFirebaseTokens(GROUP_UUID, PUBLIC_KEY_USER_1);
+        final Set<String> membersFirebaseTokens = contactRepository.retrieveGroupMembersFirebaseTokens(GROUP_UUID, PUBLIC_KEY_USER_1);
 
         assertThat(membersFirebaseTokens).hasSize(2);
-        assertThat(membersFirebaseTokens.get(0)).contains(groupMember1.getFirebaseToken());
-        assertThat(membersFirebaseTokens.get(1)).isEqualTo(groupMember2.getFirebaseToken());
+        assertThat(membersFirebaseTokens).containsOnly(groupMember1.getFirebaseToken(), groupMember2.getFirebaseToken());
         assertThat(membersFirebaseTokens).doesNotContain(FIREBASE_TOKEN_3, FIREBASE_TOKEN_4);
+    }
+
+    @Test
+    void testRetrieveFirebaseTokensByHashes_shouldRetrieveFirebaseTokens() {
+        final User user1 = this.userService.createUser(PUBLIC_KEY_USER_1, HASH_USER, new CreateUserRequest(FIREBASE_TOKEN_1));
+        final User user2 = this.userService.createUser(PUBLIC_KEY_USER_2, CONTACTS_1.get(0), new CreateUserRequest(FIREBASE_TOKEN_2));
+        final User user3 = this.userService.createUser(PUBLIC_KEY_USER_3, CONTACTS_1.get(1), new CreateUserRequest(FIREBASE_TOKEN_3));
+        final User user4 = this.userService.createUser(PUBLIC_KEY_USER_3, CONTACTS_2.get(0), new CreateUserRequest(FIREBASE_TOKEN_4));
+
+        final String user1Hash = user1.getHash();
+        final String user2Hash = user2.getHash();
+        final String user3Hash = user3.getHash();
+        final String user4Hash = user4.getHash();
+
+        final Set<String> result1 = this.contactRepository.retrieveFirebaseTokensByHashes(Set.of(user1Hash));
+        assertThat(result1).hasSize(1);
+        assertThat(result1).containsOnly(FIREBASE_TOKEN_1);
+
+        final Set<String> result2 = this.contactRepository.retrieveFirebaseTokensByHashes(Set.of(user1Hash, user2Hash, user3Hash));
+        assertThat(result2).hasSize(3);
+        assertThat(result2).containsOnly(FIREBASE_TOKEN_1, FIREBASE_TOKEN_2, FIREBASE_TOKEN_3);
+
+        final Set<String> result3 = this.contactRepository.retrieveFirebaseTokensByHashes(Set.of(user1Hash, user2Hash, user3Hash, user4Hash));
+        assertThat(result3).hasSize(4);
+        assertThat(result3).containsOnly(FIREBASE_TOKEN_1, FIREBASE_TOKEN_2, FIREBASE_TOKEN_3, FIREBASE_TOKEN_4);
     }
 
 

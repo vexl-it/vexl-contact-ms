@@ -1,8 +1,8 @@
 package com.cleevio.vexl.common.integration.firebase.service;
 
-import com.cleevio.vexl.module.push.dto.GroupJoinedNotification;
+import com.cleevio.vexl.module.push.dto.PushNotification;
 
 public interface NotificationService {
 
-    void sendPushNotification(GroupJoinedNotification groupJoined);
+    void sendPushNotification(PushNotification groupJoined);
 }

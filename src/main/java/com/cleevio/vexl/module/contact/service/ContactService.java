@@ -3,6 +3,7 @@ package com.cleevio.vexl.module.contact.service;
 import com.cleevio.vexl.module.contact.dto.request.CommonContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.DeleteContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.NewContactsRequest;
+import com.cleevio.vexl.module.contact.dto.request.ContactsImportedEvent;
 import com.cleevio.vexl.module.contact.dto.response.CommonContactsResponse;
 import com.cleevio.vexl.module.contact.constant.ConnectionLevel;
 import com.cleevio.vexl.module.contact.event.GroupJoinedEvent;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -129,8 +131,20 @@ public class ContactService {
 
     @Transactional(readOnly = true)
     public void sendNotificationsToGroupMembers(final String groupUuid, final String publicKey) {
-        final List<String> membersFirebaseTokens = this.contactRepository.retrieveMembersFirebaseTokens(groupUuid, publicKey);
+        final Set<String> membersFirebaseTokens = this.contactRepository.retrieveGroupMembersFirebaseTokens(groupUuid, publicKey);
         if (membersFirebaseTokens.isEmpty()) return;
         applicationEventPublisher.publishEvent(new GroupJoinedEvent(groupUuid, membersFirebaseTokens));
+    }
+
+    /**
+     * Send a notification to all existing contacts, so they can encrypt their Offers for a new user.
+     */
+    @Async
+    @Transactional(readOnly = true)
+    public void sendNotificationToContacts(final Set<String> existingContactHashes) {
+        if (existingContactHashes.isEmpty()) return;
+        final Set<String> firebaseTokens = this.contactRepository.retrieveFirebaseTokensByHashes(existingContactHashes);
+        if (firebaseTokens.isEmpty()) return;
+        applicationEventPublisher.publishEvent(new ContactsImportedEvent(firebaseTokens));
     }
 }

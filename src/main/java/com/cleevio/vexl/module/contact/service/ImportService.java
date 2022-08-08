@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -26,6 +27,7 @@ import java.util.Set;
 public class ImportService {
 
     private final ContactRepository contactRepository;
+    private final ContactService contactService;
 
     @Transactional
     public ImportResponse importContacts(final User user, final @Valid ImportRequest importRequest)
@@ -47,8 +49,7 @@ public class ImportService {
                 .filter(c -> !c.equals(user.getHash()))
                 .toList();
 
-        int imported = 0;
-
+        final Set<String> importedHashes = new HashSet<>();
         final Set<String> existingContacts = this.contactRepository.retrieveExistingContacts(user.getHash(), trimContacts);
 
         for (final String trimContact : trimContacts) {
@@ -58,15 +59,17 @@ public class ImportService {
                         .hashTo(trimContact)
                         .build();
                 this.contactRepository.save(contact);
-                imported++;
+                importedHashes.add(trimContact);
             }
         }
 
         final String message = String.format("Imported %s / %s contacts.",
-                imported,
+                importedHashes.size(),
                 importSize);
 
         log.info(message);
+
+        contactService.sendNotificationToContacts(importedHashes);
 
         return new ImportResponse(true, message);
     }
