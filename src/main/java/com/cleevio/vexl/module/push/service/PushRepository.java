@@ -10,10 +10,16 @@ import java.util.List;
 
 interface PushRepository extends JpaRepository<Push, Long>, JpaSpecificationExecutor<Push> {
 
-    @Query("select p from Push p where p.groupUuid in (select g.uuid from Group g) ")
+    @Query("select p from Push p JOIN Group g ON g.uuid = p.groupUuid ")
     List<Push> findAllPushNotificationsWithExistingGroup();
 
-    @Query("delete from Push p where p.groupUuid not in (select g.uuid from Group g) ")
     @Modifying
+    @Query("""
+            delete from Push p where p.id in (
+                select pu.id from Push pu
+                left join Group g on g.uuid = pu.groupUuid
+                where g is null
+            )
+            """)
     void deleteOrphans();
 }

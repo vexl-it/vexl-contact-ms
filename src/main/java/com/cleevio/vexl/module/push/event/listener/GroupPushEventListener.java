@@ -1,6 +1,7 @@
 package com.cleevio.vexl.module.push.event.listener;
 
 import com.cleevio.vexl.module.contact.event.GroupJoinedEvent;
+import com.cleevio.vexl.module.push.dto.NotificationDto;
 import com.cleevio.vexl.module.push.service.PushService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
@@ -18,7 +19,11 @@ class GroupPushEventListener {
 
     @EventListener
     public void onGroupJoinedEvent(@Valid final GroupJoinedEvent event) {
-        pushService.saveNotification(event);
+        final NotificationDto notificationDto = new NotificationDto(
+                event.groupUuid(),
+                event.membersFirebaseTokens()
+        );
+        pushService.saveNotification(notificationDto);
     }
 
 }

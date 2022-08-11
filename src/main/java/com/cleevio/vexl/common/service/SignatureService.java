@@ -4,6 +4,7 @@ import com.cleevio.vexl.common.config.SecretKeyConfig;
 import com.cleevio.vexl.common.cryptolib.CLibrary;
 import com.cleevio.vexl.common.service.query.CheckSignatureValidityQuery;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -17,7 +18,7 @@ public class SignatureService {
     private final SecretKeyConfig secretKey;
 
     public boolean isSignatureValid(@Valid CheckSignatureValidityQuery validityQuery) {
-        final String input = String.join("", validityQuery.publicKey(), validityQuery.hash());
+        final String input = String.join(StringUtils.EMPTY, validityQuery.publicKey(), validityQuery.hash());
         return CLibrary.CRYPTO_LIB.ecdsa_verify(this.secretKey.signaturePublicKey(), input, input.length(), validityQuery.signature());
     }
 }

@@ -4,6 +4,7 @@ import com.cleevio.vexl.module.file.dto.request.ImageRequest;
 import com.cleevio.vexl.module.file.exception.FileWriteException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -49,7 +50,7 @@ public class ImageService {
 
             log.info("created file {}", destination.getPath());
 
-            return String.join("", urlPath, destination.getName());
+            return String.join(StringUtils.EMPTY, urlPath, destination.getName());
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new FileWriteException();

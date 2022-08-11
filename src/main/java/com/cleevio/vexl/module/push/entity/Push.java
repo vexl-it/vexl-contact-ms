@@ -1,5 +1,6 @@
 package com.cleevio.vexl.module.push.entity;
 
+import com.cleevio.vexl.common.hibernate.type.SetArrayType;
 import com.vladmihalcea.hibernate.type.array.StringArrayType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -16,12 +17,13 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import java.util.Set;
 
 
 @TypeDefs({
         @TypeDef(
-                name = "string-array",
-                typeClass = StringArrayType.class
+                name = "set-array",
+                typeClass = SetArrayType.class
         )
 })
 @Data
@@ -40,15 +42,15 @@ public class Push {
     @Column(nullable = false, updatable = false)
     private String groupUuid;
 
-    @Type(type = "string-array")
+    @Type(type = "set-array")
     @Column(
             name = "firebase_token",
             columnDefinition = "text[]",
             updatable = false
     )
-    private String[] firebaseTokens;
+    private Set<String> firebaseTokens;
 
-    public Push(String groupUuid, String[] firebaseTokens) {
+    public Push(String groupUuid, Set<String> firebaseTokens) {
         this.groupUuid = groupUuid;
         this.firebaseTokens = firebaseTokens;
     }

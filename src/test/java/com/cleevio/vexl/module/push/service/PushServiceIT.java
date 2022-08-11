@@ -96,10 +96,10 @@ class PushServiceIT {
         final Group group1 = this.groupService.createGroup(user1, CreateRequestTestUtil.createCreateGroupRequest());
         final Group group2 = this.groupService.createGroup(user1, CreateRequestTestUtil.createCreateGroupRequest());
 
-        this.pushRepository.save(new Push(group1.getUuid(), FIREBASE_TOKENS_1));
-        this.pushRepository.save(new Push(group1.getUuid(), FIREBASE_TOKENS_2));
-        this.pushRepository.save(new Push(group2.getUuid(), FIREBASE_TOKENS_3));
-        this.pushRepository.save(new Push(group2.getUuid(), FIREBASE_TOKENS_4));
+        this.pushRepository.save(new Push(group1.getUuid(), Set.of(FIREBASE_TOKENS_1)));
+        this.pushRepository.save(new Push(group1.getUuid(), Set.of(FIREBASE_TOKENS_2)));
+        this.pushRepository.save(new Push(group2.getUuid(), Set.of(FIREBASE_TOKENS_3)));
+        this.pushRepository.save(new Push(group2.getUuid(), Set.of(FIREBASE_TOKENS_4)));
 
         // Simulate job run
         final Map<String, Set<String>> notifications = this.pushService.processPushNotification();
@@ -118,7 +118,7 @@ class PushServiceIT {
 
     @Test
     void testSendNotificationToNotExistingGroup_shouldNotSentNotificationToNotExistingGroup() {
-        this.pushRepository.save(new Push(FAKE_GROUP_UUID, FIREBASE_TOKENS_4));
+        this.pushRepository.save(new Push(FAKE_GROUP_UUID, Set.of(FIREBASE_TOKENS_4)));
         final Map<String, Set<String>> notifications = this.pushService.processPushNotification();
         assertThat(notifications).hasSize(0);
 

@@ -2,7 +2,6 @@ package com.cleevio.vexl.common.service;
 
 import com.cleevio.vexl.common.constant.ModuleLockNamespace;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -13,7 +12,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AdvisoryLockService {

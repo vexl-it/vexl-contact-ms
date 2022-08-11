@@ -1,15 +1,19 @@
 package com.cleevio.vexl.module.push.service;
 
+import com.cleevio.vexl.common.constant.ModuleLockNamespace;
 import com.cleevio.vexl.common.integration.firebase.service.NotificationService;
-import com.cleevio.vexl.module.contact.event.GroupJoinedEvent;
+import com.cleevio.vexl.common.service.AdvisoryLockService;
 import com.cleevio.vexl.module.push.constant.NotificationType;
+import com.cleevio.vexl.module.push.constant.PushAdvisoryLock;
+import com.cleevio.vexl.module.push.dto.NotificationDto;
 import com.cleevio.vexl.module.push.dto.PushNotification;
 import com.cleevio.vexl.module.push.entity.Push;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
-import java.util.Arrays;
+import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -17,42 +21,49 @@ import java.util.Map;
 import java.util.Set;
 
 @Service
+@Validated
 @RequiredArgsConstructor
 public class PushService {
     private final NotificationService notificationService;
     private final PushRepository pushRepository;
+    private final AdvisoryLockService advisoryLockService;
 
     public void sendImportedNotification(Set<String> firebaseTokens) {
+        if (firebaseTokens.isEmpty()) {
+            return;
+        }
         this.notificationService.sendPushNotification(new PushNotification(NotificationType.NEW_APP_USER, null, firebaseTokens));
     }
 
     @Transactional
-    public void saveNotification(GroupJoinedEvent event) {
-        this.pushRepository.save(new Push(event.groupUuid(), event.membersFirebaseTokens().toArray(new String[0])));
+    public void saveNotification(@Valid final NotificationDto notification) {
+        this.pushRepository.save(new Push(notification.groupUuid(), notification.membersFirebaseTokens()));
     }
 
     @Transactional
     public Map<String, Set<String>> processPushNotification() {
+        advisoryLockService.lock(
+                ModuleLockNamespace.GROUP,
+                PushAdvisoryLock.PUSH_TASK.name()
+        );
+        this.pushRepository.deleteOrphans();
+
         final List<Push> pushes = pushRepository.findAllPushNotificationsWithExistingGroup();
-        if (pushes.isEmpty()) new HashMap<>();
+        if (pushes.isEmpty()) {
+            return Map.of();
+        }
 
         final Map<String, Set<String>> notifications = new HashMap<>();
         pushes.forEach(push -> {
-            if (notifications.containsKey(push.getGroupUuid())) {
-                notifications.get(push.getGroupUuid()).addAll(Arrays.asList(push.getFirebaseTokens()));
-            } else {
-                notifications.put(push.getGroupUuid(), new HashSet<>(Arrays.asList(push.getFirebaseTokens())));
-            }
+            Set<String> tokens = new HashSet<>();
+            tokens.addAll(notifications.getOrDefault(push.getGroupUuid(), new HashSet<>()));
+            tokens.addAll(push.getFirebaseTokens());
+            notifications.put(push.getGroupUuid(), tokens);
         });
 
         sendNewGroupMemberNotification(notifications);
-        clearPushNotifications(pushes);
-        return notifications;
-    }
-
-    private void clearPushNotifications(final List<Push> pushes) {
         this.pushRepository.deleteAllInBatch(pushes);
-        this.pushRepository.deleteOrphans();
+        return notifications;
     }
 
     private void sendNewGroupMemberNotification(Map<String, Set<String>> notifications) {

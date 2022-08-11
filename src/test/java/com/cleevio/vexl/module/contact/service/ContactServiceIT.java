@@ -3,7 +3,6 @@ package com.cleevio.vexl.module.contact.service;
 import com.cleevio.vexl.common.IntegrationTest;
 import com.cleevio.vexl.module.contact.dto.response.ImportResponse;
 import com.cleevio.vexl.module.contact.constant.ConnectionLevel;
-import com.cleevio.vexl.module.contact.exception.ContactsMissingException;
 import com.cleevio.vexl.module.user.dto.request.CreateUserRequest;
 import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.module.user.service.UserService;
@@ -12,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.validation.ConstraintViolationException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -103,7 +103,7 @@ class ContactServiceIT {
         final User user = this.userService.createUser(PUBLIC_KEY_USER_1, HASH_USER);
 
         assertThrows(
-                ContactsMissingException.class,
+                ConstraintViolationException.class,
                 () -> importService.importContacts(user, CreateRequestTestUtil.createImportRequest(Collections.emptyList()))
         );
     }

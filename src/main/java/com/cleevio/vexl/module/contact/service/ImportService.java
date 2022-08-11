@@ -4,7 +4,6 @@ import com.cleevio.vexl.module.contact.dto.request.ImportRequest;
 import com.cleevio.vexl.module.contact.dto.response.ImportResponse;
 import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.module.contact.entity.UserContact;
-import com.cleevio.vexl.module.contact.exception.ContactsMissingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,18 +29,12 @@ public class ImportService {
     private final ContactService contactService;
 
     @Transactional
-    public ImportResponse importContacts(final User user, final @Valid ImportRequest importRequest)
-            throws ContactsMissingException {
-
+    public ImportResponse importContacts(final User user, final @Valid ImportRequest importRequest) {
         final int importSize = importRequest.contacts().size();
 
         log.info("Importing new {} contacts for {}",
                 importRequest.contacts().size(),
                 user.getId());
-
-        if (importRequest.contacts().isEmpty()) {
-            throw new ContactsMissingException();
-        }
 
         final List<String> trimContacts = importRequest.contacts()
                 .stream()
