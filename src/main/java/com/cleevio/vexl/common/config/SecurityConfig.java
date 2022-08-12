@@ -3,7 +3,7 @@ package com.cleevio.vexl.common.config;
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
 import com.cleevio.vexl.common.service.SignatureService;
 import com.cleevio.vexl.module.user.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -17,13 +17,11 @@ import javax.servlet.http.HttpServletResponse;
 @EnableGlobalMethodSecurity(
 securedEnabled = true,
 prePostEnabled = true)
+@RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Autowired
-    private SignatureService signatureService;
-
-    @Autowired
-    private UserService userService;
+    private final SignatureService signatureService;
+    private final UserService userService;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
