@@ -53,7 +53,7 @@ class GroupServiceIT {
         assertThat(group.getUuid()).isNotBlank();
         assertThat(group.getName()).isEqualTo(createGroupRequest.name());
         assertThat(group.getLogoUrl()).isEqualTo(createGroupRequest.logo());
-        assertThat(group.getExpirationAt()).isEqualTo(createGroupRequest.expiration());
+        assertThat(group.getExpirationAt()).isEqualTo(createGroupRequest.expirationAt());
         assertThat(group.getClosureAt()).isEqualTo(createGroupRequest.closureAt());
         assertThat(group.getCreatedAt()).isNotNull();
         assertThat(group.getCreatedBy()).isEqualTo(PUBLIC_KEY_USER_1);

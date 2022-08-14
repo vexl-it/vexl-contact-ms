@@ -14,9 +14,9 @@ public record GroupCreatedResponse(
 
         long createdAt,
 
-        long expiration,
+        long expirationAt,
 
-        long closure,
+        long closureAt,
 
         int code
 

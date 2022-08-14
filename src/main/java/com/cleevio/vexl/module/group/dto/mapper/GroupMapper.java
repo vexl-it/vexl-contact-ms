@@ -14,7 +14,7 @@ public class GroupMapper {
     public Group mapSingleToGroup(CreateGroupRequest request) {
         return Group.builder()
                 .name(request.name())
-                .expirationAt(request.expiration())
+                .expirationAt(request.expirationAt())
                 .closureAt(request.closureAt())
                 .build();
     }
