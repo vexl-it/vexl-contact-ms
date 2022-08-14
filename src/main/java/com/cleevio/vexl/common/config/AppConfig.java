@@ -11,6 +11,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
 import org.springframework.web.filter.CorsFilter;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import javax.annotation.PostConstruct;
 import java.util.Collections;
@@ -51,5 +52,10 @@ public class AppConfig {
         loggingFilter.setIncludePayload(true);
         loggingFilter.setMaxPayloadLength(64000);
         return loggingFilter;
+    }
+
+    @Bean
+    public WebClient webClient() {
+        return WebClient.create();
     }
 }

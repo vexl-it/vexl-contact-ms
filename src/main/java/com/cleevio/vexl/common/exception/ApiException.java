@@ -50,6 +50,7 @@ public abstract class ApiException extends RuntimeException {
         CONTACT("101", "Contact Module Error."),
         GROUP("102", "Group Module Error."),
         FILE("103", "File Module Error."),
+        FIREBASE("104", "Firebase Module Error."),
         ;
 
         /**

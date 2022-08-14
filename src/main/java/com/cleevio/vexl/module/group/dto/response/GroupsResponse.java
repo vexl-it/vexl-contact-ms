@@ -20,6 +20,8 @@ public record GroupsResponse(
             @Nullable
             String logoUrl,
 
+            String qrCodeUrl,
+
             long createdAt,
 
             long expirationAt,
@@ -37,6 +39,7 @@ public record GroupsResponse(
                     group.getUuid(),
                     group.getName(),
                     group.getLogoUrl(),
+                    group.getQrCodeUrl(),
                     group.getCreatedAt(),
                     group.getExpirationAt(),
                     group.getClosureAt(),

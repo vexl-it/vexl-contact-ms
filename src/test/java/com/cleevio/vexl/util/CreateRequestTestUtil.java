@@ -5,7 +5,7 @@ import com.cleevio.vexl.module.contact.dto.request.DeleteContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.ImportRequest;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.JoinGroupRequest;
-import com.cleevio.vexl.module.group.dto.request.NewMemberRequest;
+import com.cleevio.vexl.module.group.dto.request.MemberRequest;
 import com.cleevio.vexl.module.user.dto.request.CreateUserRequest;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -51,16 +51,16 @@ public final class CreateRequestTestUtil {
         );
     }
 
-    public static List<NewMemberRequest.GroupRequest> createGroupRequestList(String groupUuid, List<String> publicKeys) {
-        return List.of(new NewMemberRequest.GroupRequest(
+    public static List<MemberRequest.GroupRequest> createGroupRequestList(String groupUuid, List<String> publicKeys) {
+        return List.of(new MemberRequest.GroupRequest(
                         groupUuid,
                         publicKeys
                 )
         );
     }
 
-    public static NewMemberRequest.GroupRequest createGroupRequest(String groupUuid, List<String> publicKeys) {
-        return new NewMemberRequest.GroupRequest(
+    public static MemberRequest.GroupRequest createGroupRequest(String groupUuid, List<String> publicKeys) {
+        return new MemberRequest.GroupRequest(
                 groupUuid,
                 publicKeys
         );

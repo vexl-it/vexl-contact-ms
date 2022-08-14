@@ -6,7 +6,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
-public record NewMemberRequest(
+public record MemberRequest(
 
         @NotNull
         List<GroupRequest> groups

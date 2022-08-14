@@ -7,10 +7,10 @@ import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.ExpiredGroupsRequest;
 import com.cleevio.vexl.module.group.dto.request.JoinGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.LeaveGroupRequest;
-import com.cleevio.vexl.module.group.dto.request.NewMemberRequest;
+import com.cleevio.vexl.module.group.dto.request.MemberRequest;
 import com.cleevio.vexl.module.group.dto.response.GroupCreatedResponse;
 import com.cleevio.vexl.module.group.dto.response.GroupsResponse;
-import com.cleevio.vexl.module.group.dto.response.NewMembersResponse;
+import com.cleevio.vexl.module.group.dto.response.MembersResponse;
 import com.cleevio.vexl.module.group.service.GroupService;
 import com.cleevio.vexl.module.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
@@ -72,7 +72,7 @@ public class GroupController {
         this.groupService.joinGroup(user, request);
     }
 
-    @PostMapping("/members/new")
+    @PostMapping("/members")
     @SecurityRequirements({
             @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
             @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
@@ -80,16 +80,17 @@ public class GroupController {
     })
     @ResponseStatus(HttpStatus.OK)
     @Operation(
-            summary = "Get new members.",
+            summary = "Get group members.",
             description = """
-                    EP returns new members. It is a POST because of needed payload.
+                    EP returns group members. It is a POST because of needed payload.
                     You should have public keys of users you already know. Send them within this request.
                     BE will return diff - that means BE will return public keys you do not have.
+                    If you want to find all members, you can send only group uuids.
                     """
     )
-    NewMembersResponse retrieveNewMembers(@AuthenticationPrincipal User user,
-                                          @RequestBody NewMemberRequest request) {
-        return new NewMembersResponse(this.groupService.retrieveNewMembers(request.groups(), user));
+    MembersResponse retrieveMembers(@AuthenticationPrincipal User user,
+                                    @RequestBody MemberRequest request) {
+        return new MembersResponse(this.groupService.retrieveMembers(request.groups(), user));
     }
 
     @GetMapping("/me")

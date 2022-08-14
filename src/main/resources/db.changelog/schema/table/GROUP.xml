@@ -22,6 +22,17 @@
         </createIndex>
     </changeSet>
 
+    <!-- ################################ V3 ################################# -->
+    <changeSet author="David Tilser" id="add_qr_code_url_column">
+        <preConditions onSqlOutput="TEST" onFail="MARK_RAN">
+            <tableExists tableName="group" schemaName="public"/>
+        </preConditions>
+
+        <addColumn tableName="group">
+            <column name="qr_code_url" type="varchar"/>
+        </addColumn>
+    </changeSet>
+
     <!-- ##################################################################### -->
     <!-- ###################### TABLE INSTALL CHANGESET ###################### -->
     <!-- ##################################################################### -->
@@ -42,6 +53,9 @@
                 <constraints nullable="false"/>
             </column>
             <column name="logo_url" type="varchar(1500)"/>
+            <column name="qr_code_url" type="varchar">
+                <constraints nullable="false"/>
+            </column>
             <column name="created_at" type="bigint">
                 <constraints nullable="false"/>
             </column>

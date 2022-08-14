@@ -1,6 +1,7 @@
 package com.cleevio.vexl.module.group.service;
 
 import com.cleevio.vexl.common.constant.ModuleLockNamespace;
+import com.cleevio.vexl.common.integration.firebase.service.DeeplinkService;
 import com.cleevio.vexl.common.service.AdvisoryLockService;
 import com.cleevio.vexl.module.contact.service.ContactService;
 import com.cleevio.vexl.module.file.service.ImageService;
@@ -10,7 +11,7 @@ import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.ExpiredGroupsRequest;
 import com.cleevio.vexl.module.group.dto.request.JoinGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.LeaveGroupRequest;
-import com.cleevio.vexl.module.group.dto.request.NewMemberRequest;
+import com.cleevio.vexl.module.group.dto.request.MemberRequest;
 import com.cleevio.vexl.module.group.entity.Group;
 import com.cleevio.vexl.module.group.constant.GroupAdvisoryLock;
 import com.cleevio.vexl.module.group.event.GroupImportedEvent;
@@ -18,6 +19,7 @@ import com.cleevio.vexl.module.group.event.GroupJoinRequestedEvent;
 import com.cleevio.vexl.module.group.event.GroupLeftEvent;
 import com.cleevio.vexl.module.group.exception.GroupNotFoundException;
 import com.cleevio.vexl.module.group.util.CodeUtil;
+import com.cleevio.vexl.module.group.util.QrCodeUtil;
 import com.cleevio.vexl.module.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +46,7 @@ public class GroupService {
     private final GroupRepository groupRepository;
     private final GroupMapper groupMapper;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final DeeplinkService deeplinkService;
 
     @Transactional
     public Group createGroup(final User user, @Valid final CreateGroupRequest request) {
@@ -60,6 +63,8 @@ public class GroupService {
             final String destination = this.imageService.save(request.logo());
             group.setLogoUrl(destination);
         }
+
+        group.setQrCodeUrl(createQrCodeUrl(group.getCode()));
 
         final Group savedGroup = this.groupRepository.save(group);
         applicationEventPublisher.publishEvent(new GroupImportedEvent(savedGroup.getUuid(), user));
@@ -102,7 +107,7 @@ public class GroupService {
     }
 
     @Transactional(readOnly = true)
-    public Map<String, List<String>> retrieveNewMembers(@Valid final List<NewMemberRequest.GroupRequest> groups, final User user) {
+    public Map<String, List<String>> retrieveMembers(@Valid final List<MemberRequest.GroupRequest> groups, final User user) {
         final Map<String, List<String>> newMembers = new HashMap<>();
 
         groups.forEach(group -> {
@@ -124,5 +129,11 @@ public class GroupService {
         final List<GroupModel> groupModels = new ArrayList<>();
         groups.forEach(g -> groupModels.add(new GroupModel(g, contactService.getContactsCountByHashTo(g.getUuid()))));
         return groupModels;
+    }
+
+    private String createQrCodeUrl(final int code) {
+        final String dynamicLink = deeplinkService.createDynamicLink(String.valueOf(code));
+
+        return this.imageService.save(QrCodeUtil.getQRCodeImageRequest(dynamicLink));
     }
 }

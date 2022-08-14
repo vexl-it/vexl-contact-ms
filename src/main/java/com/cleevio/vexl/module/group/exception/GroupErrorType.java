@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 enum GroupErrorType implements ErrorType {
 
     GROUP_NOT_FOUND("100", "Group not found."),
+    QR_CODE_ERROR("101", "Error occurred during generating group QR code."),
     ;
 
 	private final String code;

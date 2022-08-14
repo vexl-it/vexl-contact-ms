@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public record NewMembersResponse(
+public record MembersResponse(
 
         List<GroupMembers> newMembers
 
@@ -19,7 +19,7 @@ public record NewMembersResponse(
     ) {
     }
 
-    public NewMembersResponse(Map<String, List<String>> newMembers) {
+    public MembersResponse(Map<String, List<String>> newMembers) {
         this(createGroupMembers(newMembers));
     }
 

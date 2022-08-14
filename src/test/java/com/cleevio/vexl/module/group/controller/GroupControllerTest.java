@@ -7,7 +7,7 @@ import com.cleevio.vexl.module.group.dto.mapper.GroupMapper;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.JoinGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.LeaveGroupRequest;
-import com.cleevio.vexl.module.group.dto.request.NewMemberRequest;
+import com.cleevio.vexl.module.group.dto.request.MemberRequest;
 import com.cleevio.vexl.module.group.dto.response.GroupsResponse;
 import com.cleevio.vexl.module.group.entity.Group;
 import com.cleevio.vexl.module.group.service.GroupService;
@@ -48,10 +48,11 @@ class GroupControllerTest extends BaseControllerTest {
     private static final String JOIN_EP = DEFAULT_EP + "/join";
     private static final String ME_EP = DEFAULT_EP + "/me";
     private static final String LEAVE_EP = DEFAULT_EP + "/leave";
-    private static final String NEW_MEMBERS_EP = DEFAULT_EP + "/members/new";
+    private static final String MEMBERS_EP = DEFAULT_EP + "/members";
     private static final String EXPIRED_EP = DEFAULT_EP + "/expired";
     private static final String GROUP_NAME = "dummy_name";
     private static final String GROUP_LOGO = "dummy_logo";
+    private static final String GROUP_QR_CODE_URL = "dummy_qr_code_url";
     private static final String GROUP_UUID = "dummy_group_uuid";
     private static final int EXPIRATION = 46546545;
     private static final int CLOSURE_AT = 1616161156;
@@ -61,8 +62,8 @@ class GroupControllerTest extends BaseControllerTest {
     private static final CreateGroupRequest CREATE_GROUP_REQUEST;
     private static final JoinGroupRequest JOIN_GROUP_REQUEST;
     private static final LeaveGroupRequest LEAVE_GROUP_REQUEST;
-    private static final NewMemberRequest NEW_MEMBER_REQUEST;
-    private static final NewMemberRequest.GroupRequest GROUP_REQUEST;
+    private static final MemberRequest NEW_MEMBER_REQUEST;
+    private static final MemberRequest.GroupRequest GROUP_REQUEST;
 
     @MockBean
     private GroupService groupService;
@@ -86,12 +87,12 @@ class GroupControllerTest extends BaseControllerTest {
                 GROUP_UUID
         );
 
-        GROUP_REQUEST = new NewMemberRequest.GroupRequest(
+        GROUP_REQUEST = new MemberRequest.GroupRequest(
                 GROUP_UUID,
                 List.of(PUBLIC_KEY)
         );
 
-        NEW_MEMBER_REQUEST = new NewMemberRequest(
+        NEW_MEMBER_REQUEST = new MemberRequest(
                 List.of(GROUP_REQUEST)
         );
 
@@ -101,6 +102,7 @@ class GroupControllerTest extends BaseControllerTest {
         GROUP = new Group();
         GROUP.setName(GROUP_NAME);
         GROUP.setLogoUrl(GROUP_LOGO);
+        GROUP.setQrCodeUrl(GROUP_QR_CODE_URL);
         GROUP.setExpirationAt(EXPIRATION);
         GROUP.setClosureAt(CLOSURE_AT);
         GROUP.setCode(CODE);
@@ -128,6 +130,7 @@ class GroupControllerTest extends BaseControllerTest {
                 .andExpect(jsonPath("$.uuid", notNullValue()))
                 .andExpect(jsonPath("$.name", is(GROUP_NAME)))
                 .andExpect(jsonPath("$.logoUrl", is(GROUP_LOGO)))
+                .andExpect(jsonPath("$.qrCodeUrl", is(GROUP_QR_CODE_URL)))
                 .andExpect(jsonPath("$.createdAt", notNullValue()))
                 .andExpect(jsonPath("$.expirationAt", is(EXPIRATION)))
                 .andExpect(jsonPath("$.closureAt", is(CLOSURE_AT)))
@@ -149,9 +152,9 @@ class GroupControllerTest extends BaseControllerTest {
     @Test
     @SneakyThrows
     void testNewMembers_validInput_shouldReturn200() {
-        when(this.groupService.retrieveNewMembers(any(), any())).thenReturn(Map.of(GROUP_UUID, List.of(PUBLIC_KEY)));
+        when(this.groupService.retrieveMembers(any(), any())).thenReturn(Map.of(GROUP_UUID, List.of(PUBLIC_KEY)));
 
-        mvc.perform(post(NEW_MEMBERS_EP)
+        mvc.perform(post(MEMBERS_EP)
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
                         .header(SecurityFilter.HEADER_HASH, HASH)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE)
@@ -177,6 +180,7 @@ class GroupControllerTest extends BaseControllerTest {
                 .andExpect(jsonPath("$.groupResponse[0].uuid", notNullValue()))
                 .andExpect(jsonPath("$.groupResponse[0].name", is(GROUP_NAME)))
                 .andExpect(jsonPath("$.groupResponse[0].createdAt", notNullValue()))
+                .andExpect(jsonPath("$.groupResponse[0].qrCodeUrl", is(GROUP_QR_CODE_URL)))
                 .andExpect(jsonPath("$.groupResponse[0].expirationAt", is(EXPIRATION)))
                 .andExpect(jsonPath("$.groupResponse[0].closureAt", is(CLOSURE_AT)))
                 .andExpect(jsonPath("$.groupResponse[0].code", is(CODE)))
@@ -199,6 +203,7 @@ class GroupControllerTest extends BaseControllerTest {
                 .andExpect(jsonPath("$.name", is(GROUP_NAME)))
                 .andExpect(jsonPath("$.createdAt", notNullValue()))
                 .andExpect(jsonPath("$.expirationAt", is(EXPIRATION)))
+                .andExpect(jsonPath("$.qrCodeUrl", is(GROUP_QR_CODE_URL)))
                 .andExpect(jsonPath("$.closureAt", is(CLOSURE_AT)))
                 .andExpect(jsonPath("$.code", is(CODE)))
                 .andExpect(jsonPath("$.memberCount", is(MEMBERS_COUNT)));
@@ -219,6 +224,7 @@ class GroupControllerTest extends BaseControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.groupResponse[0].uuid", notNullValue()))
                 .andExpect(jsonPath("$.groupResponse[0].name", is(GROUP_NAME)))
+                .andExpect(jsonPath("$.groupResponse[0].qrCodeUrl", is(GROUP_QR_CODE_URL)))
                 .andExpect(jsonPath("$.groupResponse[0].createdAt", notNullValue()))
                 .andExpect(jsonPath("$.groupResponse[0].expirationAt", is(EXPIRATION)))
                 .andExpect(jsonPath("$.groupResponse[0].closureAt", is(CLOSURE_AT)))

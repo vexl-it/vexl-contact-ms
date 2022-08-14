@@ -36,11 +36,11 @@ public class Group {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-	@EqualsAndHashCode.Include
-	@Column(updatable = false, nullable = false)
+    @EqualsAndHashCode.Include
+    @Column(updatable = false, nullable = false)
     private final String uuid = CLibrary.CRYPTO_LIB.sha256_hash(UUID.randomUUID().toString(), UUID.randomUUID().toString().length());
 
-    @Column(nullable = false)
+    @Column(updatable = false, nullable = false)
     @Convert(converter = AesEncryptionConvertor.class)
     private String name;
 
@@ -49,17 +49,21 @@ public class Group {
     private String logoUrl;
 
     @Column(updatable = false, nullable = false)
+    @Convert(converter = AesEncryptionConvertor.class)
+    private String qrCodeUrl;
+
+    @Column(updatable = false, nullable = false)
     private final long createdAt = Instant.now().getEpochSecond();
 
-    @Column(nullable = false)
+    @Column(updatable = false, nullable = false)
     private long expirationAt;
 
-    @Column(nullable = false)
+    @Column(updatable = false, nullable = false)
     private long closureAt;
 
-    @Column(nullable = false)
+    @Column(updatable = false, nullable = false)
     private int code;
 
-    @Column(nullable = false)
+    @Column(updatable = false, nullable = false)
     private String createdBy;
 }
