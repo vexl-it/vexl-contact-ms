@@ -129,7 +129,7 @@ class GroupControllerTest extends BaseControllerTest {
                 .andExpect(jsonPath("$.name", is(GROUP_NAME)))
                 .andExpect(jsonPath("$.logoUrl", is(GROUP_LOGO)))
                 .andExpect(jsonPath("$.createdAt", notNullValue()))
-                .andExpect(jsonPath("$.expiration", is(EXPIRATION)))
+                .andExpect(jsonPath("$.expirationAt", is(EXPIRATION)))
                 .andExpect(jsonPath("$.closure", is(CLOSURE_AT)))
                 .andExpect(jsonPath("$.code", is(CODE)));
     }
