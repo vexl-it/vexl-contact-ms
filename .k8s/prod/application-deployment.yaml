@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: appplication-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: application
+  template:
+    metadata:
+      labels:
+        component: application
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      volumes:
+        - name: static-files
+          persistentVolumeClaim:
+            claimName: vexl-data
+      containers:
+        - name: application
+          imagePullPolicy: Always
+          image: gitlab.cleevio.cz:4567/backend/vexl/vexl-contact-ms/production:latest
+          volumeMounts:
+            - mountPath: "/var/www/static"
+              name: static-files
+          env:
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  key: spring.datasource.url
+                  name: spring-profile
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  key: spring.datasource.username
+                  name: spring-profile
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  key: spring.datasource.password
+                  name: spring-profile
+            - name: SECURITY_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: security.encryption.key
+                  name: spring-profile
