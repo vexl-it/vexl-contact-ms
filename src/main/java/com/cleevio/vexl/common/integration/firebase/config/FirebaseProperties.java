@@ -21,6 +21,7 @@ public record FirebaseProperties(
         @NotBlank
         String iosBundle,
 
+        @NotBlank
         String iosStore,
 
         @NotBlank
