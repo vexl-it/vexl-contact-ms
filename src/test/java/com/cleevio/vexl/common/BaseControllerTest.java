@@ -3,6 +3,7 @@ package com.cleevio.vexl.common;
 import com.cleevio.vexl.common.service.SignatureService;
 import com.cleevio.vexl.common.service.query.CheckSignatureValidityQuery;
 import com.cleevio.vexl.module.contact.service.ContactService;
+import com.cleevio.vexl.module.export.service.ExportService;
 import com.cleevio.vexl.module.facebook.service.FacebookService;
 import com.cleevio.vexl.module.contact.service.ImportService;
 import com.cleevio.vexl.module.user.entity.User;
@@ -32,6 +33,9 @@ public class BaseControllerTest {
 
     @MockBean
     protected UserService userService;
+
+    @MockBean
+    protected ExportService exportService;
 
     @MockBean
     protected ContactService contactService;

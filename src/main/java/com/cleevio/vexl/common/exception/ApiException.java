@@ -51,6 +51,7 @@ public abstract class ApiException extends RuntimeException {
         GROUP("102", "Group Module Error."),
         FILE("103", "File Module Error."),
         FIREBASE("104", "Firebase Module Error."),
+        EXPORT("105", "Export Module Error."),
         ;
 
         /**
