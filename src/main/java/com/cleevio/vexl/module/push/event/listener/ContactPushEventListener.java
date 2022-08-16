@@ -18,7 +18,7 @@ class ContactPushEventListener {
 
     @EventListener
     public void onContactsImportedEvent(@Valid final ContactsImportedEvent event) {
-        this.pushService.sendImportedNotification(event.firebaseTokens());
+        this.pushService.sendImportedNotification(event.firebaseTokens(), event.newUserPublicKey());
     }
 
 }

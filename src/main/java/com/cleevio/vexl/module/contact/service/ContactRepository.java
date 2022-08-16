@@ -66,6 +66,11 @@ interface ContactRepository extends JpaRepository<UserContact, Long>, JpaSpecifi
     @Query("select u.firebaseToken from User u where u.hash in (select uc.hashFrom from UserContact uc where uc.hashTo = :hash) and u.publicKey <> :publicKey and u.firebaseToken is not null")
     Set<String> retrieveGroupMembersFirebaseTokens(String hash, String publicKey);
 
-    @Query("select u.firebaseToken from User u where u.hash in (:existingContactHashes) and u.firebaseToken is not null")
-    Set<String> retrieveFirebaseTokensByHashes(Set<String> existingContactHashes);
+    @Query("""
+            select distinct u.firebaseToken from User u 
+            JOIN UserContact uc on u.hash = uc.hashFrom 
+            where u.hash in (:existingContactHashes) and u.firebaseToken is not null 
+            and uc.hashTo = :newUserHash
+            """)
+    Set<String> retrieveFirebaseTokensByHashes(Set<String> existingContactHashes, String newUserHash);
 }

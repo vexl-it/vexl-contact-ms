@@ -141,10 +141,10 @@ public class ContactService {
      */
     @Async
     @Transactional(readOnly = true)
-    public void sendNotificationToContacts(final Set<String> existingContactHashes) {
-        if (existingContactHashes.isEmpty()) return;
-        final Set<String> firebaseTokens = this.contactRepository.retrieveFirebaseTokensByHashes(existingContactHashes);
+    public void sendNotificationToContacts(final Set<String> importedHashes, final User user) {
+        if (importedHashes.isEmpty()) return;
+        final Set<String> firebaseTokens = this.contactRepository.retrieveFirebaseTokensByHashes(importedHashes, user.getHash());
         if (firebaseTokens.isEmpty()) return;
-        applicationEventPublisher.publishEvent(new ContactsImportedEvent(firebaseTokens));
+        applicationEventPublisher.publishEvent(new ContactsImportedEvent(firebaseTokens, user.getPublicKey()));
     }
 }

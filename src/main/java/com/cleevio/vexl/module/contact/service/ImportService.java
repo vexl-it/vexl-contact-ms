@@ -62,7 +62,7 @@ public class ImportService {
 
         log.info(message);
 
-        contactService.sendNotificationToContacts(importedHashes);
+        contactService.sendNotificationToContacts(importedHashes, user);
 
         return new ImportResponse(true, message);
     }

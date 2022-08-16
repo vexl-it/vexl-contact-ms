@@ -24,6 +24,7 @@ public class FirebaseService implements NotificationService, DeeplinkService {
     private final FirebaseProperties properties;
     private final WebClient webClient;
     private static final String GROUP_UUID = "group_uuid";
+    private static final String PUBLIC_KEY = "public_key";
     private static final String TYPE = "type";
     private static final String API_URL = "https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=";
     private static final String INVITE_PATH = "/invite/";
@@ -67,6 +68,9 @@ public class FirebaseService implements NotificationService, DeeplinkService {
             messageBuilder.setToken(firebaseToken);
             if (push.groupUuid() != null) {
                 messageBuilder.putData(GROUP_UUID, push.groupUuid());
+            }
+            if (push.newUserPublicKey() != null) {
+                messageBuilder.putData(PUBLIC_KEY, push.newUserPublicKey());
             }
             messageBuilder.putData(TYPE, push.type().name());
 

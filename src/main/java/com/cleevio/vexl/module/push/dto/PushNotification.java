@@ -18,6 +18,10 @@ public record PushNotification(
         @NullOrNotBlank
         String groupUuid,
 
+        @Nullable
+        @NullOrNotBlank
+        String newUserPublicKey,
+
         @NotEmpty
         Set<@NotBlank String> membersFirebaseTokens
 

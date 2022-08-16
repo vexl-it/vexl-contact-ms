@@ -28,11 +28,11 @@ public class PushService {
     private final PushRepository pushRepository;
     private final AdvisoryLockService advisoryLockService;
 
-    public void sendImportedNotification(Set<String> firebaseTokens) {
+    public void sendImportedNotification(Set<String> firebaseTokens, String newUserPublicKey) {
         if (firebaseTokens.isEmpty()) {
             return;
         }
-        this.notificationService.sendPushNotification(new PushNotification(NotificationType.NEW_APP_USER, null, firebaseTokens));
+        this.notificationService.sendPushNotification(new PushNotification(NotificationType.NEW_APP_USER, null, newUserPublicKey, firebaseTokens));
     }
 
     @Transactional
@@ -67,6 +67,6 @@ public class PushService {
     }
 
     private void sendNewGroupMemberNotification(Map<String, Set<String>> notifications) {
-        notifications.forEach((k, v) -> this.notificationService.sendPushNotification(new PushNotification(NotificationType.GROUP_NEW_MEMBER, k, v)));
+        notifications.forEach((k, v) -> this.notificationService.sendPushNotification(new PushNotification(NotificationType.GROUP_NEW_MEMBER, k, null, v)));
     }
 }

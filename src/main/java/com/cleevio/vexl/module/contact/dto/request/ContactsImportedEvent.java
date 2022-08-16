@@ -7,6 +7,9 @@ import java.util.Set;
 public record ContactsImportedEvent(
 
         @NotEmpty
-        Set<@NotBlank String> firebaseTokens
+        Set<@NotBlank String> firebaseTokens,
+
+        @NotBlank
+        String newUserPublicKey
 ) {
 }

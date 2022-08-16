@@ -1,6 +1,7 @@
 package com.cleevio.vexl.module.contact.service;
 
 import com.cleevio.vexl.common.IntegrationTest;
+import com.cleevio.vexl.module.contact.dto.request.ImportRequest;
 import com.cleevio.vexl.module.contact.dto.response.ImportResponse;
 import com.cleevio.vexl.module.contact.constant.ConnectionLevel;
 import com.cleevio.vexl.module.user.dto.request.CreateUserRequest;
@@ -345,24 +346,50 @@ class ContactServiceIT {
         final User user2 = this.userService.createUser(PUBLIC_KEY_USER_2, CONTACTS_1.get(0), new CreateUserRequest(FIREBASE_TOKEN_2));
         final User user3 = this.userService.createUser(PUBLIC_KEY_USER_3, CONTACTS_1.get(1), new CreateUserRequest(FIREBASE_TOKEN_3));
         final User user4 = this.userService.createUser(PUBLIC_KEY_USER_3, CONTACTS_2.get(0), new CreateUserRequest(FIREBASE_TOKEN_4));
+        final User user5 = this.userService.createUser(PUBLIC_KEY_USER_3, CONTACTS_2.get(1), new CreateUserRequest(FIREBASE_TOKEN_4));
+
+        this.importService.importContacts(user1, new ImportRequest(List.of(CONTACTS_2.get(1))));
+        this.importService.importContacts(user2, new ImportRequest(List.of(CONTACTS_2.get(1))));
+        this.importService.importContacts(user3, new ImportRequest(List.of(CONTACTS_2.get(1))));
+        this.importService.importContacts(user4, new ImportRequest(List.of(CONTACTS_2.get(1))));
 
         final String user1Hash = user1.getHash();
         final String user2Hash = user2.getHash();
         final String user3Hash = user3.getHash();
         final String user4Hash = user4.getHash();
+        final String user5Hash = user5.getHash();
 
-        final Set<String> result1 = this.contactRepository.retrieveFirebaseTokensByHashes(Set.of(user1Hash));
+        final Set<String> result1 = this.contactRepository.retrieveFirebaseTokensByHashes(Set.of(user1Hash), user5Hash);
         assertThat(result1).hasSize(1);
         assertThat(result1).containsOnly(FIREBASE_TOKEN_1);
 
-        final Set<String> result2 = this.contactRepository.retrieveFirebaseTokensByHashes(Set.of(user1Hash, user2Hash, user3Hash));
+        final Set<String> result2 = this.contactRepository.retrieveFirebaseTokensByHashes(Set.of(user1Hash, user2Hash, user3Hash), user5Hash);
         assertThat(result2).hasSize(3);
         assertThat(result2).containsOnly(FIREBASE_TOKEN_1, FIREBASE_TOKEN_2, FIREBASE_TOKEN_3);
 
-        final Set<String> result3 = this.contactRepository.retrieveFirebaseTokensByHashes(Set.of(user1Hash, user2Hash, user3Hash, user4Hash));
+        final Set<String> result3 = this.contactRepository.retrieveFirebaseTokensByHashes(Set.of(user1Hash, user2Hash, user3Hash, user4Hash), user5Hash);
         assertThat(result3).hasSize(4);
         assertThat(result3).containsOnly(FIREBASE_TOKEN_1, FIREBASE_TOKEN_2, FIREBASE_TOKEN_3, FIREBASE_TOKEN_4);
     }
 
+    @Test
+    void testNoRetrieveFirebaseTokenForNotImportedUser_thenImportUserAndRetrieveToken() {
+        final User user1 = this.userService.createUser(PUBLIC_KEY_USER_2, CONTACTS_1.get(0), new CreateUserRequest(FIREBASE_TOKEN_1));
+        final User user2 = this.userService.createUser(PUBLIC_KEY_USER_3, CONTACTS_1.get(1), new CreateUserRequest(FIREBASE_TOKEN_2));
 
+        final String user1Hash = user1.getHash();
+        final String user2Hash = user2.getHash();
+
+        //User 2 imported User 1, but User 1 did not import User 2, so User 1 should not be able to retrieve firebase token
+        final Set<String> result1 = this.contactRepository.retrieveFirebaseTokensByHashes(Set.of(user1Hash), user2Hash);
+        assertThat(result1).hasSize(0);
+
+        //User 1 is importing User 2
+        this.importService.importContacts(user1, new ImportRequest(List.of(CONTACTS_1.get(1))));
+
+        //Now User 2 imported User 1, and User 1 imported User 2 previously. So User 2 should find firebase token.
+        final Set<String> result2 = this.contactRepository.retrieveFirebaseTokensByHashes(Set.of(user1Hash), user2Hash);
+        assertThat(result2).hasSize(1);
+        assertThat(result2).containsOnly(FIREBASE_TOKEN_1);
+    }
 }
