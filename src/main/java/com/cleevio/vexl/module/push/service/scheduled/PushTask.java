@@ -11,7 +11,7 @@ public class PushTask {
 
     private final PushService pushService;
 
-    @Scheduled(fixedDelay = 600_000)
+    @Scheduled(fixedDelay = 60_000)
     public void processPushNotification() {
         pushService.processPushNotification();
     }
