@@ -64,7 +64,6 @@ public class FirebaseService implements NotificationService, DeeplinkService {
         try {
             var messageBuilder = Message.builder();
 
-            messageBuilder.setNotification(Notification.builder().setTitle(push.type().name()).setBody(push.type().name()).build());
             messageBuilder.setToken(firebaseToken);
             if (push.groupUuid() != null) {
                 messageBuilder.putData(GROUP_UUID, push.groupUuid());
