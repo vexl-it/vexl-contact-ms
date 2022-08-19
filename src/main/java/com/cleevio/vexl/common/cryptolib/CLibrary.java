@@ -6,7 +6,7 @@ import com.sun.jna.Platform;
 
 public interface CLibrary extends Library {
 
-    String LIBRARY_VERSION = "-v0-0-15";
+    String LIBRARY_VERSION = "-v1-0-1";
     String LIBRARY_NAME = "libvc";
     String LIBRARY_NAME_LINUX = "vc";
     String FULL_NAME_WIN = LIBRARY_NAME + LIBRARY_VERSION;
