@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: appplication-deployment
+  name: contact-ms-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      component: application
+      component: contact-ms
   template:
     metadata:
       labels:
-        component: application
+        component: contact-ms
     spec:
       imagePullSecrets:
         - name: regcred
@@ -19,7 +19,7 @@ spec:
           persistentVolumeClaim:
             claimName: vexl-data
       containers:
-        - name: application
+        - name: contact-ms
           imagePullPolicy: Always
           image: gitlab.cleevio.cz:4567/backend/vexl/vexl-contact-ms/production:latest
           volumeMounts:
@@ -30,19 +30,19 @@ spec:
               valueFrom:
                 secretKeyRef:
                   key: spring.datasource.url
-                  name: spring-profile
+                  name: spring-profile-contact-ms
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
                   key: spring.datasource.username
-                  name: spring-profile
+                  name: spring-profile-contact-ms
             - name: DB_PASS
               valueFrom:
                 secretKeyRef:
                   key: spring.datasource.password
-                  name: spring-profile
+                  name: spring-profile-contact-ms
             - name: SECURITY_ENCRYPTION_KEY
               valueFrom:
                 secretKeyRef:
                   key: security.encryption.key
-                  name: spring-profile
+                  name: spring-profile-contact-ms
