@@ -46,3 +46,13 @@ spec:
                 secretKeyRef:
                   key: security.encryption.key
                   name: spring-profile-contact-ms
+            - name: SIGNATURE_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: secret.signature-public-key
+                  name: spring-profile-contact-ms
+            - name: AES_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: secret.aes-key
+                  name: spring-profile-contact-ms
