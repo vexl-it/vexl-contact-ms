@@ -14,7 +14,14 @@ spec:
     spec:
       imagePullSecrets:
         - name: regcred
+      volumes:
+        - name: static-files
+          persistentVolumeClaim:
+            claimName: vexl-data
       containers:
         - name: application
           imagePullPolicy: Always
           image: gitlab.cleevio.cz:4567/backend/vexl/vexl-contact-ms/staging:latest
+          volumeMounts:
+            - mountPath: "/var/www/static"
+              name: static-files
