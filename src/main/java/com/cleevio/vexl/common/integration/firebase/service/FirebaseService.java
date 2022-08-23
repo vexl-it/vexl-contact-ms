@@ -27,7 +27,7 @@ public class FirebaseService implements NotificationService, DeeplinkService {
     private static final String PUBLIC_KEY = "public_key";
     private static final String TYPE = "type";
     private static final String API_URL = "https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=";
-    private static final String INVITE_PATH = "/invite/";
+    private static final String CODE = "?code=";
 
     @Override
     public void sendPushNotification(final PushNotification push) {
@@ -39,7 +39,8 @@ public class FirebaseService implements NotificationService, DeeplinkService {
     @Override
     public String createDynamicLink(final String code) {
         final String url = API_URL + properties.key();
-        final String link = properties.uri() + INVITE_PATH + code;
+        final String link = properties.uri();
+        final String params = CODE + code;
 
         final LinkRequest linkRequest = new LinkRequest(properties.domainUriPrefix(), link, properties.iosBundle(),
                 properties.iosStore(), properties.androidPackage());
@@ -54,7 +55,7 @@ public class FirebaseService implements NotificationService, DeeplinkService {
                 .orElseThrow(() -> new InvalidResponseFromIntegrationException("Received empty body from Firebase for creating dynamic link EP: " + url));
 
         if (linkResponse != null) {
-            return linkResponse.link();
+            return linkResponse.link() + params;
         }
 
         throw new FirebaseException();
