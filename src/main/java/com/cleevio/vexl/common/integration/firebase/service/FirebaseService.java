@@ -7,9 +7,9 @@ import com.cleevio.vexl.common.integration.firebase.dto.response.LinkResponse;
 import com.cleevio.vexl.common.integration.firebase.exception.FirebaseException;
 import com.cleevio.vexl.common.util.ErrorHandlerUtil;
 import com.cleevio.vexl.module.push.dto.PushNotification;
+import com.google.firebase.messaging.AndroidConfig;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.Message;
-import com.google.firebase.messaging.Notification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -72,6 +72,7 @@ public class FirebaseService implements NotificationService, DeeplinkService {
                 messageBuilder.putData(PUBLIC_KEY, push.newUserPublicKey());
             }
             messageBuilder.putData(TYPE, push.type().name());
+            messageBuilder.setAndroidConfig(AndroidConfig.builder().build());
 
             final String response = FirebaseMessaging.getInstance().sendAsync(messageBuilder.build()).get();
             log.info("Sent message: " + response);
