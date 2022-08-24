@@ -70,6 +70,10 @@ public class ContactService {
 
     @Transactional(readOnly = true)
     public List<String> retrieveNewContacts(User user, @Valid NewContactsRequest contactsRequest) {
+        if (contactsRequest.contacts().isEmpty()) {
+            return Collections.emptyList();
+        }
+
         final List<String> newContacts = new ArrayList<>();
 
         final List<String> trimContacts = contactsRequest.contacts()

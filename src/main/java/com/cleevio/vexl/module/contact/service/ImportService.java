@@ -27,9 +27,15 @@ public class ImportService {
 
     private final ContactRepository contactRepository;
     private final ContactService contactService;
+    private static final String NO_CONTACTS_SENT = "You did not import any contact.";
+    private static final String IMPORTED_CONTACTS_MESSAGE = "Imported %s / %s contacts.";
 
     @Transactional
     public ImportResponse importContacts(final User user, final @Valid ImportRequest importRequest) {
+        if (importRequest.contacts().isEmpty()) {
+            return new ImportResponse(true, NO_CONTACTS_SENT);
+        }
+
         final int importSize = importRequest.contacts().size();
 
         log.info("Importing new {} contacts for {}",
@@ -56,7 +62,7 @@ public class ImportService {
             }
         }
 
-        final String message = String.format("Imported %s / %s contacts.",
+        final String message = String.format(IMPORTED_CONTACTS_MESSAGE,
                 importedHashes.size(),
                 importSize);
 
