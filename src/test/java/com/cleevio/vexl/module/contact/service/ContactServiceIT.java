@@ -100,17 +100,15 @@ class ContactServiceIT {
     }
 
     @Test
-    void testImportEmptyContacts_shouldReturnException() {
+    void testImportEmptyContacts_shouldBeImportedWithoutException() {
         final User user = this.userService.createUser(PUBLIC_KEY_USER_1, HASH_USER);
 
-        assertThrows(
-                ConstraintViolationException.class,
-                () -> importService.importContacts(user, CreateRequestTestUtil.createImportRequest(Collections.emptyList()))
-        );
+        final ImportResponse importResponse = importService.importContacts(user, CreateRequestTestUtil.createImportRequest(Collections.emptyList()));
+        assertThat(importResponse.imported()).isTrue();
     }
 
     @Test
-    void testImportSameContactsForTimes_shouldBeImportedAndNotDuplicated() {
+    void testImportSameContactsFourTimes_shouldBeImportedAndNotDuplicated() {
         final User user = this.userService.createUser(PUBLIC_KEY_USER_1, HASH_USER);
         this.userService.createUser(PUBLIC_KEY_USER_2, CONTACTS_1.get(0));
         this.userService.createUser(PUBLIC_KEY_USER_3, CONTACTS_1.get(1));
