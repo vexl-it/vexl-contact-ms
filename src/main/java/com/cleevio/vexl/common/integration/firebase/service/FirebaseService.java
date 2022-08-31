@@ -7,6 +7,8 @@ import com.cleevio.vexl.common.integration.firebase.dto.response.LinkResponse;
 import com.cleevio.vexl.common.integration.firebase.exception.FirebaseException;
 import com.cleevio.vexl.common.util.ErrorHandlerUtil;
 import com.cleevio.vexl.module.push.dto.PushNotification;
+import com.google.firebase.messaging.ApnsConfig;
+import com.google.firebase.messaging.Aps;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.Message;
 import lombok.RequiredArgsConstructor;
@@ -63,6 +65,14 @@ public class FirebaseService implements NotificationService, DeeplinkService {
     private void processNotification(String firebaseToken, PushNotification push) {
         try {
             var messageBuilder = Message.builder();
+
+            final ApnsConfig apnsConfig = ApnsConfig.builder()
+                    .setAps(Aps.builder()
+                            .setContentAvailable(true)
+                            .build())
+                    .build();
+
+            messageBuilder.setApnsConfig(apnsConfig);
 
             messageBuilder.setToken(firebaseToken);
             if (push.groupUuid() != null) {
