@@ -9,6 +9,8 @@ public record ContactsImportedEvent(
         @NotEmpty
         Set<@NotBlank String> firebaseTokens,
 
+        Set<@NotBlank String> firebaseTokensSecondDegree,
+
         @NotBlank
         String newUserPublicKey
 ) {

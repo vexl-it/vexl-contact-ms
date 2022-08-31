@@ -23,7 +23,9 @@ public record PushNotification(
         String newUserPublicKey,
 
         @NotEmpty
-        Set<@NotBlank String> membersFirebaseTokens
+        Set<@NotBlank String> membersFirebaseTokens,
+
+        Set<@NotBlank String> secondDegreeMembersFirebaseTokens
 
 ) {
 }

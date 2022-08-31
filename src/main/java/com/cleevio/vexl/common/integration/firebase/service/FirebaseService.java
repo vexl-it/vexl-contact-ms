@@ -6,6 +6,7 @@ import com.cleevio.vexl.common.integration.firebase.dto.request.LinkRequest;
 import com.cleevio.vexl.common.integration.firebase.dto.response.LinkResponse;
 import com.cleevio.vexl.common.integration.firebase.exception.FirebaseException;
 import com.cleevio.vexl.common.util.ErrorHandlerUtil;
+import com.cleevio.vexl.module.contact.constant.ConnectionLevel;
 import com.cleevio.vexl.module.push.dto.PushNotification;
 import com.google.firebase.messaging.ApnsConfig;
 import com.google.firebase.messaging.Aps;
@@ -26,15 +27,17 @@ public class FirebaseService implements NotificationService, DeeplinkService {
     private final WebClient webClient;
     private static final String GROUP_UUID = "group_uuid";
     private static final String PUBLIC_KEY = "public_key";
+    private static final String CONNECTION_LEVEL_KEY = "connection_level";
+    private static final String CONNECTION_LEVEL_VALUE_FIRST = "FIRST_DEGREE";
+    private static final String CONNECTION_LEVEL_VALUE_SECOND = "SECOND_DEGREE";
     private static final String TYPE = "type";
     private static final String API_URL = "https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=";
     private static final String CODE = "?code=";
 
     @Override
     public void sendPushNotification(final PushNotification push) {
-        push.membersFirebaseTokens().forEach(m -> {
-            processNotification(m, push);
-        });
+        push.membersFirebaseTokens().forEach(m -> processNotification(m, push, ConnectionLevel.FIRST));
+        push.secondDegreeMembersFirebaseTokens().forEach(m -> processNotification(m, push, ConnectionLevel.SECOND));
     }
 
     @Override
@@ -62,7 +65,7 @@ public class FirebaseService implements NotificationService, DeeplinkService {
         throw new FirebaseException();
     }
 
-    private void processNotification(String firebaseToken, PushNotification push) {
+    private void processNotification(String firebaseToken, PushNotification push, ConnectionLevel level) {
         try {
             var messageBuilder = Message.builder();
 
@@ -82,6 +85,7 @@ public class FirebaseService implements NotificationService, DeeplinkService {
                 messageBuilder.putData(PUBLIC_KEY, push.newUserPublicKey());
             }
             messageBuilder.putData(TYPE, push.type().name());
+            messageBuilder.putData(CONNECTION_LEVEL_KEY, getValueForLevel(level));
 
             final String response = FirebaseMessaging.getInstance().sendAsync(messageBuilder.build()).get();
             log.info("Sent message: " + response);
@@ -89,5 +93,12 @@ public class FirebaseService implements NotificationService, DeeplinkService {
         } catch (Exception e) {
             log.error("Error sending notification", e);
         }
+    }
+
+    private String getValueForLevel(final ConnectionLevel level) {
+        if (level == ConnectionLevel.SECOND) {
+            return CONNECTION_LEVEL_VALUE_SECOND;
+        }
+        return CONNECTION_LEVEL_VALUE_FIRST;
     }
 }

@@ -390,4 +390,31 @@ class ContactServiceIT {
         assertThat(result2).hasSize(1);
         assertThat(result2).containsOnly(FIREBASE_TOKEN_1);
     }
+
+    @Test
+    void testRetrieveSecondDegreeFirebaseTokensByHashes_shouldRetrieveFirebaseTokens() {
+        // first degree
+        final User user1 = this.userService.createUser(PUBLIC_KEY_USER_1, HASH_USER, new CreateUserRequest(FIREBASE_TOKEN_1));
+
+        // second degree
+        this.userService.createUser(PUBLIC_KEY_USER_2, CONTACTS_1.get(0), new CreateUserRequest(FIREBASE_TOKEN_2));
+        this.userService.createUser(PUBLIC_KEY_USER_3, CONTACTS_1.get(1), new CreateUserRequest(FIREBASE_TOKEN_3));
+
+        // actor
+        final User user4 = this.userService.createUser(PUBLIC_KEY_USER_3, CONTACTS_2.get(1), new CreateUserRequest(FIREBASE_TOKEN_4));
+
+        this.importService.importContacts(user1, new ImportRequest(List.of(CONTACTS_2.get(1), CONTACTS_1.get(1), CONTACTS_1.get(0))));
+
+        final String user1Hash = user1.getHash();
+        final String user4Hash = user4.getHash();
+
+        final Set<String> result1 = this.contactRepository.retrieveFirebaseTokensByHashes(Set.of(user1Hash), user4Hash);
+        assertThat(result1).hasSize(1);
+        assertThat(result1).containsOnly(FIREBASE_TOKEN_1);
+
+        // we are looking for seconds degree, but we have to set FIRST degree, because out second degree is for our contacts first degree
+        final Set<String> result2 = this.contactRepository.retrieveSecondDegreeFirebaseTokensByHashes(Set.of(user1Hash), user4Hash, result1, ConnectionLevel.FIRST);
+        assertThat(result2).hasSize(2);
+        assertThat(result2).containsOnly(FIREBASE_TOKEN_2, FIREBASE_TOKEN_3);
+    }
 }

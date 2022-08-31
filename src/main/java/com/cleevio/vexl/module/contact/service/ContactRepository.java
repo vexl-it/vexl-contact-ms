@@ -1,5 +1,6 @@
 package com.cleevio.vexl.module.contact.service;
 
+import com.cleevio.vexl.module.contact.constant.ConnectionLevel;
 import com.cleevio.vexl.module.contact.entity.UserContact;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -73,4 +74,15 @@ interface ContactRepository extends JpaRepository<UserContact, Long>, JpaSpecifi
             and uc.hashTo = :newUserHash
             """)
     Set<String> retrieveFirebaseTokensByHashes(Set<String> existingContactHashes, String newUserHash);
+
+    @Query("""
+            select distinct u.firebaseToken from User u 
+            INNER JOIN VContact v on u.publicKey = v.publicKey 
+            INNER JOIN User u2 on v.myPublicKey = u2.publicKey 
+            INNER JOIN UserContact uc on u2.hash = uc.hashFrom 
+            where u.hash <> :newUserHash and u.firebaseToken not in (:firstDegreeFirebaseTokens) 
+            and u2.hash in (:existingContactHashes) and u2.firebaseToken is not null 
+            and uc.hashTo = :newUserHash and v.level = :level
+            """)
+    Set<String> retrieveSecondDegreeFirebaseTokensByHashes(Set<String> existingContactHashes, String newUserHash, Set<String> firstDegreeFirebaseTokens, ConnectionLevel level);
 }

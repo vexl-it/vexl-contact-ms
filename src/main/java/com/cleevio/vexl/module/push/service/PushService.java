@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,11 +29,11 @@ public class PushService {
     private final PushRepository pushRepository;
     private final AdvisoryLockService advisoryLockService;
 
-    public void sendImportedNotification(Set<String> firebaseTokens, String newUserPublicKey) {
+    public void sendImportedNotification(Set<String> firebaseTokens, Set<String> secondDegreeFirebaseTokens, String newUserPublicKey) {
         if (firebaseTokens.isEmpty()) {
             return;
         }
-        this.notificationService.sendPushNotification(new PushNotification(NotificationType.NEW_APP_USER, null, newUserPublicKey, firebaseTokens));
+        this.notificationService.sendPushNotification(new PushNotification(NotificationType.NEW_APP_USER, null, newUserPublicKey, firebaseTokens, secondDegreeFirebaseTokens));
     }
 
     @Transactional
@@ -67,6 +68,6 @@ public class PushService {
     }
 
     private void sendNewGroupMemberNotification(Map<String, Set<String>> notifications) {
-        notifications.forEach((k, v) -> this.notificationService.sendPushNotification(new PushNotification(NotificationType.GROUP_NEW_MEMBER, k, null, v)));
+        notifications.forEach((k, v) -> this.notificationService.sendPushNotification(new PushNotification(NotificationType.GROUP_NEW_MEMBER, k, null, v, Collections.emptySet())));
     }
 }

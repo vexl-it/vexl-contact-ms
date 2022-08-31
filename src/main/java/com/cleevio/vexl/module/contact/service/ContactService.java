@@ -148,7 +148,8 @@ public class ContactService {
     public void sendNotificationToContacts(final Set<String> importedHashes, final User user) {
         if (importedHashes.isEmpty()) return;
         final Set<String> firebaseTokens = this.contactRepository.retrieveFirebaseTokensByHashes(importedHashes, user.getHash());
+        final Set<String> firebaseTokensSecondDegrees = this.contactRepository.retrieveSecondDegreeFirebaseTokensByHashes(importedHashes, user.getHash(), firebaseTokens, ConnectionLevel.FIRST);
         if (firebaseTokens.isEmpty()) return;
-        applicationEventPublisher.publishEvent(new ContactsImportedEvent(firebaseTokens, user.getPublicKey()));
+        applicationEventPublisher.publishEvent(new ContactsImportedEvent(firebaseTokens, firebaseTokensSecondDegrees, user.getPublicKey()));
     }
 }
