@@ -6,6 +6,7 @@ import com.cleevio.vexl.common.service.AdvisoryLockService;
 import com.cleevio.vexl.module.contact.service.ContactService;
 import com.cleevio.vexl.module.file.service.ImageService;
 import com.cleevio.vexl.module.group.dto.GroupModel;
+import com.cleevio.vexl.module.group.dto.MemberModel;
 import com.cleevio.vexl.module.group.dto.mapper.GroupMapper;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.ExpiredGroupsRequest;
@@ -30,9 +31,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Service
@@ -107,17 +106,23 @@ public class GroupService {
     }
 
     @Transactional(readOnly = true)
-    public Map<String, List<String>> retrieveMembers(@Valid final List<MemberRequest.GroupRequest> groups, final User user) {
-        final Map<String, List<String>> newMembers = new HashMap<>();
+    public List<MemberModel> retrieveMembers(@Valid final List<MemberRequest.GroupRequest> groups, final User user) {
+        final List<MemberModel> members = new ArrayList<>();
 
         groups.forEach(group -> {
             final String groupUuid = group.groupUuid();
             final List<String> publicKeys = new ArrayList<>(List.of(user.getPublicKey()));
             publicKeys.addAll(group.publicKeys());
-            newMembers.put(groupUuid, this.contactService.retrieveNewGroupMembers(groupUuid, publicKeys));
+            members.add(
+                    new MemberModel(
+                            groupUuid,
+                            this.contactService.retrieveNewGroupMembers(groupUuid, publicKeys),
+                            this.contactService.retrieveRemovedGroupMembers(groupUuid, publicKeys)
+                    )
+            );
         });
 
-        return newMembers;
+        return members;
     }
 
     @Transactional(readOnly = true)

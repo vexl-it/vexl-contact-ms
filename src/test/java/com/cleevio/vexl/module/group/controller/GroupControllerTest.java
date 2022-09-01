@@ -3,6 +3,7 @@ package com.cleevio.vexl.module.group.controller;
 import com.cleevio.vexl.common.BaseControllerTest;
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
 import com.cleevio.vexl.module.group.dto.GroupModel;
+import com.cleevio.vexl.module.group.dto.MemberModel;
 import com.cleevio.vexl.module.group.dto.mapper.GroupMapper;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.JoinGroupRequest;
@@ -152,7 +153,7 @@ class GroupControllerTest extends BaseControllerTest {
     @Test
     @SneakyThrows
     void testNewMembers_validInput_shouldReturn200() {
-        when(this.groupService.retrieveMembers(any(), any())).thenReturn(Map.of(GROUP_UUID, List.of(PUBLIC_KEY)));
+        when(this.groupService.retrieveMembers(any(), any())).thenReturn(List.of(new MemberModel(GROUP_UUID, List.of(PUBLIC_KEY), List.of(PUBLIC_KEY))));
 
         mvc.perform(post(MEMBERS_EP)
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY)
@@ -162,7 +163,8 @@ class GroupControllerTest extends BaseControllerTest {
                         .content(asJsonString(NEW_MEMBER_REQUEST)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.newMembers[0].groupUuid", is(GROUP_UUID)))
-                .andExpect(jsonPath("$.newMembers[0].publicKeys", is(List.of(PUBLIC_KEY))));
+                .andExpect(jsonPath("$.newMembers[0].newPublicKeys", is(List.of(PUBLIC_KEY))))
+                .andExpect(jsonPath("$.newMembers[0].removedPublicKeys", is(List.of(PUBLIC_KEY))));
     }
 
     @Test

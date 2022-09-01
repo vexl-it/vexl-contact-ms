@@ -84,7 +84,7 @@ public class GroupController {
             description = """
                     EP returns group members. It is a POST because of needed payload.
                     You should have public keys of users you already know. Send them within this request.
-                    BE will return diff - that means BE will return public keys you do not have.
+                    BE will return diff - that means BE will return public keys you do not have and public keys which are no longer in the group.
                     If you want to find all members, you can send only group uuids.
                     """
     )

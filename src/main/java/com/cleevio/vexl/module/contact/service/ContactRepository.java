@@ -54,12 +54,20 @@ interface ContactRepository extends JpaRepository<UserContact, Long>, JpaSpecifi
     void deleteContactByHash(String hash, String contactHash);
 
     @Query("""
-            select u.publicKey from User u 
+            select distinct u.publicKey from User u 
             inner join UserContact uc on u.hash = uc.hashFrom 
             where uc.hashTo = :groupUuidHash and u.publicKey not in (:publicKeys)
             """
     )
     List<String> retrieveNewGroupMembers(String groupUuidHash, List<String> publicKeys);
+
+    @Query("""
+            select distinct u.publicKey from User u 
+            inner join UserContact uc on u.hash = uc.hashFrom 
+            where uc.hashTo = :groupUuidHash
+            """
+    )
+    List<String> retrieveAllGroupMembers(String groupUuidHash);
 
     @Query("select uc.hashTo from UserContact uc where uc.hashFrom = :hash and uc.hashTo in (:trimContacts) ")
     Set<String> retrieveExistingContacts(String hash, List<String> trimContacts);

@@ -2,6 +2,7 @@ package com.cleevio.vexl.module.group.service;
 
 import com.cleevio.vexl.common.IntegrationTest;
 import com.cleevio.vexl.module.group.dto.GroupModel;
+import com.cleevio.vexl.module.group.dto.MemberModel;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.ExpiredGroupsRequest;
 import com.cleevio.vexl.module.group.dto.request.LeaveGroupRequest;
@@ -18,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -166,19 +166,19 @@ class GroupServiceIT {
         final Group group = this.groupService.createGroup(user1, CreateRequestTestUtil.createCreateGroupRequest());
 
         //no new user
-        final Map<String, List<String>> emptyResult = this.groupService.retrieveMembers(CreateRequestTestUtil.createGroupRequestList(group.getUuid(), Collections.emptyList()), user1);
-        assertThat(emptyResult.get(group.getUuid()).size()).isEqualTo(0);
+        final List<MemberModel> emptyResult = this.groupService.retrieveMembers(CreateRequestTestUtil.createGroupRequestList(group.getUuid(), Collections.emptyList()), user1);
+        assertThat(emptyResult.get(0).newPublicKeys().size()).isEqualTo(0);
 
         //a new user join group
         this.groupService.joinGroup(user2, CreateRequestTestUtil.createJoinGroupRequest(group.getCode()));
 
-        final Map<String, List<String>> oneResult = this.groupService.retrieveMembers(CreateRequestTestUtil.createGroupRequestList(group.getUuid(), Collections.emptyList()), user1);
-        assertThat(oneResult.values().size()).isEqualTo(1);
-        assertThat(oneResult.get(group.getUuid()).get(0)).isEqualTo(PUBLIC_KEY_USER_2);
+        final List<MemberModel> oneResult = this.groupService.retrieveMembers(CreateRequestTestUtil.createGroupRequestList(group.getUuid(), Collections.emptyList()), user1);
+        assertThat(oneResult.size()).isEqualTo(1);
+        assertThat(oneResult.get(0).newPublicKeys().get(0)).isEqualTo(PUBLIC_KEY_USER_2);
 
         //I know about a new user now
-        final Map<String, List<String>> emptyResult2 = this.groupService.retrieveMembers(CreateRequestTestUtil.createGroupRequestList(group.getUuid(), List.of(user2.getPublicKey())), user1);
-        assertThat(emptyResult2.get(group.getUuid()).size()).isEqualTo(0);
+        final List<MemberModel> emptyResult2 = this.groupService.retrieveMembers(CreateRequestTestUtil.createGroupRequestList(group.getUuid(), List.of(user2.getPublicKey())), user1);
+        assertThat(emptyResult2.get(0).newPublicKeys().size()).isEqualTo(0);
     }
 
     @Test
@@ -205,18 +205,22 @@ class GroupServiceIT {
         groupRequests.add(CreateRequestTestUtil.createGroupRequest(group3.getUuid(), Collections.emptyList()));
         groupRequests.add(CreateRequestTestUtil.createGroupRequest(group4.getUuid(), Collections.emptyList()));
 
-        final Map<String, List<String>> allUsersResult = this.groupService.retrieveMembers(groupRequests, user1);
-        assertThat(allUsersResult.get(group1.getUuid()).size()).isEqualTo(1);
-        assertThat(allUsersResult.get(group1.getUuid()).get(0)).isEqualTo(PUBLIC_KEY_USER_2);
+        final List<MemberModel> allUsersResult = this.groupService.retrieveMembers(groupRequests, user1);
+        assertThat(allUsersResult.get(0).groupUuid()).isEqualTo(group1.getUuid());
+        assertThat(allUsersResult.get(0).newPublicKeys().size()).isEqualTo(1);
+        assertThat(allUsersResult.get(0).newPublicKeys().get(0)).isEqualTo(PUBLIC_KEY_USER_2);
 
-        assertThat(allUsersResult.get(group2.getUuid()).size()).isEqualTo(1);
-        assertThat(allUsersResult.get(group2.getUuid()).get(0)).isEqualTo(PUBLIC_KEY_USER_2);
+        assertThat(allUsersResult.get(1).groupUuid()).isEqualTo(group2.getUuid());
+        assertThat(allUsersResult.get(1).newPublicKeys().size()).isEqualTo(1);
+        assertThat(allUsersResult.get(1).newPublicKeys().get(0)).isEqualTo(PUBLIC_KEY_USER_2);
 
-        assertThat(allUsersResult.get(group3.getUuid()).size()).isEqualTo(2);
-        assertThat(allUsersResult.get(group3.getUuid())).contains(PUBLIC_KEY_USER_2, PUBLIC_KEY_USER_3);
+        assertThat(allUsersResult.get(2).groupUuid()).isEqualTo(group3.getUuid());
+        assertThat(allUsersResult.get(2).newPublicKeys().size()).isEqualTo(2);
+        assertThat(allUsersResult.get(2).newPublicKeys()).contains(PUBLIC_KEY_USER_2, PUBLIC_KEY_USER_3);
 
-        assertThat(allUsersResult.get(group4.getUuid()).size()).isEqualTo(1);
-        assertThat(allUsersResult.get(group4.getUuid()).get(0)).isEqualTo(PUBLIC_KEY_USER_3);
+        assertThat(allUsersResult.get(3).groupUuid()).isEqualTo(group4.getUuid());
+        assertThat(allUsersResult.get(3).newPublicKeys().size()).isEqualTo(1);
+        assertThat(allUsersResult.get(3).newPublicKeys().get(0)).isEqualTo(PUBLIC_KEY_USER_3);
 
         //User 2 is known
         groupRequests.clear();
@@ -225,16 +229,18 @@ class GroupServiceIT {
         groupRequests.add(CreateRequestTestUtil.createGroupRequest(group3.getUuid(), List.of(PUBLIC_KEY_USER_2)));
         groupRequests.add(CreateRequestTestUtil.createGroupRequest(group4.getUuid(), Collections.emptyList()));
 
-        final Map<String, List<String>> user2IsKnown = this.groupService.retrieveMembers(groupRequests, user1);
-        assertThat(user2IsKnown.get(group1.getUuid()).size()).isEqualTo(0);
+        final List<MemberModel> user2IsKnown = this.groupService.retrieveMembers(groupRequests, user1);
+        assertThat(user2IsKnown.get(0).newPublicKeys().size()).isEqualTo(0);
 
-        assertThat(user2IsKnown.get(group2.getUuid()).size()).isEqualTo(0);
+        assertThat(user2IsKnown.get(1).newPublicKeys().size()).isEqualTo(0);
 
-        assertThat(user2IsKnown.get(group3.getUuid()).size()).isEqualTo(1);
-        assertThat(user2IsKnown.get(group3.getUuid()).get(0)).isEqualTo(PUBLIC_KEY_USER_3);
+        assertThat(user2IsKnown.get(2).groupUuid()).isEqualTo(group3.getUuid());
+        assertThat(user2IsKnown.get(2).newPublicKeys().size()).isEqualTo(1);
+        assertThat(user2IsKnown.get(2).newPublicKeys().get(0)).isEqualTo(PUBLIC_KEY_USER_3);
 
-        assertThat(user2IsKnown.get(group4.getUuid()).size()).isEqualTo(1);
-        assertThat(allUsersResult.get(group4.getUuid()).get(0)).isEqualTo(PUBLIC_KEY_USER_3);
+        assertThat(user2IsKnown.get(3).groupUuid()).isEqualTo(group4.getUuid());
+        assertThat(user2IsKnown.get(3).newPublicKeys().size()).isEqualTo(1);
+        assertThat(user2IsKnown.get(3).newPublicKeys().get(0)).isEqualTo(PUBLIC_KEY_USER_3);
 
         //User 3 is known
         groupRequests.clear();
@@ -243,17 +249,21 @@ class GroupServiceIT {
         groupRequests.add(CreateRequestTestUtil.createGroupRequest(group3.getUuid(), List.of(PUBLIC_KEY_USER_3)));
         groupRequests.add(CreateRequestTestUtil.createGroupRequest(group4.getUuid(), List.of(PUBLIC_KEY_USER_3)));
 
-        final Map<String, List<String>> user3IsKnown = this.groupService.retrieveMembers(groupRequests, user1);
-        assertThat(user3IsKnown.get(group1.getUuid()).size()).isEqualTo(1);
-        assertThat(user3IsKnown.get(group1.getUuid()).get(0)).isEqualTo(PUBLIC_KEY_USER_2);
+        final List<MemberModel> user3IsKnown = this.groupService.retrieveMembers(groupRequests, user1);
+        assertThat(user3IsKnown.get(0).groupUuid()).isEqualTo(group1.getUuid());
+        assertThat(user3IsKnown.get(0).newPublicKeys().size()).isEqualTo(1);
+        assertThat(user3IsKnown.get(0).newPublicKeys().get(0)).isEqualTo(PUBLIC_KEY_USER_2);
 
-        assertThat(user3IsKnown.get(group2.getUuid()).size()).isEqualTo(1);
-        assertThat(user3IsKnown.get(group2.getUuid()).get(0)).isEqualTo(PUBLIC_KEY_USER_2);
+        assertThat(user3IsKnown.get(1).groupUuid()).isEqualTo(group2.getUuid());
+        assertThat(user3IsKnown.get(1).newPublicKeys().size()).isEqualTo(1);
+        assertThat(user3IsKnown.get(1).newPublicKeys().get(0)).isEqualTo(PUBLIC_KEY_USER_2);
 
-        assertThat(user3IsKnown.get(group3.getUuid()).size()).isEqualTo(1);
-        assertThat(user3IsKnown.get(group3.getUuid()).get(0)).isEqualTo(PUBLIC_KEY_USER_2);
+        assertThat(user3IsKnown.get(2).groupUuid()).isEqualTo(group3.getUuid());
+        assertThat(user3IsKnown.get(2).newPublicKeys().size()).isEqualTo(1);
+        assertThat(user3IsKnown.get(2).newPublicKeys().get(0)).isEqualTo(PUBLIC_KEY_USER_2);
 
-        assertThat(user3IsKnown.get(group4.getUuid()).size()).isEqualTo(0);
+        assertThat(user3IsKnown.get(3).groupUuid()).isEqualTo(group4.getUuid());
+        assertThat(user3IsKnown.get(3).newPublicKeys().size()).isEqualTo(0);
 
         //everyone is known
         groupRequests.clear();
@@ -262,11 +272,11 @@ class GroupServiceIT {
         groupRequests.add(CreateRequestTestUtil.createGroupRequest(group3.getUuid(), List.of(PUBLIC_KEY_USER_2, PUBLIC_KEY_USER_3)));
         groupRequests.add(CreateRequestTestUtil.createGroupRequest(group4.getUuid(), List.of(PUBLIC_KEY_USER_3)));
 
-        final Map<String, List<String>> allIsKnown = this.groupService.retrieveMembers(groupRequests, user1);
-        assertThat(allIsKnown.get(group1.getUuid()).size()).isEqualTo(0);
-        assertThat(allIsKnown.get(group2.getUuid()).size()).isEqualTo(0);
-        assertThat(allIsKnown.get(group3.getUuid()).size()).isEqualTo(0);
-        assertThat(allIsKnown.get(group4.getUuid()).size()).isEqualTo(0);
+        final List<MemberModel> allIsKnown = this.groupService.retrieveMembers(groupRequests, user1);
+        assertThat(allIsKnown.get(0).newPublicKeys().size()).isEqualTo(0);
+        assertThat(allIsKnown.get(1).newPublicKeys().size()).isEqualTo(0);
+        assertThat(allIsKnown.get(2).newPublicKeys().size()).isEqualTo(0);
+        assertThat(allIsKnown.get(3).newPublicKeys().size()).isEqualTo(0);
     }
 
     @Test
@@ -283,5 +293,50 @@ class GroupServiceIT {
         assertThat(expiredGroups).hasSize(2);
         assertThat(expiredGroups.get(0).group().getUuid()).doesNotContain(nonExpiredGroup1.getUuid(), nonExpiredGroup2.getUuid());
         assertThat(expiredGroups.get(1).group().getUuid()).doesNotContain(nonExpiredGroup1.getUuid(), nonExpiredGroup2.getUuid());
+    }
+
+    @Test
+    void testRetrieveRemovedGroupMembers_shouldBeRetrieved() {
+        final User user1 = userService.createUser(PUBLIC_KEY_USER_1, HASH_USER_1);
+        final User user2 = userService.createUser(PUBLIC_KEY_USER_2, HASH_USER_2);
+        final User user3 = userService.createUser(PUBLIC_KEY_USER_3, HASH_USER_3);
+        final Group group = this.groupService.createGroup(user1, CreateRequestTestUtil.createCreateGroupRequest());
+        final List<MemberRequest.GroupRequest> groupRequests = new ArrayList<>();
+
+        this.groupService.joinGroup(user2, CreateRequestTestUtil.createJoinGroupRequest(group.getCode()));
+        this.groupService.joinGroup(user3, CreateRequestTestUtil.createJoinGroupRequest(group.getCode()));
+
+        //everyone is unknown
+        groupRequests.add(CreateRequestTestUtil.createGroupRequest(group.getUuid(), Collections.emptyList()));
+
+        // Check all members are in group
+        final List<MemberModel> members = this.groupService.retrieveMembers(groupRequests, user1);
+        assertThat(members.get(0).newPublicKeys()).hasSize(2);
+        assertThat(members.get(0).newPublicKeys()).contains(PUBLIC_KEY_USER_2, PUBLIC_KEY_USER_3);
+        assertThat(members.get(0).removedPublicKeys()).hasSize(0);
+
+        // User 2 is leaving group
+        groupRequests.clear();
+        groupRequests.add(CreateRequestTestUtil.createGroupRequest(group.getUuid(), List.of(PUBLIC_KEY_USER_2, PUBLIC_KEY_USER_3)));
+
+        this.groupService.leaveGroup(user2, new LeaveGroupRequest(group.getUuid()));
+        final List<MemberModel> membersAfterUser2Left = this.groupService.retrieveMembers(groupRequests, user1);
+        assertThat(membersAfterUser2Left.get(0).newPublicKeys()).hasSize(0);
+        assertThat(membersAfterUser2Left.get(0).removedPublicKeys()).hasSize(1);
+        assertThat(membersAfterUser2Left.get(0).removedPublicKeys()).contains(PUBLIC_KEY_USER_2);
+
+        // User 3 is leaving group
+        this.groupService.leaveGroup(user3, new LeaveGroupRequest(group.getUuid()));
+        final List<MemberModel> membersAfterUser2AndUser3Left = this.groupService.retrieveMembers(groupRequests, user1);
+        assertThat(membersAfterUser2AndUser3Left.get(0).newPublicKeys()).hasSize(0);
+        assertThat(membersAfterUser2AndUser3Left.get(0).removedPublicKeys()).hasSize(2);
+        assertThat(membersAfterUser2AndUser3Left.get(0).removedPublicKeys()).contains(PUBLIC_KEY_USER_2, PUBLIC_KEY_USER_3);
+
+        // User 2 and User 3 are joining group again
+        this.groupService.joinGroup(user2, CreateRequestTestUtil.createJoinGroupRequest(group.getCode()));
+        this.groupService.joinGroup(user3, CreateRequestTestUtil.createJoinGroupRequest(group.getCode()));
+        final List<MemberModel> membersAfterRejoinUser2AndUser3 = this.groupService.retrieveMembers(groupRequests, user1);
+        assertThat(membersAfterRejoinUser2AndUser3.get(0).newPublicKeys()).hasSize(0);
+        assertThat(membersAfterRejoinUser2AndUser3.get(0).removedPublicKeys()).hasSize(0);
     }
 }

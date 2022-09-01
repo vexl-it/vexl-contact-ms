@@ -1,31 +1,12 @@
 package com.cleevio.vexl.module.group.dto.response;
 
-import java.util.ArrayList;
+import com.cleevio.vexl.module.group.dto.MemberModel;
+
 import java.util.List;
-import java.util.Map;
 
 public record MembersResponse(
 
-        List<GroupMembers> newMembers
+        List<MemberModel> newMembers
 
 ) {
-
-    public record GroupMembers(
-
-            String groupUuid,
-
-            List<String> publicKeys
-
-    ) {
-    }
-
-    public MembersResponse(Map<String, List<String>> newMembers) {
-        this(createGroupMembers(newMembers));
-    }
-
-    private static List<GroupMembers> createGroupMembers(Map<String, List<String>> newMembers) {
-        List<GroupMembers> newMembersResponse = new ArrayList<>();
-        newMembers.forEach((k, v) -> newMembersResponse.add(new GroupMembers(k, v)));
-        return newMembersResponse;
-    }
 }

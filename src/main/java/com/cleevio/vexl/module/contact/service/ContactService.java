@@ -152,4 +152,11 @@ public class ContactService {
         if (firebaseTokens.isEmpty()) return;
         applicationEventPublisher.publishEvent(new ContactsImportedEvent(firebaseTokens, firebaseTokensSecondDegrees, user.getPublicKey()));
     }
+
+    @Transactional(readOnly = true)
+    public List<String> retrieveRemovedGroupMembers(String groupUuid, List<String> publicKeys) {
+        final List<String> activeMembersPublicKeys = this.contactRepository.retrieveAllGroupMembers(groupUuid);
+        publicKeys.removeAll(activeMembersPublicKeys);
+        return publicKeys;
+    }
 }
