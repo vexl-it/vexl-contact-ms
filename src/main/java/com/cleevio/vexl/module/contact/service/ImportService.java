@@ -72,4 +72,17 @@ public class ImportService {
 
         return new ImportResponse(true, message);
     }
+
+    @Transactional
+    public void importGroupToContacts(final User user, final String groupUuid) {
+        final String trimmedContact = groupUuid.trim();
+        if (this.contactRepository.existsContact(user.getHash(), trimmedContact)) {
+            return;
+        }
+        final UserContact contact = UserContact.builder()
+                .hashFrom(user.getHash())
+                .hashTo(trimmedContact)
+                .build();
+        this.contactRepository.save(contact);
+    }
 }

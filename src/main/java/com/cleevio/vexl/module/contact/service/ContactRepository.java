@@ -72,6 +72,9 @@ interface ContactRepository extends JpaRepository<UserContact, Long>, JpaSpecifi
     @Query("select uc.hashTo from UserContact uc where uc.hashFrom = :hash and uc.hashTo in (:trimContacts) ")
     Set<String> retrieveExistingContacts(String hash, List<String> trimContacts);
 
+    @Query("select case when (count(uc) > 0) then true else false end from UserContact uc where uc.hashFrom = :hash and uc.hashTo = :trimContact ")
+    boolean existsContact(String hash, String trimContact);
+
     @Query("select u.firebaseToken from User u where u.hash in (select uc.hashFrom from UserContact uc where uc.hashTo = :hash) and u.publicKey <> :publicKey and u.firebaseToken is not null")
     Set<String> retrieveGroupMembersFirebaseTokens(String hash, String publicKey);
 

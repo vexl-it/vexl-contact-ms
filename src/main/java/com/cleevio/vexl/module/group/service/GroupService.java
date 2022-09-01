@@ -15,7 +15,7 @@ import com.cleevio.vexl.module.group.dto.request.LeaveGroupRequest;
 import com.cleevio.vexl.module.group.dto.request.MemberRequest;
 import com.cleevio.vexl.module.group.entity.Group;
 import com.cleevio.vexl.module.group.constant.GroupAdvisoryLock;
-import com.cleevio.vexl.module.group.event.GroupImportedEvent;
+import com.cleevio.vexl.module.group.event.GroupCreatedEvent;
 import com.cleevio.vexl.module.group.event.GroupJoinRequestedEvent;
 import com.cleevio.vexl.module.group.event.GroupLeftEvent;
 import com.cleevio.vexl.module.group.exception.GroupNotFoundException;
@@ -66,7 +66,7 @@ public class GroupService {
         group.setQrCodeUrl(createQrCodeUrl(group.getCode()));
 
         final Group savedGroup = this.groupRepository.save(group);
-        applicationEventPublisher.publishEvent(new GroupImportedEvent(savedGroup.getUuid(), user));
+        applicationEventPublisher.publishEvent(new GroupCreatedEvent(savedGroup.getUuid(), user));
         return savedGroup;
     }
 
