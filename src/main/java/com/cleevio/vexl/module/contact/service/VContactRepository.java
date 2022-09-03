@@ -12,6 +12,9 @@ import java.util.EnumSet;
 
 interface VContactRepository extends JpaRepository<VContact, Long>, JpaSpecificationExecutor<VContact> {
 
-    @Query("select distinct v.publicKey from VContact v where v.myPublicKey = :myPublicKey AND v.level in (:level) ")
+    @Query("""
+            select distinct v.publicKey from VContact v 
+            where v.myPublicKey = :myPublicKey AND v.level in (:level) 
+            """)
     Page<String> findPublicKeysByMyPublicKeyAndLevel(String myPublicKey, EnumSet<ConnectionLevel> level, Pageable pageable);
 }

@@ -17,7 +17,7 @@ join user_contact uc2 on u.hash = uc2.hash_from
 join user_contact uc3 on uc2.hash_to = uc3.hash_from
 join users u4 on uc3.hash_to = u4.hash
  ) x
-where x.public_key is not null</createView>
+where x.public_key is not null and x.public_key != x.my_public_key</createView>
     </changeSet>
 
 </databaseChangeLog>

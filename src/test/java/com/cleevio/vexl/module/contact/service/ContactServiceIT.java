@@ -29,15 +29,20 @@ class ContactServiceIT {
     private final static String PUBLIC_KEY_USER_3 = "dummy_public_key_3";
     private final static String PUBLIC_KEY_USER_4 = "dummy_public_key_4";
     private final static String PUBLIC_KEY_USER_5 = "dummy_public_key_5";
+    private final static String PUBLIC_KEY_USER_6 = "dummy_public_key_6";
     private final static String HASH_USER = "dummy_hash";
     private final static String PHONE_1 = "dummy_phone_1";
     private final static String PHONE_2 = "dummy_phone_2";
     private final static String PHONE_3 = "dummy_phone_3";
     private final static String PHONE_4 = "dummy_phone_4";
+    private final static String PHONE_5 = "dummy_phone_5";
+    private final static String PHONE_6 = "dummy_phone_6";
     private final static String FIREBASE_TOKEN_1 = "dummy_firebase_token_1";
     private final static String FIREBASE_TOKEN_2 = "dummy_firebase_token_2";
     private final static String FIREBASE_TOKEN_3 = "dummy_firebase_token_3";
     private final static String FIREBASE_TOKEN_4 = "dummy_firebase_token_4";
+    private final static String FIREBASE_TOKEN_5 = "dummy_firebase_token_5";
+    private final static String FIREBASE_TOKEN_6 = "dummy_firebase_token_6";
     private final static String GROUP_UUID = "dummy_group_uuid";
     private final static List<String> CONTACTS_1 = List.of(PHONE_1, PHONE_2);
     private final static List<String> CONTACTS_2 = List.of(PHONE_3, PHONE_4);
@@ -414,5 +419,74 @@ class ContactServiceIT {
         final Set<String> result2 = this.contactRepository.retrieveSecondDegreeFirebaseTokensByHashes(Set.of(user1Hash), user4Hash, result1, ConnectionLevel.FIRST);
         assertThat(result2).hasSize(2);
         assertThat(result2).containsOnly(FIREBASE_TOKEN_2, FIREBASE_TOKEN_3);
+    }
+
+    @Test
+    void testCombinationOfFirstDegreeAndSecondDegree_gettingFirebaseTokensByHashes_shouldBeRetrieved() {
+        // actor
+        final User mainUser = this.userService.createUser(PUBLIC_KEY_USER_1, PHONE_1, new CreateUserRequest(FIREBASE_TOKEN_1));
+
+        // first degree
+        final Set<String> firstDegreeHashes = Set.of(PHONE_2, PHONE_3);
+        final User firstDegreeUser1 = this.userService.createUser(PUBLIC_KEY_USER_2, PHONE_2, new CreateUserRequest(FIREBASE_TOKEN_2));
+        final User firstDegreeUser2 = this.userService.createUser(PUBLIC_KEY_USER_3, PHONE_3, new CreateUserRequest(FIREBASE_TOKEN_3));
+
+        // second degree
+        this.userService.createUser(PUBLIC_KEY_USER_4, PHONE_4, new CreateUserRequest(FIREBASE_TOKEN_4));
+        this.userService.createUser(PUBLIC_KEY_USER_5, PHONE_5, new CreateUserRequest(FIREBASE_TOKEN_5));
+        final User secondDegreeUser3 = this.userService.createUser(PUBLIC_KEY_USER_6, PHONE_6, new CreateUserRequest(FIREBASE_TOKEN_6));
+
+        // make them seconds degree
+        this.importService.importContacts(firstDegreeUser1, new ImportRequest(List.of(PHONE_4, PHONE_6)));
+        this.importService.importContacts(firstDegreeUser2, new ImportRequest(List.of(PHONE_5, PHONE_6)));
+
+        // make them first degree
+        this.importService.importContacts(mainUser, new ImportRequest(List.of(PHONE_2, PHONE_3)));
+
+        // try to get firebase tokens, but should not get anything, because users do not have imported main user
+        final Set<String> firebaseTokensFirstDegreesZeroRecords = this.contactRepository.retrieveFirebaseTokensByHashes(firstDegreeHashes, mainUser.getHash());
+        final Set<String> firebaseTokensSecondDegreesZeroRecords = this.contactRepository.retrieveSecondDegreeFirebaseTokensByHashes(firstDegreeHashes, mainUser.getHash(), firebaseTokensFirstDegreesZeroRecords, ConnectionLevel.FIRST);
+        assertThat(firebaseTokensFirstDegreesZeroRecords).hasSize(0);
+        assertThat(firebaseTokensSecondDegreesZeroRecords).hasSize(0);
+
+        // import main user by first degree and by one second degree
+        this.importService.importContacts(firstDegreeUser1, new ImportRequest(List.of(PHONE_1)));
+        this.importService.importContacts(firstDegreeUser2, new ImportRequest(List.of(PHONE_1)));
+        this.importService.importContacts(secondDegreeUser3, new ImportRequest(List.of(PHONE_1)));
+
+        // check if contacts were imported correctly
+        final List<String> firstDegree = this.contactService.retrieveContactsByUser(mainUser, 0, 10, ConnectionLevel.FIRST).get().toList();
+        final List<String> secondDegree = this.contactService.retrieveContactsByUser(mainUser, 0, 10, ConnectionLevel.SECOND).get().toList();
+        assertThat(firstDegree).hasSize(2);
+        assertThat(firstDegree).containsOnly(PUBLIC_KEY_USER_2, PUBLIC_KEY_USER_3);
+        assertThat(secondDegree).hasSize(3);
+        assertThat(secondDegree).containsOnly(PUBLIC_KEY_USER_4, PUBLIC_KEY_USER_5, PUBLIC_KEY_USER_6);
+
+        // test getting correct firebase tokens
+        final Set<String> firebaseTokensFirstDegrees = this.contactRepository.retrieveFirebaseTokensByHashes(firstDegreeHashes, mainUser.getHash());
+        final Set<String> firebaseTokensSecondDegrees = this.contactRepository.retrieveSecondDegreeFirebaseTokensByHashes(firstDegreeHashes, mainUser.getHash(), firebaseTokensFirstDegrees, ConnectionLevel.FIRST);
+        assertThat(firebaseTokensFirstDegrees).containsOnly(FIREBASE_TOKEN_2, FIREBASE_TOKEN_3);
+        assertThat(firebaseTokensSecondDegrees).containsOnly(FIREBASE_TOKEN_4, FIREBASE_TOKEN_5, FIREBASE_TOKEN_6);
+
+        // import secondDegreeUser3 by maim user
+        this.importService.importContacts(mainUser, new ImportRequest(List.of(PHONE_6)));
+
+        // check if contacts degree - PUBLIC_KEY_USER_6 is now first and seconds, because he is main user friend, but he is also friend of my friends
+        final List<String> firstDegreeAfterNewImport = this.contactService.retrieveContactsByUser(mainUser, 0, 10, ConnectionLevel.FIRST).get().toList();
+        final List<String> secondDegreeAfterNewImport = this.contactService.retrieveContactsByUser(mainUser, 0, 10, ConnectionLevel.SECOND).get().toList();
+        assertThat(firstDegreeAfterNewImport).hasSize(3);
+        assertThat(firstDegreeAfterNewImport).containsOnly(PUBLIC_KEY_USER_2, PUBLIC_KEY_USER_3, PUBLIC_KEY_USER_6);
+        assertThat(secondDegreeAfterNewImport).hasSize(3);
+        assertThat(secondDegreeAfterNewImport).containsOnly(PUBLIC_KEY_USER_4, PUBLIC_KEY_USER_5, PUBLIC_KEY_USER_6);
+
+        // check correct degrees for firebase tokens
+        final Set<String> firebaseTokensFirstDegreesAfterNewImport = this.contactRepository.retrieveFirebaseTokensByHashes(Set.of(PHONE_2, PHONE_3, PHONE_6), mainUser.getHash());
+        final Set<String> firebaseTokensSecondDegreesAfterNewImport = this.contactRepository.retrieveSecondDegreeFirebaseTokensByHashes(
+                Set.of(PHONE_2, PHONE_3, PHONE_6),
+                mainUser.getHash(),
+                firebaseTokensFirstDegreesAfterNewImport,
+                ConnectionLevel.FIRST);
+        assertThat(firebaseTokensFirstDegreesAfterNewImport).containsOnly(FIREBASE_TOKEN_2, FIREBASE_TOKEN_3, FIREBASE_TOKEN_6);
+        assertThat(firebaseTokensSecondDegreesAfterNewImport).containsOnly(FIREBASE_TOKEN_4, FIREBASE_TOKEN_5);
     }
 }
