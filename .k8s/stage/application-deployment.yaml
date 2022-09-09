@@ -22,13 +22,6 @@ spec:
         - name: application
           imagePullPolicy: Always
           image: gitlab.cleevio.cz:4567/backend/vexl/vexl-contact-ms/staging:latest
-          resources:
-            requests:
-              memory: "1024Mi"
-              cpu: "250m"
-            limits:
-              memory: "1024Mi"
-              cpu: "250m"
           volumeMounts:
             - mountPath: "/var/www/static"
               name: static-files
