@@ -22,9 +22,24 @@ spec:
         - name: contact-ms
           imagePullPolicy: Always
           image: gitlab.cleevio.cz:4567/backend/vexl/vexl-contact-ms/production:latest
+          resources:
+            requests:
+              memory: "1024Mi"
+              cpu: "1000m"
+            limits:
+              memory: "1024Mi"
+              cpu: "1000m"
           volumeMounts:
             - mountPath: "/var/www/static"
               name: static-files
+          readinessProbe:
+            httpGet:
+              port: 8282
+              path: /actuator/health
+            initialDelaySeconds: 120
+            timeoutSeconds: 20
+            periodSeconds: 5
+            failureThreshold: 10
           env:
             - name: DB_URL
               valueFrom:
