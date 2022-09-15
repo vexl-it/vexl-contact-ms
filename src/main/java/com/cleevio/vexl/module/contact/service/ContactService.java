@@ -110,7 +110,7 @@ public class ContactService {
     @Transactional(readOnly = true)
     public CommonContactsResponse retrieveCommonContacts(final String ownerPublicKey, @Valid final CommonContactsRequest request) {
         final List<String> publicKeys = request.publicKeys();
-        List<CommonContactsResponse.Contacts> contacts = new ArrayList<>();
+        final List<CommonContactsResponse.Contacts> contacts = new ArrayList<>();
         publicKeys.stream()
                 .map(String::trim)
                 .filter(pk -> !pk.equals(ownerPublicKey))

@@ -34,16 +34,19 @@ interface ContactRepository extends JpaRepository<UserContact, Long>, JpaSpecifi
     int countContactsByHashTo(String hash);
 
     @Query("""
-            select distinct uc.hashTo from UserContact uc where uc.hashTo in 
-            (select uc.hashTo from UserContact uc where uc.hashFrom in (select u.hash from User u where u.publicKey = :ownerPublicKey)) 
-            and uc.hashTo in 
-            (select uc.hashTo from UserContact uc where uc.hashFrom in (select u.hash from User u where u.publicKey = :publicKey))
+            select distinct uc.hashTo from UserContact uc 
+            inner join UserContact uc2 on uc.hashTo = uc2.hashTo
+            inner join User u on uc2.hashFrom = u.hash
+            inner join UserContact uc3 on uc3.hashTo = uc.hashTo
+            inner join User u2 on u2.hash = uc3.hashFrom
+            where u.publicKey = :ownerPublicKey and u2.publicKey = :publicKey
             """)
     List<String> retrieveCommonContacts(String ownerPublicKey, String publicKey);
 
     @Query("""
-            select distinct uc.hashTo from UserContact uc where uc.hashFrom = :hash 
-            and uc.hashTo in (select g.uuid from Group g where g.expirationAt > (extract(epoch from now())) ) 
+            select distinct uc.hashTo from UserContact uc
+            inner join Group g on g.uuid = uc.hashTo
+            where uc.hashFrom = :hash and g.expirationAt > (extract(epoch from now()))
             """
     )
     List<String> getGroupsUuidsByHash(String hash);
@@ -75,7 +78,12 @@ interface ContactRepository extends JpaRepository<UserContact, Long>, JpaSpecifi
     @Query("select case when (count(uc) > 0) then true else false end from UserContact uc where uc.hashFrom = :hash and uc.hashTo = :trimContact ")
     boolean existsContact(String hash, String trimContact);
 
-    @Query("select u.firebaseToken from User u where u.hash in (select uc.hashFrom from UserContact uc where uc.hashTo = :hash) and u.publicKey <> :publicKey and u.firebaseToken is not null")
+    @Query("""
+                select u.firebaseToken from User u 
+                inner join UserContact uc on uc.hashFrom = u.hash 
+                where u.publicKey <> :publicKey and u.firebaseToken is not null 
+                and uc.hashTo = :hash
+            """)
     Set<String> retrieveGroupMembersFirebaseTokens(String hash, String publicKey);
 
     @Query("""
