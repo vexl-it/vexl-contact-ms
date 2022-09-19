@@ -81,7 +81,7 @@ public class ContactService {
                 .map(String::trim)
                 .toList();
 
-        final Set<String> existingContacts = this.contactRepository.retrieveExistingContacts(user.getHash(), trimContacts);
+        final Set<String> existingContacts = this.contactRepository.retrieveExistingContacts(user.getHash());
 
         trimContacts.forEach(tr -> {
             if (existingContacts.add(tr)) {
@@ -93,8 +93,8 @@ public class ContactService {
     }
 
     @Transactional(readOnly = true)
-    public Set<String> retrieveExistingContacts(String hashFrom, List<String> trimContactsHashTo) {
-        return this.contactRepository.retrieveExistingContacts(hashFrom, trimContactsHashTo);
+    public Set<String> retrieveExistingContacts(String hashFrom) {
+        return this.contactRepository.retrieveExistingContacts(hashFrom);
     }
 
     @Transactional(readOnly = true)

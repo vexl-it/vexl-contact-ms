@@ -71,11 +71,8 @@ public class FacebookService {
         final FacebookUser facebookUser = retrieveContacts(facebookId, accessToken);
 
         final Set<String> existingFriends = this.contactService.retrieveExistingContacts(
-                user.getHash(),
-                facebookUser.getFriends().stream()
-                        .map(FacebookUser::getId)
-                        .map(id -> CLibrary.CRYPTO_LIB.sha256_hash(id, id.length()))
-                        .toList());
+                user.getHash()
+        );
 
         facebookUser.getFriends().forEach(f -> {
             if (!existingFriends.contains(CLibrary.CRYPTO_LIB.sha256_hash(f.getId(), f.getId().length()))) {

@@ -49,7 +49,7 @@ public class ImportService {
                 .toList();
 
         final Set<String> importedHashes = new HashSet<>();
-        final Set<String> existingContacts = this.contactRepository.retrieveExistingContacts(user.getHash(), trimContacts);
+        final Set<String> existingContacts = this.contactRepository.retrieveExistingContacts(user.getHash());
 
         for (final String trimContact : trimContacts) {
             if (existingContacts.add(trimContact)) {
