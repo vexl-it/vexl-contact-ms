@@ -2,6 +2,8 @@ package com.cleevio.vexl.module.user.service;
 
 import com.cleevio.vexl.common.constant.ModuleLockNamespace;
 import com.cleevio.vexl.common.service.AdvisoryLockService;
+import com.cleevio.vexl.module.stats.constant.StatsKey;
+import com.cleevio.vexl.module.stats.dto.StatsDto;
 import com.cleevio.vexl.module.user.constant.UserAdvisoryLock;
 import com.cleevio.vexl.module.user.dto.request.CreateUserRequest;
 import com.cleevio.vexl.module.user.dto.request.FirebaseTokenUpdateRequest;
@@ -16,6 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -107,5 +112,23 @@ public class UserService {
     @Transactional
     public void deleteUnregisteredToken(final String firebaseToken) {
         this.userRepository.unregisterFirebaseTokens(firebaseToken);
+    }
+
+    @Transactional(readOnly = true)
+    public List<StatsDto> retrieveStats(final StatsKey... statsKeys) {
+        final List<StatsDto> statsDtos = new ArrayList<>();
+        Arrays.stream(statsKeys).forEach(statKey -> {
+            switch (statKey) {
+                case ALL_TIME_USERS_COUNT -> statsDtos.add(new StatsDto(
+                        StatsKey.ALL_TIME_USERS_COUNT,
+                        this.userRepository.getAllTimeUsersCount()
+                ));
+                case ACTIVE_USERS_COUNT -> statsDtos.add(new StatsDto(
+                        StatsKey.ACTIVE_USERS_COUNT,
+                        this.userRepository.getActiveUsersCount()
+                ));
+            }
+        });
+        return statsDtos;
     }
 }

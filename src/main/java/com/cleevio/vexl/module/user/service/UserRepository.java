@@ -19,4 +19,10 @@ interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExec
     @Modifying
     @Query("update User s set s.firebaseToken = null where s.firebaseToken = :firebaseToken")
     void unregisterFirebaseTokens(String firebaseToken);
+
+    @Query(value = "SELECT last_value from users_id_seq", nativeQuery = true)
+    int getAllTimeUsersCount();
+
+    @Query("select count(u) from User u")
+    int getActiveUsersCount();
 }

@@ -5,5 +5,6 @@ public enum ModuleLockNamespace {
     GROUP,
     PUSH,
     USER,
+    STATS,
     ;
 }

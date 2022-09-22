@@ -7,6 +7,8 @@ import com.cleevio.vexl.module.contact.dto.request.ContactsImportedEvent;
 import com.cleevio.vexl.module.contact.dto.response.CommonContactsResponse;
 import com.cleevio.vexl.module.contact.constant.ConnectionLevel;
 import com.cleevio.vexl.module.contact.event.GroupJoinedEvent;
+import com.cleevio.vexl.module.stats.constant.StatsKey;
+import com.cleevio.vexl.module.stats.dto.StatsDto;
 import com.cleevio.vexl.module.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -158,5 +161,19 @@ public class ContactService {
         final List<String> activeMembersPublicKeys = this.contactRepository.retrieveAllGroupMembers(groupUuid);
         publicKeys.removeAll(activeMembersPublicKeys);
         return publicKeys;
+    }
+
+    @Transactional(readOnly = true)
+    public List<StatsDto> retrieveStats(final StatsKey... statsKeys) {
+        final List<StatsDto> statsDtos = new ArrayList<>();
+        Arrays.stream(statsKeys).forEach(statKey -> {
+            if (statKey == StatsKey.CONTACTS_COUNT) {
+                statsDtos.add(new StatsDto(
+                        StatsKey.CONTACTS_COUNT,
+                        this.contactRepository.getContactsCount()
+                ));
+            }
+        });
+        return statsDtos;
     }
 }

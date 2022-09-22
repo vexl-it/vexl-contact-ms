@@ -104,4 +104,7 @@ interface ContactRepository extends JpaRepository<UserContact, Long>, JpaSpecifi
             and uc.hashTo = :newUserHash and v.level = :level
             """)
     Set<String> retrieveSecondDegreeFirebaseTokensByHashes(Set<String> existingContactHashes, String newUserHash, Set<String> firstDegreeFirebaseTokens, ConnectionLevel level);
+
+    @Query("select count(uc) from UserContact uc")
+    int getContactsCount();
 }
