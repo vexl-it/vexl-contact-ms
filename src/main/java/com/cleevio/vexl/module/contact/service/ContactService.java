@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of receiving and deleting contacts. Adding (importing) contacts is done in ImportService.
@@ -149,11 +150,32 @@ public class ContactService {
     @Async
     @Transactional(readOnly = true)
     public void sendNotificationToContacts(final Set<String> importedHashes, final User user) {
-        if (importedHashes.isEmpty()) return;
-        final Set<String> firebaseTokens = this.contactRepository.retrieveFirebaseTokensByHashes(importedHashes, user.getHash());
-        final Set<String> firebaseTokensSecondDegrees = this.contactRepository.retrieveSecondDegreeFirebaseTokensByHashes(importedHashes, user.getHash(), firebaseTokens, ConnectionLevel.FIRST);
-        if (firebaseTokens.isEmpty()) return;
+        if (importedHashes.isEmpty()) {
+            return;
+        }
+        final Set<String> firebaseTokens = retrieveFirebaseTokensByHashes(importedHashes, user.getHash());
+        if (firebaseTokens.isEmpty()) {
+            return;
+        }
+        final Set<String> firebaseTokensSecondDegrees = retrieveSecondDegreeFirebaseTokensByHashes(importedHashes, user.getHash(), firebaseTokens);
         applicationEventPublisher.publishEvent(new ContactsImportedEvent(firebaseTokens, firebaseTokensSecondDegrees, user.getPublicKey()));
+    }
+
+    public Set<String> retrieveFirebaseTokensByHashes(final Set<String> importedHashes, final String hash) {
+        final Set<User> users = this.contactRepository.retrieveFirebaseTokensByHashes(hash);
+        return users.stream()
+                .filter(user -> importedHashes.contains(user.getHash()))
+                .map(User::getFirebaseToken)
+                .collect(Collectors.toSet());
+    }
+
+    public Set<String> retrieveSecondDegreeFirebaseTokensByHashes(final Set<String> importedHashes, final String hash, final Set<String> firebaseTokens) {
+        final Set<User> usersSecondDegree = this.contactRepository.retrieveSecondDegreeFirebaseTokensByHashes(hash, ConnectionLevel.SECOND, importedHashes);
+        return usersSecondDegree.stream()
+                .map(User::getFirebaseToken)
+                .filter(firebaseToken -> !firebaseTokens.contains(firebaseToken))
+                .collect(Collectors.toSet());
+
     }
 
     @Transactional(readOnly = true)

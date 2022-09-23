@@ -2,6 +2,7 @@ package com.cleevio.vexl.module.contact.service;
 
 import com.cleevio.vexl.module.contact.constant.ConnectionLevel;
 import com.cleevio.vexl.module.contact.entity.UserContact;
+import com.cleevio.vexl.module.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -87,23 +88,21 @@ interface ContactRepository extends JpaRepository<UserContact, Long>, JpaSpecifi
     Set<String> retrieveGroupMembersFirebaseTokens(String hash, String publicKey);
 
     @Query("""
-            select distinct u.firebaseToken from User u 
+            select distinct u from User u 
             JOIN UserContact uc on u.hash = uc.hashFrom 
-            where u.hash in (:existingContactHashes) and u.firebaseToken is not null 
-            and uc.hashTo = :newUserHash
+            where u.firebaseToken is not null and uc.hashTo = :newUserHash
             """)
-    Set<String> retrieveFirebaseTokensByHashes(Set<String> existingContactHashes, String newUserHash);
+    Set<User> retrieveFirebaseTokensByHashes(String newUserHash);
 
     @Query("""
-            select distinct u.firebaseToken from User u 
-            INNER JOIN VContact v on u.publicKey = v.publicKey 
-            INNER JOIN User u2 on v.myPublicKey = u2.publicKey 
-            INNER JOIN UserContact uc on u2.hash = uc.hashFrom 
-            where u.hash <> :newUserHash and u.firebaseToken not in (:firstDegreeFirebaseTokens) 
-            and u2.hash in (:existingContactHashes) and u2.firebaseToken is not null 
-            and uc.hashTo = :newUserHash and v.level = :level
+            select distinct second from User second 
+            INNER JOIN VContact v on second.publicKey = v.publicKey 
+            INNER JOIN User me on me.publicKey = v.myPublicKey 
+            INNER JOIN UserContact uc on second.hash = uc.hashFrom
+            where v.level = :level and me.hash = :newUserHash 
+            and second.firebaseToken is not null and uc.hashTo in (:importedHashes)
             """)
-    Set<String> retrieveSecondDegreeFirebaseTokensByHashes(Set<String> existingContactHashes, String newUserHash, Set<String> firstDegreeFirebaseTokens, ConnectionLevel level);
+    Set<User> retrieveSecondDegreeFirebaseTokensByHashes(String newUserHash, ConnectionLevel level, Set<String> importedHashes);
 
     @Query("select count(uc) from UserContact uc")
     int getContactsCount();
