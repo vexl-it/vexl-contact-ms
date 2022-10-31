@@ -287,7 +287,7 @@ class ContactServiceIT {
 
         final var commonContactsResponse = this.contactService.retrieveCommonContacts(
                 PUBLIC_KEY_USER_1,
-                CreateRequestTestUtil.createCommonContactsRequest(List.of(PUBLIC_KEY_USER_2))
+                CreateRequestTestUtil.createCommonContactsRequest(Set.of(PUBLIC_KEY_USER_2))
         );
         final var contacts = commonContactsResponse.commonContacts().get(0);
         final var common = contacts.common().hashes().stream().sorted().toList();
@@ -312,7 +312,7 @@ class ContactServiceIT {
 
         final var commonContactsResponse = this.contactService.retrieveCommonContacts(
                 PUBLIC_KEY_USER_1,
-                CreateRequestTestUtil.createCommonContactsRequest(List.of(PUBLIC_KEY_USER_2, PUBLIC_KEY_USER_1, PUBLIC_KEY_USER_1))
+                CreateRequestTestUtil.createCommonContactsRequest(Set.of(PUBLIC_KEY_USER_2, PUBLIC_KEY_USER_1))
         );
 
         final var contacts = commonContactsResponse.commonContacts().get(0);

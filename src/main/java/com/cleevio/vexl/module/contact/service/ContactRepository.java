@@ -1,12 +1,14 @@
 package com.cleevio.vexl.module.contact.service;
 
 import com.cleevio.vexl.module.contact.constant.ConnectionLevel;
+import com.cleevio.vexl.module.contact.dto.CommonFriendsDto;
 import com.cleevio.vexl.module.contact.entity.UserContact;
 import com.cleevio.vexl.module.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -34,15 +36,17 @@ interface ContactRepository extends JpaRepository<UserContact, Long>, JpaSpecifi
     @Query("select count(distinct uc) from UserContact uc where uc.hashTo = :hash")
     int countContactsByHashTo(String hash);
 
-    @Query("""
-            select distinct uc.hashTo from UserContact uc 
-            inner join UserContact uc2 on uc.hashTo = uc2.hashTo
-            inner join User u on uc2.hashFrom = u.hash
-            inner join UserContact uc3 on uc3.hashTo = uc.hashTo
-            inner join User u2 on u2.hash = uc3.hashFrom
-            where u.publicKey = :ownerPublicKey and u2.publicKey = :publicKey
-            """)
-    List<String> retrieveCommonContacts(String ownerPublicKey, String publicKey);
+    @Query(value = """
+            select u2.public_key as FriendPublicKey, array_agg(distinct uc.hash_to) as CommonFriends from user_contact uc
+            inner join user_contact uc2 on uc.hash_to = uc2.hash_to
+            inner join users u on uc2.hash_from  = u.hash
+            inner join user_contact uc3 on uc3.hash_to = uc.hash_to
+            inner join users u2 on u2.hash = uc3.hash_from
+            where u.public_key = :ownerPublicKey
+            and u2.public_key in (:publicKeys)
+            group by u2.public_key
+            """, nativeQuery = true)
+    List<CommonFriendsDto> retrieveCommonContacts(@Param("ownerPublicKey") String ownerPublicKey, @Param("publicKeys") Set<String> publicKeys);
 
     @Query("""
             select distinct uc.hashTo from UserContact uc

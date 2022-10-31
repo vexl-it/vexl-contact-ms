@@ -3,6 +3,7 @@ package com.cleevio.vexl.module.contact.dto.response;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
+import java.util.Set;
 
 public record CommonContactsResponse(
 
@@ -23,7 +24,7 @@ public record CommonContactsResponse(
         public record CommonContacts(
 
                 @Schema(description = "Hashes of the contacts. Hash is HMAC-SHA256. Can be phone number or facebook id.")
-                List<String> hashes
+                Set<String> hashes
 
         ) {
         }

@@ -11,6 +11,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Set;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CreateRequestTestUtil {
@@ -45,7 +46,7 @@ public final class CreateRequestTestUtil {
         );
     }
 
-    public static CommonContactsRequest createCommonContactsRequest(List<String> contacts) {
+    public static CommonContactsRequest createCommonContactsRequest(Set<String> contacts) {
         return new CommonContactsRequest(
                 contacts
         );

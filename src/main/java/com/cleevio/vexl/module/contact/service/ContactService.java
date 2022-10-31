@@ -1,5 +1,6 @@
 package com.cleevio.vexl.module.contact.service;
 
+import com.cleevio.vexl.module.contact.dto.CommonFriendsDto;
 import com.cleevio.vexl.module.contact.dto.request.CommonContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.DeleteContactsRequest;
 import com.cleevio.vexl.module.contact.dto.request.NewContactsRequest;
@@ -113,15 +114,26 @@ public class ContactService {
 
     @Transactional(readOnly = true)
     public CommonContactsResponse retrieveCommonContacts(final String ownerPublicKey, @Valid final CommonContactsRequest request) {
-        final List<String> publicKeys = request.publicKeys();
-        final List<CommonContactsResponse.Contacts> contacts = new ArrayList<>();
-        publicKeys.stream()
+        final Set<String> publicKeys = request.publicKeys()
+                .stream()
                 .map(String::trim)
                 .filter(pk -> !pk.equals(ownerPublicKey))
-                .forEach(pk -> {
-                    final List<String> commonContacts = this.contactRepository.retrieveCommonContacts(ownerPublicKey, pk);
-                    contacts.add(new CommonContactsResponse.Contacts(pk, new CommonContactsResponse.Contacts.CommonContacts(commonContacts)));
-                });
+                .collect(Collectors.toSet());
+        final List<CommonContactsResponse.Contacts> contacts = new ArrayList<>();
+
+        final List<CommonFriendsDto> commonFriendsDto = this.contactRepository.retrieveCommonContacts(
+                ownerPublicKey,
+                publicKeys
+        );
+
+        commonFriendsDto.forEach(it -> contacts.add(
+                        new CommonContactsResponse.Contacts(
+                                it.getFriendPublicKey(),
+                                new CommonContactsResponse.Contacts.CommonContacts(it.getCommonFriends())
+                        )
+                )
+        );
+
         return new CommonContactsResponse(contacts);
     }
 

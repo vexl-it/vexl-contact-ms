@@ -1,7 +1,6 @@
 package com.cleevio.vexl.module.push.entity;
 
 import com.cleevio.vexl.common.hibernate.type.SetArrayType;
-import com.vladmihalcea.hibernate.type.array.StringArrayType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -19,6 +19,7 @@ import org.springframework.http.MediaType;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -67,9 +68,9 @@ public class ContactControllerTest extends BaseControllerTest {
         DELETE_CONTACTS_REQUEST = new DeleteContactsRequest(PHONES);
 
         COMMON_CONTACTS_RESPONSE = new CommonContactsResponse(
-                List.of(new CommonContactsResponse.Contacts(PUBLIC_KEY, new CommonContactsResponse.Contacts.CommonContacts(List.of(HASH)))));
+                List.of(new CommonContactsResponse.Contacts(PUBLIC_KEY, new CommonContactsResponse.Contacts.CommonContacts(Set.of(HASH)))));
 
-        COMMON_CONTACTS_REQUEST = new CommonContactsRequest(List.of(PUBLIC_KEY));
+        COMMON_CONTACTS_REQUEST = new CommonContactsRequest(Set.of(PUBLIC_KEY));
     }
 
 

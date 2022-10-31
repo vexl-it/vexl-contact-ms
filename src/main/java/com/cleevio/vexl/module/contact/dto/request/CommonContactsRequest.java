@@ -1,11 +1,11 @@
 package com.cleevio.vexl.module.contact.dto.request;
 
 import javax.validation.constraints.NotBlank;
-import java.util.List;
+import java.util.Set;
 
 public record CommonContactsRequest(
 
-    List<@NotBlank String> publicKeys
+    Set<@NotBlank String> publicKeys
 
 ) {
 }
