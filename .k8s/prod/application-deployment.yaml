@@ -71,3 +71,43 @@ spec:
                 secretKeyRef:
                   key: secret.aes-key
                   name: spring-profile-contact-ms
+            - name: FIREBASE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  key: secret.firebase-client-id
+                  name: spring-profile-contact-ms
+            - name: FIREBASE_CLIENT_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  key: secret.firebase-client-email
+                  name: spring-profile-contact-ms
+            - name: FIREBASE_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: secret.firebase-private-key
+                  name: spring-profile-contact-ms
+            - name: FIREBASE_PRIVATE_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  key: secret.firebase-private-key-id
+                  name: spring-profile-contact-ms
+            - name: FIREBASE_PROJECT_ID
+              valueFrom:
+                secretKeyRef:
+                  key: secret.firebase-project-id
+                  name: spring-profile-contact-ms
+            - name: FIREBASE_TOKEN_URI
+              valueFrom:
+                secretKeyRef:
+                  key: secret.firebase-token-uri
+                  name: spring-profile-contact-ms
+            - name: FIREBASE_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: secret.firebase-key
+                  name: spring-profile-contact-ms
+            - name: FIREBASE_IOS_STORE
+              valueFrom:
+                secretKeyRef:
+                  key: secret.firebase-ios-store
+                  name: spring-profile-contact-ms

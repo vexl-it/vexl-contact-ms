@@ -1,6 +1,7 @@
 package com.cleevio.vexl.module.group.service;
 
 import com.cleevio.vexl.common.IntegrationTest;
+import com.cleevio.vexl.common.integration.firebase.service.FirebaseService;
 import com.cleevio.vexl.module.group.dto.GroupModel;
 import com.cleevio.vexl.module.group.dto.MemberModel;
 import com.cleevio.vexl.module.group.dto.request.CreateGroupRequest;
@@ -12,9 +13,11 @@ import com.cleevio.vexl.module.group.exception.GroupNotFoundException;
 import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.module.user.service.UserService;
 import com.cleevio.vexl.util.CreateRequestTestUtil;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,6 +25,8 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @IntegrationTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -33,9 +38,18 @@ class GroupServiceIT {
     private final static String HASH_USER_2 = "dummy_hash_2";
     private final static String PUBLIC_KEY_USER_3 = "dummy_public_key_3";
     private final static String HASH_USER_3 = "dummy_hash_3";
+    private final static String DYNAMIC_LINK = "dummy_dynamic_link";
     private final GroupService groupService;
     private final UserService userService;
     private final GroupRepository groupRepository;
+
+    @MockBean
+    private FirebaseService firebaseService;
+
+    @BeforeEach
+    void beforeEach() {
+        when(firebaseService.createDynamicLink(any())).thenReturn(DYNAMIC_LINK);
+    }
 
     @Autowired
     public GroupServiceIT(GroupService groupService, UserService userService, GroupRepository groupRepository) {

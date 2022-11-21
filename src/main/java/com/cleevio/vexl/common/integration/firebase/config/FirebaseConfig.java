@@ -4,31 +4,39 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.configurationprocessor.json.JSONException;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 @Slf4j
 @Configuration
 public class FirebaseConfig {
 
-    public FirebaseConfig(@Value("${firebase.config.path}") String configPath) {
-        if (configPath.isBlank()) {
-            return;
-        }
-
+    public FirebaseConfig(FirebaseProperties properties) {
         try {
-            var options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(new ClassPathResource(configPath).getInputStream())).build();
+            JSONObject json = new JSONObject();
+            json.put("client_id", properties.clientId());
+            json.put("client_email", properties.clientEmail());
+            json.put("private_key", properties.privateKey());
+            json.put("private_key_id", properties.privateKeyId());
+            json.put("project_id", properties.projectId());
+            json.put("token_uri", properties.tokenUri());
+            json.put("type", properties.serviceType());
+
+            final var inputStream = new ByteArrayInputStream(json.toString().getBytes());
+
+            final var options = FirebaseOptions.builder()
+                    .setCredentials(GoogleCredentials.fromStream(inputStream)).build();
 
             if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseApp.initializeApp(options);
                 log.info("Firebase application has been initialized");
             }
 
-        } catch (IOException e) {
+        } catch (IOException | JSONException e) {
             log.error("Could not initialize Firebase application", e);
         }
     }

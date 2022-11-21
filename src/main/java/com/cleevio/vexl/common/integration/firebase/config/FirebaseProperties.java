@@ -25,8 +25,28 @@ public record FirebaseProperties(
         String iosStore,
 
         @NotBlank
-        String androidPackage
+        String androidPackage,
 
+        @NotBlank
+        String clientId,
+
+        @NotBlank
+        String clientEmail,
+
+        @NotBlank
+        String privateKey,
+
+        @NotBlank
+        String privateKeyId,
+
+        @NotBlank
+        String projectId,
+
+        @NotBlank
+        String tokenUri,
+
+        @NotBlank
+        String serviceType
 
 ) {
 }

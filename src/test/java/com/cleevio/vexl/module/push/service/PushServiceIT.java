@@ -1,6 +1,7 @@
 package com.cleevio.vexl.module.push.service;
 
 import com.cleevio.vexl.common.IntegrationTest;
+import com.cleevio.vexl.common.integration.firebase.service.FirebaseService;
 import com.cleevio.vexl.module.group.entity.Group;
 import com.cleevio.vexl.module.group.service.GroupService;
 import com.cleevio.vexl.module.push.entity.Push;
@@ -8,15 +9,19 @@ import com.cleevio.vexl.module.user.dto.request.CreateUserRequest;
 import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.module.user.service.UserService;
 import com.cleevio.vexl.util.CreateRequestTestUtil;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @IntegrationTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -38,11 +43,19 @@ class PushServiceIT {
     private final static String[] FIREBASE_TOKENS_2 = {"0", "1", "2", "3", "4"};
     private final static String[] FIREBASE_TOKENS_3 = {"0", "1", "2", "3", "4", "5"};
     private final static String[] FIREBASE_TOKENS_4 = {"0", "1", "6"};
-
+    private final static String DYNAMIC_LINK = "dummy_dynamic_link";
     private final PushService pushService;
     private final PushRepository pushRepository;
     private final GroupService groupService;
     private final UserService userService;
+
+    @MockBean
+    private FirebaseService firebaseService;
+
+    @BeforeEach
+    void beforeEach() {
+        when(firebaseService.createDynamicLink(any())).thenReturn(DYNAMIC_LINK);
+    }
 
     @Autowired
     public PushServiceIT(PushService pushService, PushRepository pushRepository,
