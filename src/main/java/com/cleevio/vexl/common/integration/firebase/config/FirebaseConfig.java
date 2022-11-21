@@ -4,8 +4,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.configurationprocessor.json.JSONException;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
+import org.json.JSONObject;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.ByteArrayInputStream;
@@ -36,7 +35,7 @@ public class FirebaseConfig {
                 log.info("Firebase application has been initialized");
             }
 
-        } catch (IOException | JSONException e) {
+        } catch (IOException e) {
             log.error("Could not initialize Firebase application", e);
         }
     }
