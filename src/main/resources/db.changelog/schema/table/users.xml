@@ -33,6 +33,22 @@
         </addColumn>
     </changeSet>
 
+    <!-- ################################ V4 ################################# -->
+    <changeSet author="David Tilser" id="add_refreshed_at_and_platform_column_and_create_firebase_token_index">
+        <preConditions onSqlOutput="TEST" onFail="MARK_RAN">
+            <tableExists tableName="users" schemaName="public"/>
+        </preConditions>
+
+        <addColumn tableName="users" schemaName="public">
+            <column name="refreshed_at" type="date"/>
+            <column name="platform" type="text"/>
+        </addColumn>
+
+        <createIndex tableName="users" indexName="a90098b876d449c8bb4c_ix">
+            <column name="firebase_token"/>
+        </createIndex>
+    </changeSet>
+
     <!-- ##################################################################### -->
     <!-- ###################### TABLE INSTALL CHANGESET ###################### -->
     <!-- ##################################################################### -->
@@ -53,6 +69,8 @@
                 <constraints nullable="false"/>
             </column>
             <column name="firebase_token" type="varchar"/>
+            <column name="refreshed_at" type="date"/>
+            <column name="platform" type="text"/>
         </createTable>
 
         <createIndex tableName="users" indexName="fa8fa5318f0b4b298baa_ix">
@@ -60,6 +78,9 @@
         </createIndex>
         <createIndex tableName="users" indexName="5834a3584c634d0fab53_ix">
             <column name="hash"/>
+        </createIndex>
+        <createIndex tableName="users" indexName="a90098b876d449c8bb4c_ix">
+            <column name="firebase_token"/>
         </createIndex>
     </changeSet>
 </databaseChangeLog>

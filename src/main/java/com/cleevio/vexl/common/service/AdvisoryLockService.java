@@ -23,6 +23,11 @@ public class AdvisoryLockService {
         repository.lockExclusively(constructKey(module, lockName, params));
     }
 
+    @Transactional(propagation = Propagation.MANDATORY)
+    public boolean tryLock(ModuleLockNamespace module, @Nullable String lockName, Object... params) {
+        return repository.tryLockExclusively(constructKey(module, lockName, params));
+    }
+
     private static String constructKey(ModuleLockNamespace module, @Nullable String lockName, Object... params) {
         List<String> key = new ArrayList<>();
 

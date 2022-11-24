@@ -1,8 +1,10 @@
 package com.cleevio.vexl.module.user.controller;
 
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
+import com.cleevio.vexl.module.user.constant.Platform;
 import com.cleevio.vexl.module.user.dto.request.CreateUserRequest;
 import com.cleevio.vexl.module.user.dto.request.FirebaseTokenUpdateRequest;
+import com.cleevio.vexl.module.user.dto.request.RefreshUserRequest;
 import com.cleevio.vexl.module.user.entity.User;
 import com.cleevio.vexl.module.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,6 +55,28 @@ public class UserController {
                     @RequestHeader(name = SecurityFilter.HEADER_HASH) String hash,
                     @RequestBody(required = false) @Nullable CreateUserRequest request) {
         this.userService.createUser(publicKey, hash, request == null ? new CreateUserRequest(null) : request);
+    }
+
+    @PostMapping("/refresh")
+    @SecurityRequirements({
+            @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
+            @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
+            @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
+    })
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "User has been refreshed."),
+    })
+    @Operation(
+            summary = "Refresh an user",
+            description = "Call this endpoint always when you open app."
+    )
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ROLE_USER')")
+    void refresh(@RequestHeader(name = SecurityFilter.HEADER_PUBLIC_KEY) String publicKey,
+                 @RequestHeader(name = SecurityFilter.HEADER_HASH) String hash,
+                 @RequestHeader(name = SecurityFilter.X_PLATFORM) Platform platform,
+                 @RequestBody RefreshUserRequest request) {
+        this.userService.refreshUser(publicKey, hash, platform, request);
     }
 
     @PutMapping

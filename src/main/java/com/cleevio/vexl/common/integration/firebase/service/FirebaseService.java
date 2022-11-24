@@ -5,22 +5,28 @@ import com.cleevio.vexl.common.integration.firebase.config.FirebaseProperties;
 import com.cleevio.vexl.common.integration.firebase.dto.request.LinkRequest;
 import com.cleevio.vexl.common.integration.firebase.dto.response.LinkResponse;
 import com.cleevio.vexl.common.integration.firebase.event.FirebaseTokenUnregisteredEvent;
+import com.cleevio.vexl.common.integration.firebase.event.InactivityNotificationSuccessfullySentEvent;
 import com.cleevio.vexl.common.integration.firebase.exception.FirebaseException;
 import com.cleevio.vexl.common.util.ErrorHandlerUtil;
 import com.cleevio.vexl.module.contact.constant.ConnectionLevel;
 import com.cleevio.vexl.module.push.dto.PushNotification;
+import com.cleevio.vexl.module.user.constant.Platform;
+import com.cleevio.vexl.module.user.dto.InactivityNotificationDto;
 import com.google.firebase.messaging.ApnsConfig;
 import com.google.firebase.messaging.Aps;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
-import com.google.firebase.messaging.MessagingErrorCode;
+import com.google.firebase.messaging.Notification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -38,11 +44,41 @@ public class FirebaseService implements NotificationService, DeeplinkService {
     private static final String TYPE = "type";
     private static final String API_URL = "https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=";
     private static final String CODE = "?code=";
+    private static final String TITLE = "title";
+    private static final String BODY = "body";
 
     @Override
     public void sendPushNotification(final PushNotification push) {
         push.membersFirebaseTokens().forEach(m -> processNotification(m, push, ConnectionLevel.FIRST));
         push.secondDegreeMembersFirebaseTokens().forEach(m -> processNotification(m, push, ConnectionLevel.SECOND));
+    }
+
+    @Override
+    public void sendInactivityReminderNotification(final List<InactivityNotificationDto> firebaseTokens) {
+        final List<String> successfullySentNotificationsTo = new ArrayList<>();
+        firebaseTokens.forEach(dto -> {
+            try {
+                var messageBuilder = Message.builder();
+
+                if (Platform.IOS.equals(dto.getPlatform())) {
+                    messageBuilder.setNotification(Notification.builder().setTitle(dto.getTitle()).setBody(dto.getBody()).build());
+                }
+                messageBuilder.setToken(dto.getFirebaseToken());
+                messageBuilder.putData(TITLE, dto.getTitle());
+                messageBuilder.putData(BODY, dto.getBody());
+
+                final String response = FirebaseMessaging.getInstance().send(messageBuilder.build());
+                log.info("Sent message: " + response);
+                successfullySentNotificationsTo.add(dto.getFirebaseToken());
+            } catch (FirebaseMessagingException e) {
+                handleException(e, dto.getFirebaseToken());
+            } catch (Exception e) {
+                log.error("Error sending notification: " + e.getMessage(), e);
+            }
+        });
+        if (!successfullySentNotificationsTo.isEmpty()) {
+            applicationEventPublisher.publishEvent(new InactivityNotificationSuccessfullySentEvent(successfullySentNotificationsTo));
+        }
     }
 
     @Override

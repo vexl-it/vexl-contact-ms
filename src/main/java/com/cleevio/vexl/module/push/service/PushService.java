@@ -8,6 +8,7 @@ import com.cleevio.vexl.module.push.constant.PushAdvisoryLock;
 import com.cleevio.vexl.module.push.dto.NotificationDto;
 import com.cleevio.vexl.module.push.dto.PushNotification;
 import com.cleevio.vexl.module.push.entity.Push;
+import com.cleevio.vexl.module.user.dto.InactivityNotificationDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,5 +70,9 @@ public class PushService {
 
     private void sendNewGroupMemberNotification(Map<String, Set<String>> notifications) {
         notifications.forEach((k, v) -> this.notificationService.sendPushNotification(new PushNotification(NotificationType.GROUP_NEW_MEMBER, k, null, v, Collections.emptySet())));
+    }
+
+    public void sendInactivityReminderNotification(List<InactivityNotificationDto> inactivityNotificationDto) {
+        notificationService.sendInactivityReminderNotification(inactivityNotificationDto);
     }
 }

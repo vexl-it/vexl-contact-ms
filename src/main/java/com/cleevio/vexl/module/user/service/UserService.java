@@ -4,10 +4,14 @@ import com.cleevio.vexl.common.constant.ModuleLockNamespace;
 import com.cleevio.vexl.common.service.AdvisoryLockService;
 import com.cleevio.vexl.module.stats.constant.StatsKey;
 import com.cleevio.vexl.module.stats.dto.StatsDto;
+import com.cleevio.vexl.module.user.constant.Platform;
 import com.cleevio.vexl.module.user.constant.UserAdvisoryLock;
+import com.cleevio.vexl.module.user.dto.InactivityNotificationDto;
 import com.cleevio.vexl.module.user.dto.request.CreateUserRequest;
 import com.cleevio.vexl.module.user.dto.request.FirebaseTokenUpdateRequest;
+import com.cleevio.vexl.module.user.dto.request.RefreshUserRequest;
 import com.cleevio.vexl.module.user.entity.User;
+import com.cleevio.vexl.module.user.event.UserInactivityLimitExceededEvent;
 import com.cleevio.vexl.module.user.event.UserRemovedEvent;
 import com.cleevio.vexl.module.user.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -92,8 +99,8 @@ public class UserService {
     }
 
     @Transactional
-    public User save(User user) {
-        return this.userRepository.save(user);
+    public void save(User user) {
+        this.userRepository.save(user);
     }
 
     @Transactional
@@ -111,7 +118,8 @@ public class UserService {
 
     @Transactional
     public void deleteUnregisteredToken(final String firebaseToken) {
-        this.userRepository.unregisterFirebaseTokens(firebaseToken);
+        this.userRepository.findByFirebaseTokens(List.of(firebaseToken))
+                .forEach(it -> it.setFirebaseToken(null));
     }
 
     @Transactional(readOnly = true)
@@ -130,5 +138,38 @@ public class UserService {
             }
         });
         return statsDtos;
+    }
+
+    @Transactional
+    public void refreshUser(final String publicKey, final String hash,
+                            final Platform platform, @Valid final RefreshUserRequest request) {
+        User user = this.userRepository.findUserByPublicKeyAndHash(publicKey, hash)
+                .orElseThrow(UserNotFoundException::new);
+        user.setRefreshedAt(request.offersAlive() ? LocalDate.now() : null);
+        user.setPlatform(platform);
+    }
+
+    @Transactional(readOnly = true)
+    public void processNotificationsForInactivity(@NotNull @PositiveOrZero final Integer notificationAfter) {
+        if (!advisoryLockService.tryLock(
+                ModuleLockNamespace.USER,
+                UserAdvisoryLock.INACTIVITY_TASK.name()
+        )) {
+            log.info("Could not obtain lock for user inactivity task.");
+            return;
+        }
+
+        final List<InactivityNotificationDto> inactivityNotificationDtos = this.userRepository.retrieveFirebaseTokensOfInactiveUsers(LocalDate.now().minusDays(notificationAfter));
+        if (inactivityNotificationDtos.isEmpty()) {
+            return;
+        }
+
+        applicationEventPublisher.publishEvent(new UserInactivityLimitExceededEvent(inactivityNotificationDtos));
+    }
+
+    @Transactional
+    public void resetDatesForNotifiedUsers(List<String> firebaseTokens) {
+        this.userRepository.findByFirebaseTokens(firebaseTokens)
+                .forEach(it -> it.setRefreshedAt(null));
     }
 }

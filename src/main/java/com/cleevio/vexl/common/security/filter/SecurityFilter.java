@@ -27,7 +27,7 @@ public class SecurityFilter extends OncePerRequestFilter {
     public static final String HEADER_PUBLIC_KEY = "public-key";
     public static final String HEADER_HASH = "hash";
     public static final String HEADER_SIGNATURE = "signature";
-
+    public static final String X_PLATFORM = "X-Platform";
     private final SignatureService signatureService;
     private final UserService userService;
 

@@ -1,6 +1,7 @@
 package com.cleevio.vexl.module.user.event.listener;
 
 import com.cleevio.vexl.common.integration.firebase.event.FirebaseTokenUnregisteredEvent;
+import com.cleevio.vexl.common.integration.firebase.event.InactivityNotificationSuccessfullySentEvent;
 import com.cleevio.vexl.module.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
@@ -21,5 +22,11 @@ class FirebaseUserEventListener {
     @EventListener
     public void onFirebaseTokenUnregisteredEvent(@Valid FirebaseTokenUnregisteredEvent event) {
         this.userService.deleteUnregisteredToken(event.firebaseToken());
+    }
+
+    @Async
+    @EventListener
+    public void onInactivityNotificationSuccessfullySentEvent(@Valid InactivityNotificationSuccessfullySentEvent event) {
+        this.userService.resetDatesForNotifiedUsers(event.firebaseTokens());
     }
 }
