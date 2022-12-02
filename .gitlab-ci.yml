@@ -198,18 +198,3 @@ deploy-staging:
   only:
     refs:
       - staging
-
-deploy-production:
-  image: gitlab.cleevio.cz:4567/backend/containers/kubectl-az-container:latest
-  stage: deploy
-  before_script:
-    - az login -u deploy@cleevio.onmicrosoft.com -p ${AZURE_PASSWORD}
-  script:
-    - export KUBECONFIG=/root/.kube/config
-    - az aks get-credentials --resource-group cleevio-clients-production --name cleevio-clients-production
-    - kubectl config set-context cleevio-clients-production --namespace=vexl
-    - kubectl apply -f .k8s/prod
-    - kubectl set image deployments/contact-ms-deployment contact-ms=gitlab.cleevio.cz:4567/backend/vexl/vexl-contact-ms/production:${CI_APPLICATION_TAG:-$CI_COMMIT_SHA}
-  only:
-    refs:
-      - production
