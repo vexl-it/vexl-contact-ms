@@ -111,3 +111,8 @@ spec:
                 secretKeyRef:
                   key: secret.firebase-ios-store
                   name: spring-profile-contact-ms
+            - name: SENTRY_DNS
+              valueFrom:
+                secretKeyRef:
+                  key: sentry.dsn
+                  name: spring-profile-user-ms
