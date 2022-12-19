@@ -17,8 +17,11 @@ public class SignatureService {
 
     private final SecretKeyConfig secretKey;
 
-    public boolean isSignatureValid(@Valid CheckSignatureValidityQuery validityQuery) {
+    public boolean isSignatureValid(@Valid CheckSignatureValidityQuery validityQuery, final int cryptoVersion) {
         final String input = String.join(StringUtils.EMPTY, validityQuery.publicKey(), validityQuery.hash());
+        if(cryptoVersion >= 2) {
+            return CLibrary.CRYPTO_LIB.ecdsa_verify_v2(this.secretKey.signaturePublicKey(), input, input.length(), validityQuery.signature());
+        }
         return CLibrary.CRYPTO_LIB.ecdsa_verify(this.secretKey.signaturePublicKey(), input, input.length(), validityQuery.signature());
     }
 }

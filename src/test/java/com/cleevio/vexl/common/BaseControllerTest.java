@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 
 public class BaseControllerTest {
@@ -57,7 +58,7 @@ public class BaseControllerTest {
     @BeforeEach
     @SneakyThrows
     public void setup() {
-        when(signatureService.isSignatureValid(any(CheckSignatureValidityQuery.class))).thenReturn(true);
+        when(signatureService.isSignatureValid(any(CheckSignatureValidityQuery.class), anyInt())).thenReturn(true);
         when(userService.findByPublicKeyAndHash(any(String.class), any(String.class))).thenReturn(Optional.of(USER));
         when(userService.existsByPublicKeyAndHash(any(String.class), any(String.class))).thenReturn(true);
     }

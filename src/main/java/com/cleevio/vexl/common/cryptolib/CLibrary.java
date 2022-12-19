@@ -6,7 +6,7 @@ import com.sun.jna.Platform;
 
 public interface CLibrary extends Library {
 
-    String LIBRARY_VERSION = "-v1-0-1";
+    String LIBRARY_VERSION = "-v1-0-2";
     String LIBRARY_NAME = "libvc";
     String LIBRARY_NAME_LINUX = "vc";
     String FULL_NAME_WIN = LIBRARY_NAME + LIBRARY_VERSION;
@@ -21,6 +21,13 @@ public interface CLibrary extends Library {
     boolean ecdsa_verify(String base64_public_key, String data, int data_len, String base64_signature);
 
     String ecdsa_sign(String base64_public_key, String base64_private_key, String data, int data_len);
+
+    /**
+     * ECDSA V2
+     */
+    boolean ecdsa_verify_v2(String base64_public_key, String data, int data_len, String base64_signature);
+
+    String ecdsa_sign_v2(String base64_public_key, String base64_private_key, String data, int data_len);
 
     /**
      * ECIES
