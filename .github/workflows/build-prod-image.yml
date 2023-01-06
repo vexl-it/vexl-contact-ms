@@ -43,9 +43,6 @@ jobs:
           platforms: linux/amd64
           push: true
           build-args: |
-            http_proxy=$http_proxy
-            https_proxy=$https_proxy
-            no_proxy=$no_proxy
             CI_PROJECT_NAME=${{ github.repository }}
             CI_COMMIT_SHORT_SHA=${{ github.sha }}
             KUBE_DOMAIN=vexl.it
@@ -53,3 +50,5 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository_owner }}/contact-ms:latest
             ghcr.io/${{ github.repository_owner }}/contact-ms:${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/vexl:contact-ms
+            ${{ steps.login-ecr.outputs.registry }}/vexl:contact-ms-${{ github.sha }}
