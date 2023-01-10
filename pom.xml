@@ -11,7 +11,7 @@
     <groupId>com.cleevio</groupId>
     <artifactId>vexl</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>vexl</name>
+    <name>vexl-contact</name>
     <description>vexl</description>
 
     <properties>
