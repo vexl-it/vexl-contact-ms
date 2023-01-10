@@ -25,6 +25,7 @@ import javax.transaction.Transactional;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
 @ExtendWith(SpringExtension.class)
@@ -61,7 +62,7 @@ public abstract class BaseIntegrationTest {
         this.mvc = MockMvcBuilders.webAppContextSetup(this.wac).apply(springSecurity()).build();
         this.userService.save(getUser());
 
-        Mockito.when(signatureService.isSignatureValid(any(CheckSignatureValidityQuery.class))).thenReturn(true);
+        Mockito.when(signatureService.isSignatureValid(any(CheckSignatureValidityQuery.class), anyInt())).thenReturn(true);
         Mockito.when(userService.findByPublicKeyAndHash(any(String.class), any(String.class))).thenReturn(Optional.of(getUser()));
         Mockito.when(userService.existsByPublicKeyAndHash(any(String.class), any(String.class))).thenReturn(true);
 

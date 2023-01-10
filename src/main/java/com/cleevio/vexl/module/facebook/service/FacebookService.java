@@ -1,6 +1,6 @@
 package com.cleevio.vexl.module.facebook.service;
 
-import com.cleevio.vexl.common.cryptolib.CLibrary;
+import com.cleevio.vexl.common.cryptolib.CryptoLibrary;
 import com.cleevio.vexl.module.contact.exception.InvalidFacebookToken;
 import com.cleevio.vexl.module.contact.service.ContactService;
 import com.cleevio.vexl.module.facebook.dto.FacebookUser;
@@ -75,7 +75,7 @@ public class FacebookService {
         );
 
         facebookUser.getFriends().forEach(f -> {
-            if (!existingFriends.contains(CLibrary.CRYPTO_LIB.sha256_hash(f.getId(), f.getId().length()))) {
+            if (!existingFriends.contains(CryptoLibrary.instance.sha256(f.getId()))) {
                 newConnections.add(f);
             }
         });

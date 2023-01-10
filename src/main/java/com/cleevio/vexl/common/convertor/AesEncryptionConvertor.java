@@ -1,7 +1,7 @@
 package com.cleevio.vexl.common.convertor;
 
 import com.cleevio.vexl.common.config.SecretKeyConfig;
-import com.cleevio.vexl.common.cryptolib.CLibrary;
+import com.cleevio.vexl.common.cryptolib.CryptoLibrary;
 import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nullable;
@@ -20,7 +20,7 @@ public class AesEncryptionConvertor implements AttributeConverter<String, String
         if (value == null) {
             return null;
         }
-        return CLibrary.CRYPTO_LIB.aes_encrypt(secretKeyConfig.aesKey(), value);
+        return CryptoLibrary.instance.aesEncryptIgnoreTag(secretKeyConfig.aesKey(), value);
     }
 
     @Nullable
@@ -29,6 +29,6 @@ public class AesEncryptionConvertor implements AttributeConverter<String, String
         if (value == null) {
             return null;
         }
-        return CLibrary.CRYPTO_LIB.aes_decrypt(secretKeyConfig.aesKey(), value);
+        return CryptoLibrary.instance.aesDecryptIgnoreTag(secretKeyConfig.aesKey(), value);
     }
 }
