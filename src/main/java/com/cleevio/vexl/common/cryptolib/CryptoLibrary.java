@@ -76,8 +76,7 @@ public class CryptoLibrary {
             ecdsaSign.update(data.getBytes(StandardCharsets.UTF_8));
             return ecdsaSign.verify(Base64.getDecoder().decode(base64Signature));
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error verifying ecdsa signature", e);
+            return false;
         }
     }
 
@@ -111,8 +110,7 @@ public class CryptoLibrary {
                     ecdsaVerifyV1(pubKey, ecdsaSign, Arrays.copyOfRange(signatureBytes, 0, signatureBytes.length-1), dataHash) ||
                     ecdsaVerifyV1(pubKey, ecdsaSign, Arrays.copyOfRange(signatureBytes, 0, signatureBytes.length-2), dataHash);
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error verifying ecdsa signature");
+            return false;
         }
     }
     private boolean ecdsaVerifyV1(PublicKey pubKey, Signature ecdsaSign, byte[] signatureBytes, byte[] dataHash) {
