@@ -71,6 +71,7 @@ public class UserService {
                         .publicKey(publicKey)
                         .hash(hash)
                         .firebaseToken(request.firebaseToken())
+                        .refreshedAt(LocalDate.now())
                         .build()
         );
 
