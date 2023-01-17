@@ -208,11 +208,20 @@ public class CryptoLibrary {
 
             Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding", "BC");
             cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(cipherKey, "AES"), new IvParameterSpec(iv), new SecureRandom());
-            return new String(cipher.doFinal(Base64.getDecoder().decode(encrypted)), StandardCharsets.UTF_8);
+            byte[] decrypted = cipher.doFinal(Base64.getDecoder().decode(encrypted));
+            return new String(stripEmptyBytes(decrypted), StandardCharsets.UTF_8);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Error AES decrypting message", e);
         }
+    }
+
+    private byte[] stripEmptyBytes(byte[] bytes) {
+        int i = bytes.length - 1;
+        while (i >= 0 && bytes[i] == 0) {
+            --i;
+        }
+        return Arrays.copyOf(bytes, i + 1);
     }
 
     private byte[] pbkd2fSha1(String data, int lengthBytes) throws InvalidKeySpecException {
